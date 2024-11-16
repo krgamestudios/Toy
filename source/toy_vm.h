@@ -2,17 +2,15 @@
 
 #include "toy_common.h"
 
+#include "toy_bytecode.h"
 #include "toy_bucket.h"
 #include "toy_stack.h"
 #include "toy_scope.h"
 
 typedef struct Toy_VM {
-	//hold the raw bytecode
-	unsigned char* bc;
-
 	//raw instructions to be executed
-	unsigned char* routine;
-	unsigned int routineSize;
+	unsigned char* module;
+	unsigned int moduleSize;
 
 	unsigned int paramSize;
 	unsigned int jumpsSize;
@@ -25,7 +23,7 @@ typedef struct Toy_VM {
 	unsigned int dataAddr;
 	unsigned int subsAddr;
 
-	unsigned int routineCounter;
+	unsigned int programCounter;
 
 	//stack - immediate-level values only
 	Toy_Stack* stack;
@@ -41,8 +39,8 @@ typedef struct Toy_VM {
 } Toy_VM;
 
 TOY_API void Toy_initVM(Toy_VM* vm);
-TOY_API void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode); //process the version data
-TOY_API void Toy_bindVMToRoutine(Toy_VM* vm, unsigned char* routine); //process the routine only
+TOY_API void Toy_bindVM(Toy_VM* vm, struct Toy_Bytecode* bc); //process the version data
+TOY_API void Toy_bindVMToModule(Toy_VM* vm, unsigned char* module); //process the module only
 
 TOY_API void Toy_runVM(Toy_VM* vm);
 TOY_API void Toy_freeVM(Toy_VM* vm);

@@ -311,18 +311,19 @@ int repl(const char* filepath) {
 		}
 
 		Toy_Bytecode bc = Toy_compileBytecode(ast);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
 
 		//free the bytecode, and leave the VM ready for the next loop
 		Toy_resetVM(&vm);
+		Toy_freeBytecode(bc);
 
 		printf("%s> ", prompt); //shows the terminal prompt
 	}
 
-	//cleanp all memory
+	//cleanup all memory
 	Toy_freeVM(&vm);
 	Toy_freeBucket(&bucket);
 
@@ -531,7 +532,7 @@ int main(int argc, const char* argv[]) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -544,6 +545,7 @@ int main(int argc, const char* argv[]) {
 
 		//cleanup
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 		Toy_freeBucket(&bucket);
 		free(source);
 	}

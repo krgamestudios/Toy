@@ -50,6 +50,18 @@ test-cases-gdb:
 test-integrations-gdb:
 	$(MAKE) -C $(TOY_INTEGRATIONSDIR) gdb -k
 
+#same as above, but with valgrind
+.PHONY: tests-valgrind
+tests-valgrind: clean test-cases-valgrind test-integrations-valgrind
+
+.PHONY: test-cases-valgrind
+test-cases-valgrind:
+	$(MAKE) -C $(TOY_CASESDIR) valgrind -k
+
+.PHONY: test-integrations-valgrind
+test-integrations-valgrind:
+	$(MAKE) -C $(TOY_INTEGRATIONSDIR) valgrind -k
+
 #TODO: mustfail tests
 
 #util targets

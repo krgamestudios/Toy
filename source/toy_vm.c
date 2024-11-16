@@ -12,16 +12,16 @@
 
 //utilities
 #define READ_BYTE(vm) \
-	vm->routine[vm->routineCounter++]
+	vm->module[vm->programCounter++]
 
 #define READ_UNSIGNED_INT(vm) \
-	*((unsigned int*)(vm->routine + readPostfixUtil(&(vm->routineCounter), 4)))
+	*((unsigned int*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
 
 #define READ_INT(vm) \
-	*((int*)(vm->routine + readPostfixUtil(&(vm->routineCounter), 4)))
+	*((int*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
 
 #define READ_FLOAT(vm) \
-	*((float*)(vm->routine + readPostfixUtil(&(vm->routineCounter), 4)))
+	*((float*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
 
 static inline int readPostfixUtil(unsigned int* ptr, int amount) {
 	int ret = *ptr;
@@ -31,7 +31,7 @@ static inline int readPostfixUtil(unsigned int* ptr, int amount) {
 
 static inline void fixAlignment(Toy_VM* vm) {
 	//NOTE: It's a tilde, not a negative sign
-	vm->routineCounter = (vm->routineCounter + 3) & ~0b11;
+	vm->programCounter = (vm->programCounter + 3) & ~0b11;
 }
 
 //instruction handlers
@@ -68,10 +68,10 @@ static void processRead(Toy_VM* vm) {
 			int len = (int)READ_BYTE(vm);
 
 			//grab the jump as an integer
-			unsigned int jump = vm->routine[ vm->jumpsAddr + READ_INT(vm) ];
+			unsigned int jump = vm->module[ vm->jumpsAddr + READ_INT(vm) ];
 
 			//jumps are relative to the data address
-			char* cstring = (char*)(vm->routine + vm->dataAddr + jump);
+			char* cstring = (char*)(vm->module + vm->dataAddr + jump);
 
 			//build a string from the data section
 			if (stringType == TOY_STRING_LEAF) {
@@ -142,10 +142,10 @@ static void processDeclare(Toy_VM* vm) {
 	bool constant = READ_BYTE(vm); //constness
 
 	//grab the jump
-	unsigned int jump = *(unsigned int*)(vm->routine + vm->jumpsAddr + READ_INT(vm));
+	unsigned int jump = *(unsigned int*)(vm->module + vm->jumpsAddr + READ_INT(vm));
 
 	//grab the data
-	char* cstring = (char*)(vm->routine + vm->dataAddr + jump);
+	char* cstring = (char*)(vm->module + vm->dataAddr + jump);
 
 	//build the name string
 	Toy_String* name = Toy_createNameStringLength(&vm->stringBucket, cstring, len, type, constant);
@@ -166,7 +166,7 @@ static void processAssign(Toy_VM* vm) {
 	Toy_Value name = Toy_popStack(&vm->stack);
 
 	//check name string type
-	if (!TOY_VALUE_IS_STRING(name) && TOY_VALUE_AS_STRING(name)->type != TOY_STRING_NAME) {
+	if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->type != TOY_STRING_NAME) {
 		Toy_error("Invalid assignment target");
 		return;
 	}
@@ -596,18 +596,18 @@ void Toy_initVM(Toy_VM* vm) {
 	Toy_resetVM(vm);
 }
 
-void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode) {
-	if (bytecode[0] != TOY_VERSION_MAJOR || bytecode[1] > TOY_VERSION_MINOR) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Wrong bytecode version found: expected %d.%d.%d found %d.%d.%d, exiting\n" TOY_CC_RESET, TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, bytecode[0], bytecode[1], bytecode[2]);
+void Toy_bindVM(Toy_VM* vm, struct Toy_Bytecode* bc) {
+	if (bc->ptr[0] != TOY_VERSION_MAJOR || bc->ptr[1] > TOY_VERSION_MINOR) {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Wrong bytecode version found: expected %d.%d.%d found %d.%d.%d, exiting\n" TOY_CC_RESET, TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, bc->ptr[0], bc->ptr[1], bc->ptr[2]);
 		exit(-1);
 	}
 
-	if (bytecode[2] != TOY_VERSION_PATCH) {
-		fprintf(stderr, TOY_CC_WARN "WARNING: Wrong bytecode version found: expected %d.%d.%d found %d.%d.%d, continuing\n" TOY_CC_RESET, TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, bytecode[0], bytecode[1], bytecode[2]);
+	if (bc->ptr[2] != TOY_VERSION_PATCH) {
+		fprintf(stderr, TOY_CC_WARN "WARNING: Wrong bytecode version found: expected %d.%d.%d found %d.%d.%d, continuing\n" TOY_CC_RESET, TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, bc->ptr[0], bc->ptr[1], bc->ptr[2]);
 	}
 
-	if (strcmp((char*)(bytecode + 3), TOY_VERSION_BUILD) != 0) {
-		fprintf(stderr, TOY_CC_WARN "WARNING: Wrong bytecode build info found: expected '%s' found '%s', continuing\n" TOY_CC_RESET, TOY_VERSION_BUILD, (char*)(bytecode + 3));
+	if (strcmp((char*)(bc->ptr + 3), TOY_VERSION_BUILD) != 0) {
+		fprintf(stderr, TOY_CC_WARN "WARNING: Wrong bytecode build info found: expected '%s' found '%s', continuing\n" TOY_CC_RESET, TOY_VERSION_BUILD, (char*)(bc->ptr + 3));
 	}
 
 	//offset by the header size
@@ -616,18 +616,17 @@ void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode) {
 		offset += 4 - (offset % 4); //ceil
 	}
 
-	//delegate
-	Toy_bindVMToRoutine(vm, bytecode + offset);
-
-	//cache these
-	vm->bc = bytecode;
+	if (bc->moduleCount != 0) { //tmp check, just in case the bytecode is empty; will rework this when module packing works
+		//delegate to a more specialized function
+		Toy_bindVMToModule(vm, bc->ptr + offset);
+	}
 }
 
-void Toy_bindVMToRoutine(Toy_VM* vm, unsigned char* routine) {
-	vm->routine = routine;
+void Toy_bindVMToModule(Toy_VM* vm, unsigned char* module) {
+	vm->module = module;
 
 	//read the header metadata
-	vm->routineSize = READ_UNSIGNED_INT(vm);
+	vm->moduleSize = READ_UNSIGNED_INT(vm);
 	vm->paramSize = READ_UNSIGNED_INT(vm);
 	vm->jumpsSize = READ_UNSIGNED_INT(vm);
 	vm->dataSize = READ_UNSIGNED_INT(vm);
@@ -663,10 +662,15 @@ void Toy_bindVMToRoutine(Toy_VM* vm, unsigned char* routine) {
 }
 
 void Toy_runVM(Toy_VM* vm) {
+	//NO-OP on empty VMs
+	if (vm->module == NULL) {
+		return;
+	}
+
 	//TODO: read params into scope
 
-	//prep the routine counter for execution
-	vm->routineCounter = vm->codeAddr;
+	//prep the program counter for execution
+	vm->programCounter = vm->codeAddr;
 
 	//begin
 	process(vm);
@@ -679,17 +683,12 @@ void Toy_freeVM(Toy_VM* vm) {
 	Toy_freeBucket(&vm->stringBucket);
 	Toy_freeBucket(&vm->scopeBucket);
 
-	//free the bytecode
-	free(vm->bc);
-
 	Toy_resetVM(vm);
 }
 
 void Toy_resetVM(Toy_VM* vm) {
-	vm->bc = NULL;
-
-	vm->routine = NULL;
-	vm->routineSize = 0;
+	vm->module = NULL;
+	vm->moduleSize = 0;
 
 	vm->paramSize = 0;
 	vm->jumpsSize = 0;
@@ -702,7 +701,7 @@ void Toy_resetVM(Toy_VM* vm) {
 	vm->dataAddr = 0;
 	vm->subsAddr = 0;
 
-	vm->routineCounter = 0;
+	vm->programCounter = 0;
 
 	//NOTE: stack, scope and memory are not altered during resets
 }

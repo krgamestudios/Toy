@@ -72,3 +72,13 @@ build-run-gdb: $(addprefix $(TEST_OUTDIR)/,$(notdir $(TEST_CASESFILES:%.c=%.exe)
 .PRECIOUS: $(TEST_OUTDIR)/%.run-gdb
 $(TEST_OUTDIR)/%.run-gdb: $(TEST_OUTDIR)/%.exe
 	gdb $< -ix gdb_init -ex=run --batch --return-child-result --args "$<"
+
+#valgrind targets
+valgrind: build-source build-cases build-link build-run-valgrind
+
+.PHONY: build-run-valgrind
+build-run-valgrind: $(addprefix $(TEST_OUTDIR)/,$(notdir $(TEST_CASESFILES:%.c=%.exe))) $(addprefix $(TEST_OUTDIR)/,$(notdir $(TEST_CASESFILES:%.c=%.run-valgrind)))
+
+.PRECIOUS: $(TEST_OUTDIR)/%.run-valgrind
+$(TEST_OUTDIR)/%.run-valgrind: $(TEST_OUTDIR)/%.exe
+	valgrind $< --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose

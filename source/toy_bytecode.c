@@ -57,11 +57,17 @@ static void writeBytecodeBody(Toy_Bytecode* bc, Toy_Ast* ast) {
 	//eventually, the bytecode may support multiple modules packed into one file
 	void* module = Toy_compileRoutine(ast);
 
+	//don't try writing an empty module
+	if (module == NULL) {
+		return;
+	}
+
 	size_t len = (size_t)(((int*)module)[0]);
 
 	expand(bc, len);
 	memcpy(bc->ptr + bc->count, module, len);
 	bc->count += len;
+	bc->moduleCount++;
 }
 
 //exposed functions
@@ -73,9 +79,11 @@ Toy_Bytecode Toy_compileBytecode(Toy_Ast* ast) {
 	bc.capacity = 0;
 	bc.count = 0;
 
+	bc.moduleCount = 0;
+
 	//build
 	writeBytecodeHeader(&bc);
-	writeBytecodeBody(&bc, ast);
+	writeBytecodeBody(&bc, ast); //TODO: implement module packing
 
 	return bc;
 }

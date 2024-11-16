@@ -329,6 +329,22 @@ static unsigned int writeInstructionVarDeclare(Toy_Routine** rt, Toy_AstVarDecla
 static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign ast) {
 	unsigned int result = 0;
 
+	//don't treat these as valid values
+	switch (ast.expr->type) {
+		case TOY_AST_BLOCK:
+		case TOY_AST_COMPOUND:
+		case TOY_AST_ASSERT:
+		case TOY_AST_PRINT:
+		case TOY_AST_VAR_DECLARE:
+			//emit a compiler error, set the panic flag and skip out
+			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Malformed assignment\n" TOY_CC_RESET);
+			(*rt)->panic = true;
+			return 0;
+
+		default:
+			break;
+	}
+
 	//name, duplicate, right, opcode
 	if (ast.flag == TOY_AST_FLAG_ASSIGN) {
 		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
@@ -473,6 +489,11 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 		return 0;
 	}
 
+	//if an error occured, just exit
+	if (rt == NULL || (*rt) == NULL || (*rt)->panic) {
+		return 0;
+	}
+
 	unsigned int result = 0;
 
 	//determine how to write each instruction based on the Ast
@@ -542,19 +563,17 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 
 		//meta instructions are disallowed
 		case TOY_AST_PASS:
-			//NOTE: this should be disallowed, but for now it's required for testing
-			// fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST type found: Unknown pass\n" TOY_CC_RESET);
-			// exit(-1);
+			//NOTE: this *should* be disallowed, but for now it's required for testing
 			break;
 
 		case TOY_AST_ERROR:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST type found: Unknown error\n" TOY_CC_RESET);
-			exit(-1);
+			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Unknown 'error'\n" TOY_CC_RESET);
+			(*rt)->panic = true;
 			break;
 
 		case TOY_AST_END:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST type found: Unknown end\n" TOY_CC_RESET);
-			exit(-1);
+			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Unknown 'end'\n" TOY_CC_RESET);
+			(*rt)->panic = true;
 			break;
 	}
 
@@ -562,14 +581,17 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 }
 
 static void* writeRoutine(Toy_Routine* rt, Toy_Ast* ast) {
-	//build the routine's parts
-	//TODO: param
 	//code
 	writeRoutineCode(&rt, ast);
 	EMIT_BYTE(&rt, code, TOY_OPCODE_RETURN); //temp terminator
 	EMIT_BYTE(&rt, code, 0); //4-byte alignment
 	EMIT_BYTE(&rt, code, 0);
 	EMIT_BYTE(&rt, code, 0);
+
+	//if an error occurred, just exit
+	if (rt->panic) {
+		return NULL;
+	}
 
 	//write the header and combine the parts
 	void* buffer = NULL;
@@ -667,9 +689,10 @@ void* Toy_compileRoutine(Toy_Ast* ast) {
 	rt.subsCapacity = 0;
 	rt.subsCount = 0;
 
+	rt.panic = false;
+
 	//build
 	void * buffer = writeRoutine(&rt, ast);
-
 
 	//cleanup the temp object
 	free(rt.param);

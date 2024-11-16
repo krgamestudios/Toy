@@ -1,2 +1,5 @@
 
-1 + 2;
+//TODO: mustfails
+var a = 0;
+var b = a = a + 1, 6;
+

@@ -24,6 +24,8 @@ typedef struct Toy_Routine {
 	unsigned char* subs; //subroutines, recursively
 	unsigned int subsCapacity;
 	unsigned int subsCount;
+
+	bool panic; //any issues found at this point are compilation errors
 } Toy_Routine;
 
 TOY_API void* Toy_compileRoutine(Toy_Ast* ast);

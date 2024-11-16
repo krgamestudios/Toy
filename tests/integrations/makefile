@@ -43,6 +43,14 @@ run-gdb: $(TEST_SCRIPTFILES:.toy=.toy-gdb)
 %.toy-gdb: %.toy
 	gdb $(TEST_OUTDIR)/$(TEST_REPLNAME) -ix gdb_init -ex=run --batch --return-child-result --args "$(TEST_OUTDIR)/$(TEST_REPLNAME)" "-f" "../$<" "--verbose"
 
+#same as above, but with valgrind
+valgrind: source repl run-valgrind
+
+run-valgrind: $(TEST_SCRIPTFILES:.toy=.toy-valgrind)
+
+%.toy-valgrind: %.toy
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose $(TEST_OUTDIR)/$(TEST_REPLNAME) -f ../$< --verbose
+
 #compile the source and repl first
 source: $(TEST_OBJDIR) $(TEST_OUTDIR)
 	$(MAKE) SRC_OUTDIR=../$(TOY_INTEGRATIONSDIR)/$(TEST_OUTDIR) -C $(TEST_SOURCEDIR)

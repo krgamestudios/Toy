@@ -44,7 +44,7 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//check the header size
 		int headerSize = 3 + strlen(TOY_VERSION_BUILD) + 1;
@@ -52,10 +52,10 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 			headerSize += 4 - (headerSize % 4); //ceil
 		}
 
-		//check the routine was loaded correctly
+		//check the module was loaded correctly
 		if (
-			vm.routine - vm.bc != headerSize ||
-			vm.routineSize != 72 ||
+			vm.module - bc.ptr != headerSize ||
+			vm.moduleSize != 72 ||
 			vm.paramSize != 0 ||
 			vm.jumpsSize != 0 ||
 			vm.dataSize != 0 ||
@@ -66,11 +66,13 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
 		//don't run it this time, simply teadown
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	return 0;
@@ -95,7 +97,7 @@ int test_simple_execution(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -111,11 +113,13 @@ int test_simple_execution(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
 		//teadown
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	return 0;
@@ -140,7 +144,7 @@ int test_opcode_not_equal(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -156,11 +160,13 @@ int test_opcode_not_equal(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
 		//teadown
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	return 0;
@@ -193,7 +199,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -207,6 +213,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 			Toy_resetAssertFailureCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
@@ -215,6 +222,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	//test assert false
@@ -234,7 +242,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -249,6 +257,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 			Toy_resetAssertFailureCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
@@ -257,6 +266,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	//test assert false with message
@@ -276,7 +286,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -291,6 +301,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 			Toy_resetAssertFailureCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
@@ -299,6 +310,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	return 0;
@@ -322,7 +334,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -337,6 +349,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
@@ -345,6 +358,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	//test print with a string
@@ -364,7 +378,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -379,6 +393,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
@@ -387,6 +402,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	//test print with a string concat
@@ -406,7 +422,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -421,6 +437,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
@@ -429,6 +446,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	return 0;
@@ -453,7 +471,7 @@ int test_scope(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -475,11 +493,13 @@ int test_scope(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
 		//teadown
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	//test declaration with absent value
@@ -500,7 +520,7 @@ int test_scope(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bc.ptr);
+		Toy_bindVM(&vm, &bc);
 
 		//run
 		Toy_runVM(&vm);
@@ -520,11 +540,13 @@ int test_scope(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
 			return -1;
 		}
 
 		//teadown
 		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
 	}
 
 	return 0;
@@ -540,7 +562,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 
 		//run 1
 		Toy_Bytecode bc1 = makeBytecodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, bc1.ptr);
+		Toy_bindVM(&vm, &bc1);
 		Toy_runVM(&vm);
 		Toy_resetVM(&vm);
 
@@ -559,7 +581,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 
 		//run 2
 		Toy_Bytecode bc2 = makeBytecodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, bc2.ptr);
+		Toy_bindVM(&vm, &bc2);
 		Toy_runVM(&vm);
 		Toy_resetVM(&vm);
 
@@ -578,7 +600,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 
 		//run 3
 		Toy_Bytecode bc3 = makeBytecodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, bc3.ptr);
+		Toy_bindVM(&vm, &bc3);
 		Toy_runVM(&vm);
 		Toy_resetVM(&vm);
 
