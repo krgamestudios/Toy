@@ -18,6 +18,7 @@ export
 false
 float
 fn
+function
 for
 foreach
 function
