@@ -229,7 +229,13 @@ char* Toy_getStringRawBuffer(Toy_String* str) {
 		exit(-1);
 	}
 
-	char* buffer = malloc(str->length + 1);
+	//BUGFIX: Make sure it's aligned, and there's space for the null
+	int len = (str->length + 3) & ~3;
+	if (len == str->length) {
+		len += 4;
+	}
+
+	char* buffer = malloc(len);
 
 	deepCopyUtil(buffer, str);
 	buffer[str->length] = '\0';

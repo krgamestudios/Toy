@@ -9,9 +9,9 @@
 	strncpy((dest) + (strlen(dest)), (src), strlen((src)) + 1);
 
 #if defined(_WIN32) || defined(_WIN64)
-	#define FLIPSLASH(str) for (int i = 0; str[i]; i++) str[i] = str[i] == '/' ? '\\' : str[i];
+	#define FLIPSLASH(str) for (int i = 0; str != NULL && str[i]; i++) str[i] = str[i] == '/' ? '\\' : str[i];
 #else
-	#define FLIPSLASH(str) for (int i = 0; str[i]; i++) str[i] = str[i] == '\\' ? '/' : str[i];
+	#define FLIPSLASH(str) for (int i = 0; str != NULL && str[i]; i++) str[i] = str[i] == '\\' ? '/' : str[i];
 #endif
 
 unsigned char* readFile(char* path, int* size) {
@@ -219,8 +219,9 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 				i++;
 
 				//total space to reserve - it's actually longer than needed, due to the exe name being removed
-				cmd.infileLength = strlen(argv[0]) + strlen(argv[i]);
-				cmd.infile = malloc(cmd.infileLength + 1);
+				cmd.infileLength = strlen(argv[0]) + strlen(argv[i]) + 1;
+				cmd.infileLength = (cmd.infileLength + 3) & ~3; //BUGFIX: align to  word size for malloc()
+				cmd.infile = malloc(cmd.infileLength);
 
 				if (cmd.infile == NULL) {
 					fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate space while parsing the command line, exiting\n" TOY_CC_RESET);

@@ -1,0 +1,8 @@
+The default version of GCC that ships on Raspian has an issue. The file '/usr/lib/arm-linux-gnueabihf/libarmmem-v7l.so' has a faulty implementation of 'memcpy()' and possibly 'memset()'. Changing to the newer versions doens't work, as they're just symlinks to v7.
+
+To resolve this, download and build this shared object:
+
+https://github.com/simonjhall/copies-and-fills
+
+Then, set the linker's preload value to point to that '.so' file (You may need to edit '/etc/ld.so.preload')
+

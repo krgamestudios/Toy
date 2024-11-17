@@ -210,7 +210,7 @@ int test_string_concatenation() {
 
 		//check the refcounts
 		if (strlen(buffer) != 11 ||
-			strcmp(buffer, "Hello world") != 0)
+			strncmp(buffer, "Hello world", 11) != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to get the raw buffer from concatenated string\n" TOY_CC_RESET);
 			free(buffer);
@@ -267,7 +267,7 @@ int test_string_with_stressed_bucket() {
 		//grab the buffer
 		char* buffer = Toy_getStringRawBuffer(str);
 
-		if (strcmp(buffer, "thequickbrownfoxjumpedoverthelazydog") != 0 ||
+		if (strncmp(buffer, "thequickbrownfoxjumpedoverthelazydog", 36) != 0 ||
 			strlen(buffer) != 36)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected state of the raw buffer after string stress test: '%s'\n" TOY_CC_RESET, buffer);

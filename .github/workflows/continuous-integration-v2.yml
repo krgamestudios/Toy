@@ -60,3 +60,22 @@ jobs:
       - name: run the tests
         if: (matrix.commands.gdb == true && matrix.platforms.gdb_enabled == false) != true
         run: ${{ matrix.commands.exec }}
+  
+  run-test-valgrind:
+    needs: run-test-integrations
+    continue-on-error: true
+    strategy:
+      matrix:
+        platforms:
+          - { os: ubuntu-latest, preinstall: sudo apt-get install valgrind }
+        commands:
+          - { exec: make tests-valgrind }
+    
+    runs-on: ${{ matrix.platforms.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preinstall dependencies
+        run: ${{ matrix.platforms.preinstall }}
+      - name: run the tests
+        run: ${{ matrix.commands.exec }}
+

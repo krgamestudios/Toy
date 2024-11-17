@@ -33,9 +33,7 @@ void* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount) {
 	}
 
 	//BUGFIX: the endpoint must be aligned to the word size, otherwise you'll get a bus error from moving pointers
-	if (amount % 4 != 0) {
-		amount += 4 - (amount % 4); //ceil
-	}
+	amount = (amount + 3) & ~3;
 
 	//if you try to allocate too much space
 	if ((*bucketHandle)->capacity < amount) {

@@ -68,6 +68,8 @@ static void writeBytecodeBody(Toy_Bytecode* bc, Toy_Ast* ast) {
 	memcpy(bc->ptr + bc->count, module, len);
 	bc->count += len;
 	bc->moduleCount++;
+
+	free(module);
 }
 
 //exposed functions

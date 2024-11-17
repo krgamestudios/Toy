@@ -17,6 +17,10 @@ static void incrementRefCount(Toy_Scope* scope) {
 static void decrementRefCount(Toy_Scope* scope) {
 	for (Toy_Scope* iter = scope; iter; iter = iter->next) {	
 		iter->refCount--;
+		if (iter->refCount == 0 && iter->table != NULL) {
+			Toy_freeTable(iter->table);
+			iter->table = NULL;
+		}
 	}
 }
 
@@ -64,12 +68,6 @@ Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 	}
 
 	decrementRefCount(scope);
-
-	if (scope->refCount == 0) {
-		Toy_freeTable(scope->table);
-		scope->table = NULL;
-	}
-
 	return scope->next;
 }
 
@@ -86,7 +84,7 @@ Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	//forcibly copy the contents
 	for (int i = 0; i < scope->table->capacity; i++) {
 		if (!TOY_VALUE_IS_NULL(scope->table->data[i].key)) {
-			Toy_insertTable(&newScope->table, scope->table->data[i].key, scope->table->data[i].value);
+			Toy_insertTable(&newScope->table, Toy_copyValue(scope->table->data[i].key), Toy_copyValue(scope->table->data[i].value));
 		}
 	}
 

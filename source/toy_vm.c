@@ -651,12 +651,17 @@ void Toy_bindVMToModule(Toy_VM* vm, unsigned char* module) {
 		vm->subsAddr = READ_UNSIGNED_INT(vm);
 	}
 
-	//allocate the stack, scope, and memory
-	vm->stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-	vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
-	vm->stack = Toy_allocateStack();
+	//allocate the stack, scope, and memory (skip if already in use)
+	if (vm->stringBucket == NULL) {
+		vm->stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+	}
+	if (vm->scopeBucket == NULL) {
+		vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+	}
+	if (vm->stack == NULL) {
+		vm->stack = Toy_allocateStack();
+	}
 	if (vm->scope == NULL) {
-		//only allocate a new top-level scope when needed, otherwise REPL will break
 		vm->scope = Toy_pushScope(&vm->scopeBucket, NULL);
 	}
 }

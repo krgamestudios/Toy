@@ -49,7 +49,7 @@ valgrind: source repl run-valgrind
 run-valgrind: $(TEST_SCRIPTFILES:.toy=.toy-valgrind)
 
 %.toy-valgrind: %.toy
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose $(TEST_OUTDIR)/$(TEST_REPLNAME) -f ../$< --verbose
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(TEST_OUTDIR)/$(TEST_REPLNAME) -f ../$< --verbose
 
 #compile the source and repl first
 source: $(TEST_OBJDIR) $(TEST_OUTDIR)
