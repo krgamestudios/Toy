@@ -18,6 +18,7 @@ typedef enum Toy_AstType {
 	TOY_AST_COMPOUND,
 
 	TOY_AST_ASSERT,
+	TOY_AST_IF_THEN_ELSE,
 	TOY_AST_PRINT,
 
 	TOY_AST_VAR_DECLARE,
@@ -123,6 +124,13 @@ typedef struct Toy_AstAssert {
 	Toy_Ast* message;
 } Toy_AstAssert;
 
+typedef struct Toy_AstIfThenElse {
+	Toy_AstType type;
+	Toy_Ast* condBranch;
+	Toy_Ast* thenBranch;
+	Toy_Ast* elseBranch;
+} Toy_AstIfThenElse;
+
 typedef struct Toy_AstPrint {
 	Toy_AstType type;
 	Toy_Ast* child;
@@ -168,6 +176,7 @@ union Toy_Ast {                     //32 | 64 BITNESS
 	Toy_AstGroup group;             //8  | 16
 	Toy_AstCompound compound;       //16 | 24
 	Toy_AstAssert assert;           //16 | 24
+	Toy_AstIfThenElse ifThenElse;   //16 | 32
 	Toy_AstPrint print;             //8  | 16
 	Toy_AstVarDeclare varDeclare;   //16 | 24
 	Toy_AstVarAssign varAssign;     //16 | 24
@@ -188,6 +197,7 @@ void Toy_private_emitAstGroup(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 void Toy_private_emitAstCompound(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag, Toy_Ast* right);
 
 void Toy_private_emitAstAssert(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* child, Toy_Ast* msg);
+void Toy_private_emitAstIfThenElse(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* condBranch, Toy_Ast* thenBranch, Toy_Ast* elseBranch);
 void Toy_private_emitAstPrint(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 
 void Toy_private_emitAstVariableDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_Ast* expr);

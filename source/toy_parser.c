@@ -655,6 +655,7 @@ static void makeExpr(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 
 //forward declarations
 static void makeBlockStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
+static void makeDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 
 static void makeAssertStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	Toy_Ast* ast = NULL; //assert's emit function is a bit different
@@ -675,6 +676,27 @@ static void makeAssertStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 	}
 
 	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of assert statement");
+}
+
+static void makeIfThenElseStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	Toy_Ast* condBranch = NULL;
+	Toy_Ast* thenBranch = NULL;
+	Toy_Ast* elseBranch = NULL;
+
+	//if (condBranch)
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_LEFT, "Expected '(' after 'if' keyword");
+	makeExpr(bucketHandle, parser, &condBranch);
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'if' condition");
+
+	// { thenBranch }
+	makeDeclarationStmt(bucketHandle, parser, &thenBranch);
+
+	//else { elseBranch }
+	if (match(parser, TOY_TOKEN_KEYWORD_ELSE)) {
+		makeDeclarationStmt(bucketHandle, parser, &elseBranch);
+	}
+
+	Toy_private_emitAstIfThenElse(bucketHandle, rootHandle, condBranch, thenBranch, elseBranch);
 }
 
 static void makePrintStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
@@ -737,12 +759,18 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
+	//assert
 	else if (match(parser, TOY_TOKEN_KEYWORD_ASSERT)) {
 		makeAssertStmt(bucketHandle, parser, rootHandle);
 		return;
 	}
 
 	//if-then-else
+	else if (match(parser, TOY_TOKEN_KEYWORD_IF)) {
+		makeIfThenElseStmt(bucketHandle, parser, rootHandle);
+		return;
+	}
+
 	//while-then
 	//for-pre-clause-post-then
 	//break
@@ -750,17 +778,19 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 	//return
 	//import
 
-	//check for empty lines
-	else if (match(parser, TOY_TOKEN_OPERATOR_SEMICOLON)) {
-		Toy_private_emitAstPass(bucketHandle, rootHandle);
-		return;
-	}
-
+	//print
 	else if (match(parser, TOY_TOKEN_KEYWORD_PRINT)) {
 		makePrintStmt(bucketHandle, parser, rootHandle);
 		return;
 	}
 
+	//empty lines
+	else if (match(parser, TOY_TOKEN_OPERATOR_SEMICOLON)) {
+		Toy_private_emitAstPass(bucketHandle, rootHandle);
+		return;
+	}
+
+	//expressions
 	else {
 		//default
 		makeExprStmt(bucketHandle, parser, rootHandle);

@@ -105,6 +105,17 @@ void Toy_private_emitAstAssert(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, T
 	(*astHandle) = tmp;
 }
 
+void Toy_private_emitAstIfThenElse(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* condBranch, Toy_Ast* thenBranch, Toy_Ast* elseBranch) {
+	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
+
+	tmp->type = TOY_AST_IF_THEN_ELSE;
+	tmp->ifThenElse.condBranch = condBranch;
+	tmp->ifThenElse.thenBranch = thenBranch;
+	tmp->ifThenElse.elseBranch = elseBranch;
+
+	(*astHandle) = tmp;
+}
+
 void Toy_private_emitAstPrint(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 

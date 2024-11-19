@@ -47,11 +47,22 @@ static void emitFloat(void** handle, unsigned int* capacity, unsigned int* count
 
 //write instructions based on the AST types
 #define EMIT_BYTE(rt, part, byte) \
-	emitByte((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), byte);
+	emitByte((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), byte)
 #define EMIT_INT(rt, part, bytes) \
-	emitInt((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), bytes);
+	emitInt((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), bytes)
 #define EMIT_FLOAT(rt, part, bytes) \
-	emitFloat((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), bytes);
+	emitFloat((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), bytes)
+
+//skip bytes, but return the address
+#define SKIP_BYTE(rt, part) (EMIT_BYTE(rt, part, 0), ((*rt)->part##Count - 1))
+#define SKIP_INT(rt, part) (EMIT_INT(rt, part, 0), ((*rt)->part##Count - 4))
+
+//overwrite a pre-existing position
+#define OVERWRITE_INT(rt, part, addr, bytes) \
+	emitInt((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &(addr), bytes);
+
+//simply get the address (always an integer)
+#define CURRENT_ADDRESS(rt, part) ((*rt)->part##Count)
 
 static void emitToJumpTable(Toy_Routine** rt, unsigned int startAddr) {
 	EMIT_INT(rt, code, (*rt)->jumpsCount); //mark the jump index in the code
@@ -296,6 +307,48 @@ static unsigned int writeInstructionAssert(Toy_Routine** rt, Toy_AstAssert ast) 
 	return 0;
 }
 
+static unsigned int writeInstructionIfThenElse(Toy_Routine** rt, Toy_AstIfThenElse ast) {
+	//cond-branch
+	writeRoutineCode(rt, ast.condBranch);
+
+	//emit the jump word (opcode, type, condition, padding)
+	EMIT_BYTE(rt, code, TOY_OPCODE_JUMP);
+	EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_RELATIVE);
+	EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_IF_FALSE);
+	EMIT_BYTE(rt, code, 0);
+
+	unsigned int thenEndAddr = SKIP_INT(rt, code); //parameter to be written later
+
+	//emit then branch
+	writeRoutineCode(rt, ast.thenBranch);
+
+	if (ast.elseBranch != NULL) {
+		//emit the jump-to-end (opcode, type, condition, padding)
+		EMIT_BYTE(rt, code, TOY_OPCODE_JUMP);
+		EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_RELATIVE);
+		EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_ALWAYS);
+		EMIT_BYTE(rt, code, 0);
+
+		unsigned int elseEndAddr = SKIP_INT(rt, code); //parameter to be written later
+
+		//specify the starting position for the else branch
+		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - thenEndAddr);
+
+		//emit the else branch
+		writeRoutineCode(rt, ast.elseBranch);
+
+		//specify the ending position for the else branch
+		OVERWRITE_INT(rt, code, elseEndAddr, CURRENT_ADDRESS(rt, code) - elseEndAddr);
+	}
+
+	else {
+		//without an else branch, set the jump destination and move on
+		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - thenEndAddr);
+	}
+
+	return 0;
+}
+
 static unsigned int writeInstructionPrint(Toy_Routine** rt, Toy_AstPrint ast) {
 	//the thing to print
 	writeRoutineCode(rt, ast.child);
@@ -494,6 +547,7 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 		return 0;
 	}
 
+	//NOTE: 'result' is used to in 'writeInstructionCompound()'
 	unsigned int result = 0;
 
 	//determine how to write each instruction based on the Ast
@@ -543,6 +597,10 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 
 		case TOY_AST_ASSERT:
 			result += writeInstructionAssert(rt, ast->assert);
+			break;
+
+		case TOY_AST_IF_THEN_ELSE:
+			result += writeInstructionIfThenElse(rt, ast->ifThenElse);
 			break;
 
 		case TOY_AST_PRINT:
@@ -596,7 +654,7 @@ static void* writeRoutine(Toy_Routine* rt, Toy_Ast* ast) {
 	//write the header and combine the parts
 	void* buffer = NULL;
 	unsigned int capacity = 0, count = 0;
-	// int paramAddr = 0, codeAddr = 0, subsAddr = 0;
+	// int paramAddr = 0, subsAddr = 0;
 	int codeAddr = 0;
 	int jumpsAddr = 0;
 	int dataAddr = 0;

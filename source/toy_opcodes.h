@@ -32,6 +32,7 @@ typedef enum Toy_OpcodeType {
 
 	//control instructions
 	TOY_OPCODE_RETURN,
+	TOY_OPCODE_JUMP,
 
 	TOY_OPCODE_SCOPE_PUSH,
 	TOY_OPCODE_SCOPE_POP,
@@ -48,3 +49,16 @@ typedef enum Toy_OpcodeType {
 	TOY_OPCODE_ERROR,
 	TOY_OPCODE_EOF = 255,
 } Toy_OpcodeType;
+
+//specific opcode flags
+typedef enum Toy_OpParamJumpType {
+	TOY_OP_PARAM_JUMP_ABSOLUTE = 0, //from the start of the routine's code section
+	TOY_OP_PARAM_JUMP_RELATIVE = 1,
+} Toy_OpJumpType;
+
+typedef enum Toy_OpParamJumpConditional {
+	TOY_OP_PARAM_JUMP_ALWAYS = 0,
+	TOY_OP_PARAM_JUMP_IF_TRUE = 1,
+	TOY_OP_PARAM_JUMP_IF_FALSE = 2,
+} Toy_OpParamJumpConditional;
+

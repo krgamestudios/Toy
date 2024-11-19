@@ -1,0 +1,10 @@
+
+
+if (true) {
+	print "Success";
+}
+
+else {
+	print "Failed";
+}
+

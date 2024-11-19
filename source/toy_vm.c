@@ -31,7 +31,7 @@ static inline int readPostfixUtil(unsigned int* ptr, int amount) {
 
 static inline void fixAlignment(Toy_VM* vm) {
 	//NOTE: It's a tilde, not a negative sign
-	vm->programCounter = (vm->programCounter + 3) & ~0b11;
+	vm->programCounter = (vm->programCounter + 3) & ~3;
 }
 
 //instruction handlers
@@ -361,6 +361,52 @@ static void processLogical(Toy_VM* vm, Toy_OpcodeType opcode) {
 	}
 }
 
+static void processJump(Toy_VM* vm) {
+	Toy_OpJumpType type = READ_BYTE(vm);
+	Toy_OpParamJumpConditional cond = READ_BYTE(vm);
+	fixAlignment(vm);
+
+	//assume the param is a signed integer
+	int param = READ_INT(vm);
+
+	//should we jump?
+	switch(cond) {
+		case TOY_OP_PARAM_JUMP_ALWAYS:
+			break;
+
+		case TOY_OP_PARAM_JUMP_IF_TRUE: {
+			Toy_Value value = Toy_popStack(&vm->stack);
+			if (Toy_checkValueIsTruthy(value) == true) {
+				Toy_freeValue(value);
+				break;
+			}
+			Toy_freeValue(value);
+			return;
+		}
+
+		case TOY_OP_PARAM_JUMP_IF_FALSE: {
+			Toy_Value value = Toy_popStack(&vm->stack);
+			if (Toy_checkValueIsTruthy(value) != true) {
+				Toy_freeValue(value);
+				break;
+			}
+			Toy_freeValue(value);
+			return;
+		}
+	}
+
+	//do the jump
+	switch(type) {
+		case TOY_OP_PARAM_JUMP_ABSOLUTE:
+			vm->programCounter = vm->codeAddr + param;
+			return;
+
+		case TOY_OP_PARAM_JUMP_RELATIVE:
+			vm->programCounter += param;
+			return;
+	}
+}
+
 static void processAssert(Toy_VM* vm) {
 	unsigned int count = READ_BYTE(vm);
 
@@ -550,6 +596,10 @@ static void process(Toy_VM* vm) {
 			case TOY_OPCODE_RETURN:
 				//temp terminator
 				return;
+
+			case TOY_OPCODE_JUMP:
+				processJump(vm);
+				break;
 
 			case TOY_OPCODE_SCOPE_PUSH:
 				vm->scope = Toy_pushScope(&vm->scopeBucket, vm->scope);

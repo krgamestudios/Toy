@@ -5,6 +5,7 @@
 #include <string.h>
 
 int test_sizeof_ast_64bit() {
+	//NOTE: This could've covered both bitness sizes as TEST_SIZEOF(type, bit32, bit32)
 #define TEST_SIZEOF(type, size) \
 	if (sizeof(type) != size) { \
 		fprintf(stderr, TOY_CC_ERROR "ERROR: sizeof(" #type ") is %d, expected %d\n" TOY_CC_RESET, (int)sizeof(type), size); \
@@ -24,6 +25,7 @@ int test_sizeof_ast_64bit() {
 	TEST_SIZEOF(Toy_AstGroup, 16);
 	TEST_SIZEOF(Toy_AstCompound, 24);
 	TEST_SIZEOF(Toy_AstAssert, 24);
+	TEST_SIZEOF(Toy_AstIfThenElse, 32);
 	TEST_SIZEOF(Toy_AstPrint, 16);
 	TEST_SIZEOF(Toy_AstVarDeclare, 24);
 	TEST_SIZEOF(Toy_AstVarAssign, 24);
@@ -58,6 +60,7 @@ int test_sizeof_ast_32bit() {
 	TEST_SIZEOF(Toy_AstGroup, 8);
 	TEST_SIZEOF(Toy_AstCompound, 16);
 	TEST_SIZEOF(Toy_AstAssert, 12);
+	TEST_SIZEOF(Toy_AstIfThenElse, 16);
 	TEST_SIZEOF(Toy_AstPrint, 8);
 	TEST_SIZEOF(Toy_AstVarDeclare, 12);
 	TEST_SIZEOF(Toy_AstVarAssign, 16);
