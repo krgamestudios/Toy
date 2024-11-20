@@ -332,18 +332,18 @@ static unsigned int writeInstructionIfThenElse(Toy_Routine** rt, Toy_AstIfThenEl
 		unsigned int elseEndAddr = SKIP_INT(rt, code); //parameter to be written later
 
 		//specify the starting position for the else branch
-		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - thenEndAddr);
+		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - (thenEndAddr + 4));
 
 		//emit the else branch
 		writeRoutineCode(rt, ast.elseBranch);
 
 		//specify the ending position for the else branch
-		OVERWRITE_INT(rt, code, elseEndAddr, CURRENT_ADDRESS(rt, code) - elseEndAddr);
+		OVERWRITE_INT(rt, code, elseEndAddr, CURRENT_ADDRESS(rt, code) - (elseEndAddr + 4));
 	}
 
 	else {
 		//without an else branch, set the jump destination and move on
-		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - thenEndAddr);
+		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - (thenEndAddr + 4));
 	}
 
 	return 0;

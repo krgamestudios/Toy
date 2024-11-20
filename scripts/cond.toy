@@ -1,10 +1,44 @@
 
-
+//literals
 if (true) {
 	print "Success";
 }
-
 else {
 	print "Failed";
+}
+
+//false literals
+if (false) {
+	print "Failed";
+}
+else {
+	print "Success";
+}
+
+//conditionals
+if (1 < 2) {
+	print "Success";
+}
+if (1 > 2) {
+	print "Failure";
+}
+
+
+//variables
+var a = 42;
+
+if (a) {
+	print "Success";
+}
+else {
+	print "Failure";
+}
+
+
+if (a == 42) {
+	print "Success";
+}
+else {
+	print "Failure";
 }
 

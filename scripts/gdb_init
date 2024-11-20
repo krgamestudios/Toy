@@ -1,0 +1,19 @@
+set breakpoint pending on
+
+break toy_vm.c:547
+
+command 1
+	print opcode
+	continue
+end
+
+break toy_vm.c:373
+
+command 2
+	printf "JUMP %d %d %d\n", type, cond, param
+	continue
+end
+
+break toy_vm.c:375
+
+
