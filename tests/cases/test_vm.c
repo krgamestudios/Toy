@@ -681,6 +681,8 @@ int main() {
 		total += res;
 	}
 
+	//TODO: test_ifThenElse()
+
 	{
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		res = test_scope(&bucket);

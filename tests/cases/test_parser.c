@@ -456,7 +456,168 @@ int test_binary(Toy_Bucket** bucketHandle) {
 }
 
 int test_compound(Toy_Bucket** bucketHandle) {
-	//TODO: fix test_compound()
+	//TODO: implement test_compound()
+	return 0;
+}
+
+int test_keywords(Toy_Bucket** bucketHandle) {
+	//test assert
+	{
+		char* source = "assert true;";
+		Toy_Ast* ast = makeAstFromSource(bucketHandle, source);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_BLOCK ||
+			ast->block.child == NULL ||
+
+			ast->block.child->type != TOY_AST_ASSERT ||
+			ast->block.child->assert.child == NULL ||
+			ast->block.child->assert.child->type != TOY_AST_VALUE ||
+
+			TOY_VALUE_IS_BOOLEAN(ast->block.child->assert.child->value.value) == false ||
+			TOY_VALUE_AS_BOOLEAN(ast->block.child->assert.child->value.value) != true ||
+
+			ast->block.child->assert.message != NULL)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
+			return -1;
+		}
+	}
+
+	//test assert (with message)
+	{
+		char* source = "assert true, \"foobar\";";
+		Toy_Ast* ast = makeAstFromSource(bucketHandle, source);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_BLOCK ||
+			ast->block.child == NULL ||
+
+			ast->block.child->type != TOY_AST_ASSERT ||
+			ast->block.child->assert.child == NULL ||
+			ast->block.child->assert.child->type != TOY_AST_VALUE ||
+
+			TOY_VALUE_IS_BOOLEAN(ast->block.child->assert.child->value.value) == false ||
+			TOY_VALUE_AS_BOOLEAN(ast->block.child->assert.child->value.value) != true ||
+
+			ast->block.child->assert.message == NULL ||
+			ast->block.child->assert.message->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->assert.message->value.value) == false ||
+			TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->as.leaf.data, "foo", 3) != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
+			return -1;
+		}
+	}
+
+	//test print (tested first, to I can use it later)
+	{
+		char* source = "print \"foo\";";
+		Toy_Ast* ast = makeAstFromSource(bucketHandle, source);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_BLOCK ||
+			ast->block.child == NULL ||
+
+			ast->block.child->type != TOY_AST_PRINT ||
+			ast->block.child->print.child == NULL ||
+			ast->block.child->print.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->print.child->value.value) == false ||
+			TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->as.leaf.data, "foo", 3) != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
+			return -1;
+		}
+	}
+
+	//test if-then
+	{
+		char* source = "if (true) { print \"foo\"; }";
+		Toy_Ast* ast = makeAstFromSource(bucketHandle, source);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_BLOCK ||
+			ast->block.child == NULL ||
+			ast->block.child->type != TOY_AST_IF_THEN_ELSE ||
+
+			ast->block.child->ifThenElse.condBranch == NULL ||
+			ast->block.child->ifThenElse.condBranch->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_BOOLEAN(ast->block.child->ifThenElse.condBranch->value.value) == false ||
+			TOY_VALUE_AS_BOOLEAN(ast->block.child->ifThenElse.condBranch->value.value) != true ||
+
+			ast->block.child->ifThenElse.thenBranch == NULL ||
+			ast->block.child->ifThenElse.thenBranch->type != TOY_AST_BLOCK ||
+			ast->block.child->ifThenElse.thenBranch->block.child == NULL ||
+
+			ast->block.child->ifThenElse.thenBranch->block.child->type != TOY_AST_PRINT ||
+			ast->block.child->ifThenElse.thenBranch->block.child->print.child == NULL ||
+			ast->block.child->ifThenElse.thenBranch->block.child->print.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value) == false ||
+			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->as.leaf.data, "foo", 3) != 0 ||
+
+			ast->block.child->ifThenElse.elseBranch != NULL)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
+			return -1;
+		}
+	}
+
+	//test if-then-else
+	{
+		char* source = "if (true) { print \"foo\"; } else { print \"bar\"; }";
+		Toy_Ast* ast = makeAstFromSource(bucketHandle, source);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_BLOCK ||
+			ast->block.child == NULL ||
+			ast->block.child->type != TOY_AST_IF_THEN_ELSE ||
+
+			ast->block.child->ifThenElse.condBranch == NULL ||
+			ast->block.child->ifThenElse.condBranch->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_BOOLEAN(ast->block.child->ifThenElse.condBranch->value.value) == false ||
+			TOY_VALUE_AS_BOOLEAN(ast->block.child->ifThenElse.condBranch->value.value) != true ||
+
+			ast->block.child->ifThenElse.thenBranch == NULL ||
+			ast->block.child->ifThenElse.thenBranch->type != TOY_AST_BLOCK ||
+			ast->block.child->ifThenElse.thenBranch->block.child == NULL ||
+
+			ast->block.child->ifThenElse.thenBranch->block.child->type != TOY_AST_PRINT ||
+			ast->block.child->ifThenElse.thenBranch->block.child->print.child == NULL ||
+			ast->block.child->ifThenElse.thenBranch->block.child->print.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value) == false ||
+			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->as.leaf.data, "foo", 3) != 0 ||
+
+			ast->block.child->ifThenElse.elseBranch == NULL ||
+			ast->block.child->ifThenElse.elseBranch->type != TOY_AST_BLOCK ||
+			ast->block.child->ifThenElse.elseBranch->block.child == NULL ||
+			ast->block.child->ifThenElse.elseBranch->block.child->type != TOY_AST_PRINT ||
+			ast->block.child->ifThenElse.elseBranch->block.child->print.child == NULL ||
+			ast->block.child->ifThenElse.elseBranch->block.child->print.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->ifThenElse.elseBranch->block.child->print.child->value.value) == false ||
+			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.elseBranch->block.child->print.child->value.value)->type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.elseBranch->block.child->print.child->value.value)->as.leaf.data, "bar", 3) != 0 ||
+
+			false)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
+			return -1;
+		}
+	}
+
 	return 0;
 }
 
@@ -662,6 +823,16 @@ int main() {
 	{
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		res = test_compound(&bucket);
+		Toy_freeBucket(&bucket);
+		if (res == 0) {
+			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
+		}
+		total += res;
+	}
+
+	{
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+		res = test_keywords(&bucket);
 		Toy_freeBucket(&bucket);
 		if (res == 0) {
 			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);

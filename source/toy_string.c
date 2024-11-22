@@ -182,7 +182,7 @@ Toy_String* Toy_concatStrings(Toy_Bucket** bucketHandle, Toy_String* left, Toy_S
 	ret->as.node.left = left;
 	ret->as.node.right = right;
 
-	incrementRefCount(left);
+	incrementRefCount(left);//URGENT: improve
 	incrementRefCount(right);
 
 	return ret;
@@ -253,7 +253,7 @@ static int deepCompareUtil(Toy_String* left, Toy_String* right, const char** lef
 	}
 
 	//BUGFIX: if we're not currently iterating through the left leaf (and leftHead is not null), skip out
-	if (left->type == TOY_STRING_LEAF && (*leftHead) != NULL && (**leftHead) != '\0' && ((*leftHead) < left->as.leaf.data || (*leftHead) > (left->as.leaf.data + strlen(left->as.leaf.data))) ) {
+	if (left->type == TOY_STRING_LEAF && (*leftHead) != NULL && (**leftHead) != '\0' && ((*leftHead) < left->as.leaf.data || (*leftHead) > (left->as.leaf.data + strlen(left->as.leaf.data))) ) { //URGENT: replace strlen with the stored lengths
 		return result;
 	}
 
@@ -328,7 +328,7 @@ int Toy_compareStrings(Toy_String* left, Toy_String* right) {
 			exit(-1);
 		}
 
-		return strcmp(left->as.name.data, right->as.name.data);
+		return strcmp(left->as.name.data, right->as.name.data); //URGENT: strncmp
 	}
 
 	//util pointers

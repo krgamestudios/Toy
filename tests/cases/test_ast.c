@@ -252,6 +252,81 @@ int test_type_emission(Toy_Bucket** bucketHandle) {
 		}
 	}
 
+	//emit keyword if-then
+	{
+		//build the AST
+		Toy_Ast* ast = NULL;
+		Toy_Ast* condBranch = NULL;
+		Toy_Ast* thenBranch = NULL;
+
+		Toy_private_emitAstValue(bucketHandle, &condBranch, TOY_VALUE_FROM_INTEGER(42));
+		Toy_private_emitAstValue(bucketHandle, &thenBranch, TOY_VALUE_FROM_INTEGER(69));
+
+		Toy_private_emitAstIfThenElse(bucketHandle, &ast, condBranch, thenBranch, NULL);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_IF_THEN_ELSE ||
+			ast->ifThenElse.condBranch == NULL ||
+			ast->ifThenElse.condBranch->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->ifThenElse.condBranch->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->ifThenElse.condBranch->value.value) != 42 ||
+
+			ast->ifThenElse.thenBranch == NULL ||
+			ast->ifThenElse.thenBranch->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->ifThenElse.thenBranch->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->ifThenElse.thenBranch->value.value) != 69 ||
+
+			ast->ifThenElse.elseBranch != NULL ||
+
+			false)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to emit a keyword 'if-then' as 'Toy_Ast', state unknown\n" TOY_CC_RESET);
+			return -1;
+		}
+	}
+
+	//emit keyword if-then-else
+	{
+		//build the AST
+		Toy_Ast* ast = NULL;
+		Toy_Ast* condBranch = NULL;
+		Toy_Ast* thenBranch = NULL;
+		Toy_Ast* elseBranch = NULL;
+
+		Toy_private_emitAstValue(bucketHandle, &condBranch, TOY_VALUE_FROM_INTEGER(42));
+		Toy_private_emitAstValue(bucketHandle, &thenBranch, TOY_VALUE_FROM_INTEGER(69));
+		Toy_private_emitAstValue(bucketHandle, &elseBranch, TOY_VALUE_FROM_INTEGER(420));
+
+		Toy_private_emitAstIfThenElse(bucketHandle, &ast, condBranch, thenBranch, elseBranch);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_IF_THEN_ELSE ||
+			ast->ifThenElse.condBranch == NULL ||
+			ast->ifThenElse.condBranch->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->ifThenElse.condBranch->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->ifThenElse.condBranch->value.value) != 42 ||
+
+			ast->ifThenElse.thenBranch == NULL ||
+			ast->ifThenElse.thenBranch->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->ifThenElse.thenBranch->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->ifThenElse.thenBranch->value.value) != 69 ||
+
+			ast->ifThenElse.elseBranch == NULL ||
+			ast->ifThenElse.elseBranch->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->ifThenElse.elseBranch->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->ifThenElse.elseBranch->value.value) != 420 ||
+
+			false)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to emit a keyword 'if-then-else' as 'Toy_Ast', state unknown\n" TOY_CC_RESET);
+			return -1;
+		}
+	}
+
 	//emit keyword print
 	{
 		//build the AST

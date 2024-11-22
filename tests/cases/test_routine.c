@@ -719,6 +719,10 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 }
 
 int test_routine_keywords(Toy_Bucket** bucketHandle) {
+	//TODO: implement assert
+	//TODO: implement if-then
+	//TODO: implement if-then-else
+
 	//print
 	{
 		//setup
