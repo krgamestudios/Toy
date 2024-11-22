@@ -282,7 +282,7 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 }
 
 static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
-	Toy_Value right = Toy_popStack(&vm->stack); //URGENT: These are not freed correctly
+	Toy_Value right = Toy_popStack(&vm->stack);
 	Toy_Value left = Toy_popStack(&vm->stack);
 
 	//most things can be equal, so handle it separately
@@ -297,6 +297,8 @@ static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
 			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_BOOLEAN(!equal) );
 		}
 
+		Toy_freeValue(left);
+		Toy_freeValue(right);
 		return;
 	}
 
@@ -330,6 +332,9 @@ static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
 	else {
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_BOOLEAN(false));
 	}
+
+	Toy_freeValue(left);
+	Toy_freeValue(right);
 }
 
 static void processLogical(Toy_VM* vm, Toy_OpcodeType opcode) {

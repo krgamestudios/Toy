@@ -182,7 +182,7 @@ Toy_String* Toy_concatStrings(Toy_Bucket** bucketHandle, Toy_String* left, Toy_S
 	ret->as.node.left = left;
 	ret->as.node.right = right;
 
-	incrementRefCount(left);//URGENT: improve
+	incrementRefCount(left);
 	incrementRefCount(right);
 
 	return ret;
@@ -253,12 +253,12 @@ static int deepCompareUtil(Toy_String* left, Toy_String* right, const char** lef
 	}
 
 	//BUGFIX: if we're not currently iterating through the left leaf (and leftHead is not null), skip out
-	if (left->type == TOY_STRING_LEAF && (*leftHead) != NULL && (**leftHead) != '\0' && ((*leftHead) < left->as.leaf.data || (*leftHead) > (left->as.leaf.data + strlen(left->as.leaf.data))) ) { //URGENT: replace strlen with the stored lengths
+	if (left->type == TOY_STRING_LEAF && (*leftHead) != NULL && (**leftHead) != '\0' && ((*leftHead) < left->as.leaf.data || (*leftHead) > (left->as.leaf.data + left->length)) ) {
 		return result;
 	}
 
 	//BUGFIX: if we're not currently iterating through the right leaf (and rightHead is not null), skip out
-	if (right->type == TOY_STRING_LEAF && (*rightHead) != NULL && (**rightHead) != '\0' && ((*rightHead) < right->as.leaf.data || (*rightHead) > (right->as.leaf.data + strlen(right->as.leaf.data))) ) {
+	if (right->type == TOY_STRING_LEAF && (*rightHead) != NULL && (**rightHead) != '\0' && ((*rightHead) < right->as.leaf.data || (*rightHead) > (right->as.leaf.data + right->length)) ) {
 		return result;
 	}
 
@@ -328,7 +328,7 @@ int Toy_compareStrings(Toy_String* left, Toy_String* right) {
 			exit(-1);
 		}
 
-		return strcmp(left->as.name.data, right->as.name.data); //URGENT: strncmp
+		return strncmp(left->as.name.data, right->as.name.data, left->length);
 	}
 
 	//util pointers
@@ -343,7 +343,7 @@ unsigned int Toy_hashString(Toy_String* str) {
 		return str->cachedHash;
 	}
 	else if (str->type == TOY_STRING_NODE) {
-		//TODO: I wonder if it would be possible to discretely swap the composite node string with a new leaf string here? Would that speed up other parts of the code by not having to walk the tree in future?
+		//TODO: I wonder if it would be possible to discretely swap the composite node string with a new leaf string here? Would that speed up other parts of the code by not having to walk the tree in future? - needs to be benchmarked
 		char* buffer = Toy_getStringRawBuffer(str);
 		str->cachedHash = hashCString(buffer);
 		free(buffer);

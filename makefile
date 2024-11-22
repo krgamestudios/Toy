@@ -27,9 +27,6 @@ repl: source
 .PHONY: tests
 tests: clean test-cases test-integrations
 
-#.PHONY: test-all
-#test-all: clean test-cases test-integrations
-
 .PHONY: test-cases
 test-cases:
 	$(MAKE) -C $(TOY_CASESDIR) -k
@@ -61,6 +58,10 @@ test-cases-valgrind:
 .PHONY: test-integrations-valgrind
 test-integrations-valgrind:
 	$(MAKE) -C $(TOY_INTEGRATIONSDIR) valgrind -k
+
+#Run all tests
+.PHONY: tests-all
+tests-all: clean tests tests-gdb tests-valgrind
 
 #TODO: mustfail tests
 
