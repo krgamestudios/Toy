@@ -1,26 +1,26 @@
 
 //literals
 if (true) {
-	print "Success";
+	print "Success 1";
 }
 else {
-	print "Failure";
+	print "Failure 1";
 }
 
 //false literals
 if (false) {
-	print "Failure";
+	print "Failure 2";
 }
 else {
-	print "Success";
+	print "Success 2";
 }
 
 //conditionals
 if (1 < 2) {
-	print "Success";
+	print "Success 3";
 }
 if (1 > 2) {
-	print "Failure";
+	print "Failure 3";
 }
 
 
@@ -28,39 +28,39 @@ if (1 > 2) {
 var a = 42;
 
 if (a) {
-	print "Success";
+	print "Success 4";
 }
 else {
-	print "Failure";
+	print "Failure 4";
 }
 
 
 if (a == 42) {
-	print "Success";
+	print "Success 5";
 }
 else {
-	print "Failure";
+	print "Failure 5";
 }
 
 //concatenated strings
 if ("foo" .. "bar" == "foobar") {
-	print "Success";
+	print "Success 6";
 }
 else {
-	print "Failure";
+	print "Failure 6";
 }
 
 
 if ("foobar" == "foo" .. "bar") {
-	print "Success";
+	print "Success 7";
 }
 else {
-	print "Failure";
+	print "Failure 7";
 }
 
 if ("fizz" .. "le" == "fi" .. "zzle") {
-	print "Success";
+	print "Success 8";
 }
 else {
-	print "Failure";
+	print "Failure 8";
 }

@@ -68,7 +68,7 @@ static void processRead(Toy_VM* vm) {
 			int len = (int)READ_BYTE(vm);
 
 			//grab the jump as an integer
-			unsigned int jump = vm->module[ vm->jumpsAddr + READ_INT(vm) ];
+			unsigned int jump = *((int*)(vm->module + vm->jumpsAddr + READ_INT(vm)));
 
 			//jumps are relative to the data address
 			char* cstring = (char*)(vm->module + vm->dataAddr + jump);
@@ -282,7 +282,7 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 }
 
 static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
-	Toy_Value right = Toy_popStack(&vm->stack);
+	Toy_Value right = Toy_popStack(&vm->stack); //URGENT: These are not freed correctly
 	Toy_Value left = Toy_popStack(&vm->stack);
 
 	//most things can be equal, so handle it separately

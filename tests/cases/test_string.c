@@ -654,7 +654,7 @@ int test_string_equality() {
 		Toy_Bucket* bucket = Toy_allocateBucket(1024);
 		Toy_String* helloWorldOne = Toy_createNameStringLength(&bucket, "Hello world", strlen("Hello world"), TOY_VALUE_UNKNOWN, false);
 		Toy_String* helloWorldTwo = Toy_createNameStringLength(&bucket, "Hello world", strlen("Hello world"), TOY_VALUE_UNKNOWN, false);
-		Toy_String* helloEveryone = Toy_createNameStringLength(&bucket, "Hello everyone", strlen("Hello everyone"), TOY_VALUE_UNKNOWN, false); //TODO: compare types?
+		Toy_String* helloEveryone = Toy_createNameStringLength(&bucket, "Hello everyone", strlen("Hello everyone"), TOY_VALUE_UNKNOWN, false);
 
 		int result = 0; //for print the errors
 
