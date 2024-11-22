@@ -456,7 +456,112 @@ int test_binary(Toy_Bucket** bucketHandle) {
 }
 
 int test_compound(Toy_Bucket** bucketHandle) {
-	//TODO: implement test_compound()
+	//test collections (do it first, because it's used below)
+	{
+		char* source = "1, 2, 3;";
+		Toy_Ast* ast = makeAstFromSource(bucketHandle, source);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_BLOCK ||
+			ast->block.child == NULL ||
+
+			ast->block.child->type != TOY_AST_COMPOUND ||
+			ast->block.child->compound.flag != TOY_AST_FLAG_COMPOUND_COLLECTION ||
+
+			ast->block.child->compound.left == NULL ||
+			ast->block.child->compound.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->compound.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->compound.left->value.value) != 1 ||
+
+			ast->block.child->compound.right == NULL ||
+			ast->block.child->compound.right->type != TOY_AST_COMPOUND ||
+			ast->block.child->compound.right->compound.flag != TOY_AST_FLAG_COMPOUND_COLLECTION ||
+
+			ast->block.child->compound.right->compound.left == NULL ||
+			ast->block.child->compound.right->compound.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->compound.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->compound.left->value.value) != 2 ||
+
+			ast->block.child->compound.right->compound.right == NULL ||
+			ast->block.child->compound.right->compound.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->compound.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->compound.right->value.value) != 3 ||
+
+			false)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
+			return -1;
+		}
+	}
+
+	//test index
+	{
+		char* source = "name[0];";
+		Toy_Ast* ast = makeAstFromSource(bucketHandle, source);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_BLOCK ||
+			ast->block.child == NULL ||
+
+			ast->block.child->type != TOY_AST_COMPOUND ||
+			ast->block.child->compound.flag != TOY_AST_FLAG_COMPOUND_INDEX ||
+
+			ast->block.child->compound.left == NULL ||
+			ast->block.child->compound.left->type != TOY_AST_VAR_ACCESS ||
+			ast->block.child->compound.left->varAccess.name->type != TOY_STRING_NAME ||
+			strcmp(ast->block.child->compound.left->varAccess.name->as.name.data, "name") != 0 ||
+
+			ast->block.child->compound.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->value.value) != 0 ||
+
+			false)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
+			return -1;
+		}
+	}
+
+	//test index, length
+	{
+		char* source = "name[0, 1];";
+		Toy_Ast* ast = makeAstFromSource(bucketHandle, source);
+
+		//check if it worked
+		if (
+			ast == NULL ||
+			ast->type != TOY_AST_BLOCK ||
+			ast->block.child == NULL ||
+
+			ast->block.child->type != TOY_AST_COMPOUND ||
+			ast->block.child->compound.flag != TOY_AST_FLAG_COMPOUND_INDEX ||
+
+			ast->block.child->compound.left == NULL ||
+			ast->block.child->compound.left->type != TOY_AST_VAR_ACCESS ||
+			ast->block.child->compound.left->varAccess.name->type != TOY_STRING_NAME ||
+			strcmp(ast->block.child->compound.left->varAccess.name->as.name.data, "name") != 0 ||
+
+			ast->block.child->compound.right->type != TOY_AST_COMPOUND ||
+			ast->block.child->compound.right->compound.flag != TOY_AST_FLAG_COMPOUND_COLLECTION ||
+			ast->block.child->compound.right->compound.left->type != TOY_AST_VALUE ||
+
+			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->compound.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->compound.left->value.value) != 0 ||
+
+			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->compound.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->compound.right->value.value) != 1 ||
+
+			false)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
+			return -1;
+		}
+	}
+
 	return 0;
 }
 

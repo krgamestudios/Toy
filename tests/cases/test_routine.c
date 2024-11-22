@@ -719,9 +719,131 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 }
 
 int test_routine_keywords(Toy_Bucket** bucketHandle) {
-	//TODO: implement assert
-	//TODO: implement if-then
-	//TODO: implement if-then-else
+	//assert
+	{
+		//setup
+		const char* source = "assert true;";
+		Toy_Lexer lexer;
+		Toy_Parser parser;
+
+		Toy_bindLexer(&lexer, source);
+		Toy_bindParser(&parser, &lexer);
+		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
+
+		//run
+		void* buffer = Toy_compileRoutine(ast);
+		int len = ((int*)buffer)[0];
+
+		//check header
+		int* ptr = (int*)buffer;
+
+		if ((ptr++)[0] != 36 || //total size
+			(ptr++)[0] != 0 || //param count
+			(ptr++)[0] != 0 || //jump count
+			(ptr++)[0] != 0 || //data count
+			(ptr++)[0] != 0) //subs count
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected routine header, source: %s\n" TOY_CC_RESET, source);
+
+			//cleanup and return
+			free(buffer);
+			return -1;
+		}
+
+		//check code
+		if (*((unsigned char*)(buffer + 24)) != TOY_OPCODE_READ ||
+			*((unsigned char*)(buffer + 25)) != TOY_VALUE_BOOLEAN ||
+			*((bool*)(buffer + 26)) != true || //bools are packed
+			*((unsigned char*)(buffer + 27)) != 0 ||
+
+			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_ASSERT ||
+			*((unsigned char*)(buffer + 29)) != 1 || //one parameter
+			*((unsigned char*)(buffer + 30)) != 0 ||
+			*((unsigned char*)(buffer + 31)) != 0 ||
+
+			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 33)) != 0 ||
+			*((unsigned char*)(buffer + 34)) != 0 ||
+			*((unsigned char*)(buffer + 35)) != 0
+		)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected routine code, source: %s\n" TOY_CC_RESET, source);
+
+			//cleanup and return
+			free(buffer);
+			return -1;
+		}
+
+		//cleanup
+		free(buffer);
+	}
+
+	//assert (with message)
+	{
+		//setup
+		const char* source = "assert true, false;";
+		Toy_Lexer lexer;
+		Toy_Parser parser;
+
+		Toy_bindLexer(&lexer, source);
+		Toy_bindParser(&parser, &lexer);
+		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
+
+		//run
+		void* buffer = Toy_compileRoutine(ast);
+		int len = ((int*)buffer)[0];
+
+		//check header
+		int* ptr = (int*)buffer;
+
+		if ((ptr++)[0] != 40 || //total size
+			(ptr++)[0] != 0 || //param count
+			(ptr++)[0] != 0 || //jump count
+			(ptr++)[0] != 0 || //data count
+			(ptr++)[0] != 0) //subs count
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected routine header, source: %s\n" TOY_CC_RESET, source);
+
+			//cleanup and return
+			free(buffer);
+			return -1;
+		}
+
+		//check code
+		if (*((unsigned char*)(buffer + 24)) != TOY_OPCODE_READ ||
+			*((unsigned char*)(buffer + 25)) != TOY_VALUE_BOOLEAN ||
+			*((bool*)(buffer + 26)) != true || //bools are packed
+			*((unsigned char*)(buffer + 27)) != 0 ||
+
+			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_READ ||
+			*((unsigned char*)(buffer + 29)) != TOY_VALUE_BOOLEAN ||
+			*((bool*)(buffer + 30)) != false || //bools are packed
+			*((unsigned char*)(buffer + 31)) != 0 ||
+
+			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_ASSERT ||
+			*((unsigned char*)(buffer + 33)) != 2 || //two parameters
+			*((unsigned char*)(buffer + 34)) != 0 ||
+			*((unsigned char*)(buffer + 35)) != 0 ||
+
+			*((unsigned char*)(buffer + 36)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 37)) != 0 ||
+			*((unsigned char*)(buffer + 38)) != 0 ||
+			*((unsigned char*)(buffer + 39)) != 0
+		)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected routine code, source: %s\n" TOY_CC_RESET, source);
+
+			//cleanup and return
+			free(buffer);
+			return -1;
+		}
+
+		//cleanup
+		free(buffer);
+	}
+
+	//TODO: implement test if-then
+	//TODO: implement test if-then-else
 
 	//print
 	{
