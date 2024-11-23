@@ -379,7 +379,7 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 			} while (parser->previous.lexeme[o++] && i < parser->previous.length);
 
 			buffer[i] = '\0';
-			unsigned int len = ((i - escapeCounter) + 3) & ~3;
+			unsigned int len = i - escapeCounter; //NOTE: len is ONLY the string length
 			Toy_private_emitAstValue(bucketHandle, rootHandle, TOY_VALUE_FROM_STRING(Toy_createStringLength(bucketHandle, buffer, len)));
 
 			return TOY_AST_FLAG_NONE;

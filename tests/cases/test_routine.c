@@ -845,6 +845,97 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 	//TODO: implement test if-then
 	//TODO: implement test if-then-else
 
+	//if-then
+	{
+		//setup
+		const char* source = "if (true) print \"hello world\";";
+		Toy_Lexer lexer;
+		Toy_Parser parser;
+
+		Toy_bindLexer(&lexer, source);
+		Toy_bindParser(&parser, &lexer);
+		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
+
+		//run
+		void* buffer = Toy_compileRoutine(ast);
+		int len = ((int*)buffer)[0];
+
+		//check header
+		int* ptr = (int*)buffer;
+
+		if ((ptr++)[0] != 76 || //total size
+			(ptr++)[0] != 0 || //param count
+			(ptr++)[0] != 4 || //jump count
+			(ptr++)[0] != 12 || //data count
+			(ptr++)[0] != 0 || //subs count
+
+			(ptr++)[0] != 32 || //code addr
+			(ptr++)[0] != 60 || //jump addr
+			(ptr++)[0] != 64 || //data addr
+
+			//header size: 32
+
+			false)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected routine header, source: %s\n" TOY_CC_RESET, source);
+
+			//cleanup and return
+			free(buffer);
+			return -1;
+		}
+
+		//check code
+		if (//cond
+			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_READ ||
+			*((unsigned char*)(buffer + 33)) != TOY_VALUE_BOOLEAN ||
+			*((bool*)(buffer + 34)) != true || //bools are packed
+			*((unsigned char*)(buffer + 35)) != 0 ||
+
+			*((unsigned char*)(buffer + 36)) != TOY_OPCODE_JUMP ||
+			*((unsigned char*)(buffer + 37)) != TOY_OP_PARAM_JUMP_RELATIVE ||
+			*((unsigned char*)(buffer + 38)) != TOY_OP_PARAM_JUMP_IF_FALSE ||
+			*((unsigned char*)(buffer + 39)) != 0 ||
+
+			*((int*)(buffer + 40)) != 12 || //param: jump distance (relative)
+
+			//then branch
+			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_READ ||
+			*((unsigned char*)(buffer + 45)) != TOY_VALUE_STRING ||
+			*((unsigned char*)(buffer + 46)) != TOY_STRING_LEAF ||
+			*((unsigned char*)(buffer + 47)) != 0 ||
+
+			*((int*)(buffer + 48)) != 0 || //first indirection
+
+			*((unsigned char*)(buffer + 52)) != TOY_OPCODE_PRINT ||
+			*((unsigned char*)(buffer + 53)) != 0 ||
+			*((unsigned char*)(buffer + 54)) != 0 ||
+			*((unsigned char*)(buffer + 55)) != 0 ||
+
+			//EOF
+			*((unsigned char*)(buffer + 56)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 57)) != 0 ||
+			*((unsigned char*)(buffer + 58)) != 0 ||
+			*((unsigned char*)(buffer + 59)) != 0 ||
+
+			//jump region
+			*((int*)(buffer + 60)) != 0 ||
+
+			//data region (strings begin at 4-byte words)
+			strcmp((char*)(buffer + 64), "hello world") != 0 ||
+
+			false)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected routine code, source: %s\n" TOY_CC_RESET, source);
+
+			//cleanup and return
+			free(buffer);
+			return -1;
+		}
+
+		//cleanup
+		free(buffer);
+	}
+
 	//print
 	{
 		//setup
