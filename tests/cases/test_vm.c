@@ -452,6 +452,185 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 	return 0;
 }
 
+int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
+	//test if-then (truthy)
+	{
+		//setup
+		Toy_setPrintCallback(callbackUtil);
+		const char* source = "if (true) print \"hello world\";";
+
+		Toy_Lexer lexer;
+		Toy_bindLexer(&lexer, source);
+
+		Toy_Parser parser;
+		Toy_bindParser(&parser, &lexer);
+
+		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
+		Toy_Bytecode bc = Toy_compileBytecode(ast);
+
+		Toy_VM vm;
+		Toy_initVM(&vm);
+		Toy_bindVM(&vm, &bc);
+
+		//run
+		Toy_runVM(&vm);
+
+		//check
+		if (callbackUtilReceived == NULL ||
+			strcmp(callbackUtilReceived, "hello world") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' passed to print in if keyword, source: %s\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL", source);
+
+			//cleanup and return
+			Toy_resetPrintCallback();
+			free(callbackUtilReceived);
+			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
+			return -1;
+		}
+
+		//teadown
+		Toy_resetPrintCallback();
+		free(callbackUtilReceived);
+		callbackUtilReceived = NULL;
+		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
+	}
+
+	//test if-then (falsy)
+	{
+		//setup
+		Toy_setPrintCallback(callbackUtil);
+		const char* source = "if (false) print \"hello world\";";
+
+		Toy_Lexer lexer;
+		Toy_bindLexer(&lexer, source);
+
+		Toy_Parser parser;
+		Toy_bindParser(&parser, &lexer);
+
+		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
+		Toy_Bytecode bc = Toy_compileBytecode(ast);
+
+		Toy_VM vm;
+		Toy_initVM(&vm);
+		Toy_bindVM(&vm, &bc);
+
+		//run
+		Toy_runVM(&vm);
+
+		//check
+		if (callbackUtilReceived != NULL)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' passed to print in if keyword, source: %s\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL", source);
+
+			//cleanup and return
+			Toy_resetPrintCallback();
+			free(callbackUtilReceived);
+			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
+			return -1;
+		}
+
+		//teadown
+		Toy_resetPrintCallback();
+		free(callbackUtilReceived);
+		callbackUtilReceived = NULL;
+		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
+	}
+
+	//test if-then-else (truthy)
+	{
+		//setup
+		Toy_setPrintCallback(callbackUtil);
+		const char* source = "if (true) print \"hello world\"; else print \"failed\";";
+
+		Toy_Lexer lexer;
+		Toy_bindLexer(&lexer, source);
+
+		Toy_Parser parser;
+		Toy_bindParser(&parser, &lexer);
+
+		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
+		Toy_Bytecode bc = Toy_compileBytecode(ast);
+
+		Toy_VM vm;
+		Toy_initVM(&vm);
+		Toy_bindVM(&vm, &bc);
+
+		//run
+		Toy_runVM(&vm);
+
+		//check
+		if (callbackUtilReceived == NULL ||
+			strcmp(callbackUtilReceived, "hello world") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' passed to print in if keyword, source: %s\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL", source);
+
+			//cleanup and return
+			Toy_resetPrintCallback();
+			free(callbackUtilReceived);
+			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
+			return -1;
+		}
+
+		//teadown
+		Toy_resetPrintCallback();
+		free(callbackUtilReceived);
+		callbackUtilReceived = NULL;
+		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
+	}
+
+	//test if-then-else (falsy)
+	{
+		//setup
+		Toy_setPrintCallback(callbackUtil);
+		const char* source = "if (false) print \"hello world\"; else print \"failed\";";
+
+		Toy_Lexer lexer;
+		Toy_bindLexer(&lexer, source);
+
+		Toy_Parser parser;
+		Toy_bindParser(&parser, &lexer);
+
+		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
+		Toy_Bytecode bc = Toy_compileBytecode(ast);
+
+		Toy_VM vm;
+		Toy_initVM(&vm);
+		Toy_bindVM(&vm, &bc);
+
+		//run
+		Toy_runVM(&vm);
+
+		//check
+		if (callbackUtilReceived == NULL ||
+			strcmp(callbackUtilReceived, "failed") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' passed to print in if keyword, source: %s\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL", source);
+
+			//cleanup and return
+			Toy_resetPrintCallback();
+			free(callbackUtilReceived);
+			Toy_freeVM(&vm);
+			Toy_freeBytecode(bc);
+			return -1;
+		}
+
+		//teadown
+		Toy_resetPrintCallback();
+		free(callbackUtilReceived);
+		callbackUtilReceived = NULL;
+		Toy_freeVM(&vm);
+		Toy_freeBytecode(bc);
+	}
+
+	return 0;
+}
+
 int test_scope(Toy_Bucket** bucketHandle) {
 	//test declaration with initial value
 	{
@@ -681,7 +860,15 @@ int main() {
 		total += res;
 	}
 
-	//TODO: test_ifThenElse()
+	{
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+		res = test_keyword_ifThenElse(&bucket);
+		Toy_freeBucket(&bucket);
+		if (res == 0) {
+			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
+		}
+		total += res;
+	}
 
 	{
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
