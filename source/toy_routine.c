@@ -319,7 +319,7 @@ static unsigned int writeInstructionIfThenElse(Toy_Routine** rt, Toy_AstIfThenEl
 
 	unsigned int thenEndAddr = SKIP_INT(rt, code); //parameter to be written later
 
-	//emit then branch
+	//emit then-branch
 	writeRoutineCode(rt, ast.thenBranch);
 
 	if (ast.elseBranch != NULL) {
@@ -345,6 +345,37 @@ static unsigned int writeInstructionIfThenElse(Toy_Routine** rt, Toy_AstIfThenEl
 		//without an else branch, set the jump destination and move on
 		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - (thenEndAddr + 4));
 	}
+
+	return 0;
+}
+
+static unsigned int writeInstructionWhileThen(Toy_Routine** rt, Toy_AstWhileThen ast) {
+	//TODO: begin
+	unsigned int beginAddr = CURRENT_ADDRESS(rt, code);
+
+	//cond-branch
+	writeRoutineCode(rt, ast.condBranch);
+
+	//emit the jump word (opcode, type, condition, padding)
+	EMIT_BYTE(rt, code, TOY_OPCODE_JUMP);
+	EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_RELATIVE);
+	EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_IF_FALSE);
+	EMIT_BYTE(rt, code, 0);
+
+	unsigned int endAddr = SKIP_INT(rt, code); //parameter to be written later
+
+	//emit then-branch
+	writeRoutineCode(rt, ast.thenBranch);
+
+	//jump to begin to repeat the conditional test
+	EMIT_BYTE(rt, code, TOY_OPCODE_JUMP);
+	EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_RELATIVE);
+	EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_ALWAYS);
+	EMIT_BYTE(rt, code, 0);
+
+	EMIT_INT(rt, code, beginAddr - (CURRENT_ADDRESS(rt, code) + 4)); //this sets a negative value
+
+	OVERWRITE_INT(rt, code, endAddr, CURRENT_ADDRESS(rt, code) - (endAddr + 4));
 
 	return 0;
 }
@@ -601,6 +632,10 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 
 		case TOY_AST_IF_THEN_ELSE:
 			result += writeInstructionIfThenElse(rt, ast->ifThenElse);
+			break;
+
+		case TOY_AST_WHILE_THEN:
+			result += writeInstructionWhileThen(rt, ast->whileThen);
 			break;
 
 		case TOY_AST_PRINT:

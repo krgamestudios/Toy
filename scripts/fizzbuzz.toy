@@ -1,0 +1,27 @@
+
+
+//moment of truth
+var counter: int = 1;
+
+while (counter <= 100) {
+	var result: string = "";
+
+	if (counter % 3 == 0) {
+		result = result .. "fizz";
+	}
+
+	if (counter % 5 == 0) {
+		result = result .. "buzz";
+	}
+
+	//finally
+	if (result == "") {
+		print counter;
+	}
+	else {
+		print result;
+	}
+
+	counter += 1;
+}
+

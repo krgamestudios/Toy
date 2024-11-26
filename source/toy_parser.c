@@ -352,31 +352,33 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 		case TOY_TOKEN_LITERAL_STRING: {
 			char buffer[parser->previous.length + 1];
 			unsigned int escapeCounter = 0;
-
 			unsigned int i = 0, o = 0;
-			do {
-				buffer[i] = parser->previous.lexeme[o];
-				if (buffer[i] == '\\' && parser->previous.lexeme[++o]) {
-					escapeCounter++;
 
-					//also handle escape characters
-					switch(parser->previous.lexeme[o]) {
-						case 'n':
-							buffer[i] = '\n';
-							break;
-						case 't':
-							buffer[i] = '\t';
-							break;
-						case '\\':
-							buffer[i] = '\\';
-							break;
-						case '"':
-							buffer[i] = '"';
-							break;
+			if (parser->previous.length > 0) { //BUGFIX: compensate for zero-length strings
+				do {
+					buffer[i] = parser->previous.lexeme[o];
+					if (buffer[i] == '\\' && parser->previous.lexeme[++o]) {
+						escapeCounter++;
+
+						//also handle escape characters
+						switch(parser->previous.lexeme[o]) {
+							case 'n':
+								buffer[i] = '\n';
+								break;
+							case 't':
+								buffer[i] = '\t';
+								break;
+							case '\\':
+								buffer[i] = '\\';
+								break;
+							case '"':
+								buffer[i] = '"';
+								break;
+						}
 					}
-				}
-				i++;
-			} while (parser->previous.lexeme[o++] && i < parser->previous.length);
+					i++;
+				} while (parser->previous.lexeme[o++] && i < parser->previous.length);
+			}
 
 			buffer[i] = '\0';
 			unsigned int len = i - escapeCounter; //NOTE: len is ONLY the string length
@@ -699,6 +701,21 @@ static void makeIfThenElseStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, To
 	Toy_private_emitAstIfThenElse(bucketHandle, rootHandle, condBranch, thenBranch, elseBranch);
 }
 
+static void makeWhileStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	Toy_Ast* condBranch = NULL;
+	Toy_Ast* thenBranch = NULL;
+
+	//while (condBranch)
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_LEFT, "Expected '(' after 'while' keyword");
+	makeExpr(bucketHandle, parser, &condBranch);
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'while' condition");
+
+	// { thenBranch }
+	makeDeclarationStmt(bucketHandle, parser, &thenBranch);
+
+	Toy_private_emitAstWhileThen(bucketHandle, rootHandle, condBranch, thenBranch);
+}
+
 static void makePrintStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	makeExpr(bucketHandle, parser, rootHandle);
 	Toy_private_emitAstPrint(bucketHandle, rootHandle);
@@ -771,10 +788,15 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
+	//TODO: break & continue
+
 	//while-then
+	else if (match(parser, TOY_TOKEN_KEYWORD_WHILE)) {
+		makeWhileStmt(bucketHandle, parser, rootHandle);
+		return;
+	}
+
 	//for-pre-clause-post-then
-	//break
-	//continue
 	//return
 	//import
 

@@ -26,6 +26,7 @@ int test_sizeof_ast_64bit() {
 	TEST_SIZEOF(Toy_AstCompound, 24);
 	TEST_SIZEOF(Toy_AstAssert, 24);
 	TEST_SIZEOF(Toy_AstIfThenElse, 32);
+	TEST_SIZEOF(Toy_AstWhileThen, 24);
 	TEST_SIZEOF(Toy_AstPrint, 16);
 	TEST_SIZEOF(Toy_AstVarDeclare, 24);
 	TEST_SIZEOF(Toy_AstVarAssign, 24);
@@ -61,6 +62,7 @@ int test_sizeof_ast_32bit() {
 	TEST_SIZEOF(Toy_AstCompound, 16);
 	TEST_SIZEOF(Toy_AstAssert, 12);
 	TEST_SIZEOF(Toy_AstIfThenElse, 16);
+	TEST_SIZEOF(Toy_AstWhileThen, 12);
 	TEST_SIZEOF(Toy_AstPrint, 8);
 	TEST_SIZEOF(Toy_AstVarDeclare, 12);
 	TEST_SIZEOF(Toy_AstVarAssign, 16);
