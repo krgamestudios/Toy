@@ -380,6 +380,22 @@ static unsigned int writeInstructionWhileThen(Toy_Routine** rt, Toy_AstWhileThen
 	return 0;
 }
 
+static unsigned int writeInstructionBreak(Toy_Routine** rt, Toy_AstBreak ast) {
+	//TODO: implement break
+	fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Keyword 'break' not yet implemented\n" TOY_CC_RESET);
+	(*rt)->panic = true;
+
+	return 0;
+}
+
+static unsigned int writeInstructionContinue(Toy_Routine** rt, Toy_AstContinue ast) {
+	//TODO: implement continue
+	fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Keyword 'continue' not yet implemented\n" TOY_CC_RESET);
+	(*rt)->panic = true;
+
+	return 0;
+}
+
 static unsigned int writeInstructionPrint(Toy_Routine** rt, Toy_AstPrint ast) {
 	//the thing to print
 	writeRoutineCode(rt, ast.child);
@@ -636,6 +652,14 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 
 		case TOY_AST_WHILE_THEN:
 			result += writeInstructionWhileThen(rt, ast->whileThen);
+			break;
+
+		case TOY_AST_BREAK:
+			result += writeInstructionBreak(rt, ast->breakPoint);
+			break;
+
+		case TOY_AST_CONTINUE:
+			result += writeInstructionContinue(rt, ast->continuePoint);
 			break;
 
 		case TOY_AST_PRINT:

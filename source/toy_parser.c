@@ -716,6 +716,16 @@ static void makeWhileStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 	Toy_private_emitAstWhileThen(bucketHandle, rootHandle, condBranch, thenBranch);
 }
 
+static void makeBreakStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	Toy_private_emitAstBreak(bucketHandle, rootHandle);
+	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of break statement");
+}
+
+static void makeContinueStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	Toy_private_emitAstContinue(bucketHandle, rootHandle);
+	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of continue statement");
+}
+
 static void makePrintStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	makeExpr(bucketHandle, parser, rootHandle);
 	Toy_private_emitAstPrint(bucketHandle, rootHandle);
@@ -788,8 +798,6 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//TODO: break & continue
-
 	//while-then
 	else if (match(parser, TOY_TOKEN_KEYWORD_WHILE)) {
 		makeWhileStmt(bucketHandle, parser, rootHandle);
@@ -799,6 +807,18 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 	//for-pre-clause-post-then
 	//return
 	//import
+
+	//break
+	else if (match(parser, TOY_TOKEN_KEYWORD_BREAK)) {
+		makeBreakStmt(bucketHandle, parser, rootHandle);
+		return;
+	}
+
+	//continue
+	else if (match(parser, TOY_TOKEN_KEYWORD_CONTINUE)) {
+		makeContinueStmt(bucketHandle, parser, rootHandle);
+		return;
+	}
 
 	//print
 	else if (match(parser, TOY_TOKEN_KEYWORD_PRINT)) {
