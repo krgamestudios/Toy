@@ -1,7 +1,7 @@
 *For the feature complete version 1, [click here](https://github.com/Ratstail91/Toy/tree/v1).*
 
 <p align="center">
-  <image src="toylogo.png" />
+	<image src="toylogo.png" />
 </p>
 
 # Toy v2.x
@@ -34,7 +34,7 @@ var foobar = 42;
 
 //scopes allow for shadowing and rebinding
 {
-    var foobar = foobar * 7;
+	var foobar = foobar * 7;
 }
 
 //the types default to 'any' but can be specified if needed (same with constants)
@@ -42,6 +42,18 @@ var immutable: string const = "Foobar";
 
 //the assert keyword can check an expression, and takes an optional second parameter
 assert immutable == "Fizzbuzz", "This message is sent to the terminal by default";
+
+//if and while works
+var count = 1;
+while (count <= 10) {
+	if (count % 2 == 0) {
+		print "even";
+	}
+	else {
+		print "odd";
+	}
+	count += 1;
+}
 
 //NOTE: This section will be expanded as more features are implemented
 ```
