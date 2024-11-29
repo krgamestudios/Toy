@@ -1,7 +1,9 @@
 #include "toy_value.h"
 #include "toy_console_colors.h"
 
+#include "toy_bucket.h"
 #include "toy_string.h"
+#include "toy_array.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +34,18 @@ unsigned int Toy_hashValue(Toy_Value value) {
 		case TOY_VALUE_STRING:
 			return Toy_hashString(TOY_VALUE_AS_STRING(value));
 
-		case TOY_VALUE_ARRAY:
+		case TOY_VALUE_ARRAY: {
+			//since array internals can change, recalc the hash each time it's needed
+			Toy_Array* array = TOY_VALUE_AS_ARRAY(value);
+			unsigned int hash = 0;
+
+			for (unsigned int i = 0; i < array->count; i++) {
+				hash ^= Toy_hashValue(array->data[i]);
+			}
+
+			return hash;
+		}
+
 		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
@@ -59,7 +72,17 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_STRING(Toy_copyString(string));
 		}
 
-		case TOY_VALUE_ARRAY:
+		case TOY_VALUE_ARRAY: {
+			Toy_Array* array = TOY_VALUE_AS_ARRAY(value);
+			Toy_Array* result = Toy_resizeArray(NULL, array->capacity);
+
+			for (unsigned int i = 0; i < array->count; i++) {
+				result->data[i] = Toy_copyValue(array->data[i]);
+			}
+
+			return TOY_VALUE_FROM_ARRAY(result);
+		}
+
 		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
@@ -88,7 +111,16 @@ void Toy_freeValue(Toy_Value value) {
 			break;
 		}
 
-		case TOY_VALUE_ARRAY:
+		case TOY_VALUE_ARRAY: {
+			Toy_Array* array = TOY_VALUE_AS_ARRAY(value);
+
+			for (unsigned int i = 0; i < array->count; i++) {
+				Toy_freeValue(array->data[i]);
+			}
+
+			TOY_ARRAY_FREE(array);
+		}
+
 		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
@@ -154,7 +186,26 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 				break;
 			}
 
-		case TOY_VALUE_ARRAY:
+		case TOY_VALUE_ARRAY: {
+			Toy_Array* leftArray = TOY_VALUE_AS_ARRAY(left);
+			Toy_Array* rightArray = TOY_VALUE_AS_ARRAY(right);
+
+			//different lengths is an easy way to check
+			if (leftArray->count != rightArray->count) {
+				return false;
+			}
+
+			for (unsigned int i = 0; i < leftArray->count; i++) {
+				//any mismatch is an easy difference
+				if (Toy_checkValuesAreEqual(leftArray->data[i], rightArray->data[i])) {
+					return false;
+				}
+			}
+
+			//finally
+			return true;
+		}
+
 		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
@@ -169,6 +220,8 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 }
 
 bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
+	//NOTE: "equal" and "comparable" are different - equal means they're identical, comparable is only possible for certain types
+
 	switch(left.type) {
 		case TOY_VALUE_NULL:
 			return false;
@@ -184,6 +237,9 @@ bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
 			return TOY_VALUE_IS_STRING(right);
 
 		case TOY_VALUE_ARRAY:
+			//nothing is comparable with an array
+			return false;
+
 		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
@@ -232,6 +288,8 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 			}
 
 		case TOY_VALUE_ARRAY:
+			break;
+
 		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
@@ -245,48 +303,57 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 	return -1;
 }
 
-void Toy_stringifyValue(Toy_Value value, Toy_callbackType callback) {
-	//NOTE: don't append a newline
+Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
+	//TODO: could have "constant" strings that can be referenced, instead of null, true, false, etc.
+
 	switch(value.type) {
 		case TOY_VALUE_NULL:
-			callback("null");
-			break;
+			return Toy_createString(bucketHandle, "null");
 
 		case TOY_VALUE_BOOLEAN:
-			callback(TOY_VALUE_AS_BOOLEAN(value) ? "true" : "false");
-			break;
+			return Toy_createString(bucketHandle, TOY_VALUE_AS_BOOLEAN(value) ? "true" : "false");
 
 		case TOY_VALUE_INTEGER: {
 			char buffer[16];
 			sprintf(buffer, "%d", TOY_VALUE_AS_INTEGER(value));
-			callback(buffer);
-			break;
+			return Toy_createString(bucketHandle, buffer);
 		}
 
 		case TOY_VALUE_FLOAT: {
 			char buffer[16];
 			sprintf(buffer, "%f", TOY_VALUE_AS_FLOAT(value));
-			callback(buffer);
-			break;
+			return Toy_createString(bucketHandle, buffer);
 		}
 
-		case TOY_VALUE_STRING: {
-			Toy_String* str = TOY_VALUE_AS_STRING(value);
-			if (str->type == TOY_STRING_NODE) {
-				char* buffer = Toy_getStringRawBuffer(str);
-				callback(buffer);
-				free(buffer);
+		case TOY_VALUE_STRING:
+			return Toy_copyString(TOY_VALUE_AS_STRING(value));
+
+		case TOY_VALUE_ARRAY: {
+			//TODO: concat + free is definitely a performance nightmare
+			Toy_Array* array = TOY_VALUE_AS_ARRAY(value);
+			Toy_String* string = Toy_createStringLength(bucketHandle, "[", 1);
+			Toy_String* comma = Toy_createStringLength(bucketHandle, ",", 1); //reusable
+
+			for (unsigned int i = 0; i < array->count; i++) {
+				//append each element
+				Toy_String* tmp = Toy_concatStrings(bucketHandle, string, Toy_stringifyValue(bucketHandle, array->data[i])); //increment ref
+				Toy_freeString(string); //decrement ref
+				string = tmp;
+
+				//if we need a comma
+				if (i + 1 < array->count) {
+					Toy_String* tmp = Toy_concatStrings(bucketHandle, string, comma); //increment ref
+					Toy_freeString(string); //decrement ref
+					string = tmp;
+				}
 			}
-			else if (str->type == TOY_STRING_LEAF) {
-				callback(str->as.leaf.data);
-			}
-			else if (str->type == TOY_STRING_NAME) {
-				callback(str->as.name.data); //should this be a thing?
-			}
-			break;
+
+			//clean up
+			Toy_freeString(comma); //TODO: reusable global, or string type "permanent"
+
+			return string;
 		}
 
-		case TOY_VALUE_ARRAY:
 		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
@@ -296,6 +363,8 @@ void Toy_stringifyValue(Toy_Value value, Toy_callbackType callback) {
 			fprintf(stderr, TOY_CC_ERROR "Unknown types in value stringify, exiting\n" TOY_CC_RESET);
 			exit(-1);
 	}
+
+	return NULL;
 }
 
 const char* Toy_private_getValueTypeAsCString(Toy_ValueType type) {

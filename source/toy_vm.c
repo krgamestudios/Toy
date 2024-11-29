@@ -435,7 +435,14 @@ static void processAssert(Toy_VM* vm) {
 	//do the check
 	if (TOY_VALUE_IS_NULL(value) || Toy_checkValueIsTruthy(value) == false) {
 		//on a failure, print the message
-		Toy_stringifyValue(message, Toy_assertFailure);
+		Toy_String* string = Toy_stringifyValue(&vm->stringBucket, message);
+		char* buffer = Toy_getStringRawBuffer(string);
+
+		Toy_assertFailure(buffer);
+
+		free(buffer);
+		Toy_freeString(string);
+		return;
 	}
 
 	//cleanup
@@ -446,7 +453,13 @@ static void processAssert(Toy_VM* vm) {
 static void processPrint(Toy_VM* vm) {
 	//print the value on top of the stack, popping it
 	Toy_Value value = Toy_popStack(&vm->stack);
-	Toy_stringifyValue(value, Toy_print);
+	Toy_String* string = Toy_stringifyValue(&vm->stringBucket, value);
+	char* buffer = Toy_getStringRawBuffer(string); //TODO: check string type to skip this call
+
+	Toy_print(buffer);
+
+	free(buffer);
+	Toy_freeString(string);
 	Toy_freeValue(value);
 }
 

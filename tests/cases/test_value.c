@@ -3,6 +3,7 @@
 
 #include "toy_bucket.h"
 #include "toy_string.h"
+#include "toy_array.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -62,6 +63,77 @@ int test_value_creation() {
 		//cleanup
 		Toy_freeBucket(&bucket);
 	}
+
+	//test creating arrays
+	{
+		//setup
+		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(8891));
+
+		Toy_Value v = TOY_VALUE_FROM_ARRAY(array);
+
+		if (TOY_VALUE_AS_ARRAY(v) == false ||
+			TOY_VALUE_AS_ARRAY(v)->capacity != 8 ||
+			TOY_VALUE_AS_ARRAY(v)->count != 3 ||
+			TOY_VALUE_IS_INTEGER(TOY_VALUE_AS_ARRAY(v)->data[0]) != true || TOY_VALUE_AS_INTEGER(TOY_VALUE_AS_ARRAY(v)->data[0]) != 42 ||
+			TOY_VALUE_IS_INTEGER(TOY_VALUE_AS_ARRAY(v)->data[1]) != true || TOY_VALUE_AS_INTEGER(TOY_VALUE_AS_ARRAY(v)->data[1]) != 69 ||
+			TOY_VALUE_IS_INTEGER(TOY_VALUE_AS_ARRAY(v)->data[2]) != true || TOY_VALUE_AS_INTEGER(TOY_VALUE_AS_ARRAY(v)->data[2]) != 8891
+		)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: 'array' value failed\n" TOY_CC_RESET);
+			TOY_ARRAY_FREE(array);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+//URGENT: copy values
+
+int test_value_hashing() {
+	//test value hashing
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+
+		//values
+		Toy_Value n = TOY_VALUE_FROM_NULL();
+		Toy_Value t = TOY_VALUE_FROM_BOOLEAN(true);
+		Toy_Value f = TOY_VALUE_FROM_BOOLEAN(false);
+		Toy_Value i = TOY_VALUE_FROM_INTEGER(42);
+		//skip float
+		Toy_Value s = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world"));
+
+		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(8891));
+		Toy_Value a = TOY_VALUE_FROM_ARRAY(array);
+
+		if (Toy_hashValue(n) != 0 ||
+			Toy_hashValue(t) != 1 ||
+			Toy_hashValue(f) != 0 ||
+			Toy_hashValue(i) != 4147366645 ||
+			Toy_hashValue(s) != 994097935 ||
+			TOY_VALUE_AS_STRING(s)->cachedHash == 0 ||
+			Toy_hashValue(a) != 2544446955
+			)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected hash of a value\n" TOY_CC_RESET);
+			TOY_ARRAY_FREE(array);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		TOY_ARRAY_FREE(array);
+		Toy_freeBucket(&bucket);
+	}
+
+	//URGENT: string hashing, use godbolt
 
 	return 0;
 }
@@ -171,48 +243,28 @@ int test_value_comparison() {
 	return 0;
 }
 
-int test_value_hashing() {
-	//test value hashing
-	{
-		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-
-		//values
-		Toy_Value n = TOY_VALUE_FROM_NULL();
-		Toy_Value t = TOY_VALUE_FROM_BOOLEAN(true);
-		Toy_Value f = TOY_VALUE_FROM_BOOLEAN(false);
-		Toy_Value i = TOY_VALUE_FROM_INTEGER(42);
-		//skip float
-		Toy_Value s = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world"));
-
-		if (Toy_hashValue(n) != 0 ||
-			Toy_hashValue(t) != 1 ||
-			Toy_hashValue(f) != 0 ||
-			Toy_hashValue(i) != 4147366645 ||
-			Toy_hashValue(s) != 994097935 ||
-			TOY_VALUE_AS_STRING(s)->cachedHash == 0
-			)
-		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected hash of a value\n" TOY_CC_RESET);
-			Toy_freeBucket(&bucket);
-			return -1;
-		}
-
-		//cleanup
-		Toy_freeBucket(&bucket);
-	}
-
-	//NOTE: string hash is a PITA, skipping
-
-	return 0;
-}
-
 int main() {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 
 	{
 		res = test_value_creation();
+		if (res == 0) {
+			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
+		}
+		total += res;
+	}
+
+	// { //URGENT: test copying
+	// 	res = test_value_copying();
+	// 	if (res == 0) {
+	// 		printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
+	// 	}
+	// 	total += res;
+	// }
+
+	{
+		res = test_value_hashing();
 		if (res == 0) {
 			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
 		}
@@ -235,13 +287,15 @@ int main() {
 		total += res;
 	}
 
-	{
-		res = test_value_hashing();
-		if (res == 0) {
-			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
-		}
-		total += res;
-	}
+	// { //URGENT: test stringify
+	// 	res = test_value_stringify();
+	// 	if (res == 0) {
+	// 		printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
+	// 	}
+	// 	total += res;
+	// }
+
+	//URGENT: arrays
 
 	return total;
 }

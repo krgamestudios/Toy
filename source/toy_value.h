@@ -4,7 +4,9 @@
 #include "toy_print.h"
 
 //forward declarations
+struct Toy_Bucket;
 struct Toy_String;
+struct Toy_Array;
 
 typedef enum Toy_ValueType {
 	TOY_VALUE_NULL,
@@ -28,6 +30,7 @@ typedef struct Toy_Value {          //32 | 64 BITNESS
 		int integer;                //4  | 4
 		float number;               //4  | 4
 		struct Toy_String* string;  //4  | 8
+		struct Toy_Array* array;    //4  | 8
 		//TODO: more types go here
 		//TODO: consider 'stack' as a possible addition
 	} as;                           //4  | 8
@@ -49,6 +52,7 @@ typedef struct Toy_Value {          //32 | 64 BITNESS
 #define TOY_VALUE_AS_INTEGER(value)				((value).as.integer)
 #define TOY_VALUE_AS_FLOAT(value)				((value).as.number)
 #define TOY_VALUE_AS_STRING(value)				((value).as.string)
+#define TOY_VALUE_AS_ARRAY(value)				((value).as.array)
 //TODO: more
 
 #define TOY_VALUE_FROM_NULL()					((Toy_Value){{ .integer = 0 }, TOY_VALUE_NULL})
@@ -56,6 +60,7 @@ typedef struct Toy_Value {          //32 | 64 BITNESS
 #define TOY_VALUE_FROM_INTEGER(value)			((Toy_Value){{ .integer = value }, TOY_VALUE_INTEGER})
 #define TOY_VALUE_FROM_FLOAT(value)				((Toy_Value){{ .number = value }, TOY_VALUE_FLOAT})
 #define TOY_VALUE_FROM_STRING(value)			((Toy_Value){{ .string = value }, TOY_VALUE_STRING})
+#define TOY_VALUE_FROM_ARRAY(value)				((Toy_Value){{ .array = value }, TOY_VALUE_ARRAY})
 //TODO: more
 
 //utilities
@@ -69,8 +74,8 @@ TOY_API bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right);
 TOY_API bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right);
 TOY_API int Toy_compareValues(Toy_Value left, Toy_Value right);
 
-//convert the value to a string, then forward it to a callback
-TOY_API void Toy_stringifyValue(Toy_Value value, Toy_callbackType callback);
+//convert the value to a string - values that *are* strings are simply copied
+TOY_API struct Toy_String* Toy_stringifyValue(struct Toy_Bucket** bucketHandle, Toy_Value value);
 
 //for debugging
 TOY_API const char* Toy_private_getValueTypeAsCString(Toy_ValueType type);
