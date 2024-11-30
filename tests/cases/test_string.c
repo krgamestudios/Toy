@@ -886,5 +886,7 @@ int main() {
 		total += res;
 	}
 
+	//TODO: hashing
+
 	return total;
 }

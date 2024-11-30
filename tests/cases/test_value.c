@@ -86,12 +86,88 @@ int test_value_creation() {
 			TOY_ARRAY_FREE(array);
 			return -1;
 		}
+
+		//cleanup
+		TOY_ARRAY_FREE(array);
 	}
 
 	return 0;
 }
 
-//URGENT: copy values
+int test_value_copying() {
+	//test simple integer copy
+	{
+		Toy_Value original = TOY_VALUE_FROM_INTEGER(42);
+		Toy_Value result = Toy_copyValue(original);
+
+		if (!TOY_VALUE_IS_INTEGER(result) ||
+			TOY_VALUE_AS_INTEGER(result) != 42
+		) {
+			fprintf(stderr, TOY_CC_ERROR "ERROR: copy an integer value failed\n" TOY_CC_RESET);
+			return -1;
+		}
+	}
+
+	//test string copy
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+
+		Toy_Value original = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world!"));
+		Toy_Value result = Toy_copyValue(original);
+
+		if (TOY_VALUE_IS_STRING(result) == false ||
+			TOY_VALUE_AS_STRING(result)->type != TOY_STRING_LEAF ||
+			strcmp(TOY_VALUE_AS_STRING(result)->as.leaf.data, "Hello world!") != 0 ||
+			TOY_VALUE_AS_STRING(result)->refCount != 2
+		)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: copy a string value failed\n" TOY_CC_RESET);
+			Toy_freeValue(original);
+			Toy_freeValue(result);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeValue(original);
+		Toy_freeValue(result);
+		Toy_freeBucket(&bucket);
+	}
+
+	//test copy arrays
+	{
+		//setup
+		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(8891));
+
+		Toy_Value original = TOY_VALUE_FROM_ARRAY(array);
+
+		Toy_Value result = Toy_copyValue(original);
+
+		if (TOY_VALUE_AS_ARRAY(result) == false ||
+			TOY_VALUE_AS_ARRAY(result)->capacity != 8 ||
+			TOY_VALUE_AS_ARRAY(result)->count != 3 ||
+			TOY_VALUE_IS_INTEGER(TOY_VALUE_AS_ARRAY(result)->data[0]) != true || TOY_VALUE_AS_INTEGER(TOY_VALUE_AS_ARRAY(result)->data[0]) != 42 ||
+			TOY_VALUE_IS_INTEGER(TOY_VALUE_AS_ARRAY(result)->data[1]) != true || TOY_VALUE_AS_INTEGER(TOY_VALUE_AS_ARRAY(result)->data[1]) != 69 ||
+			TOY_VALUE_IS_INTEGER(TOY_VALUE_AS_ARRAY(result)->data[2]) != true || TOY_VALUE_AS_INTEGER(TOY_VALUE_AS_ARRAY(result)->data[2]) != 8891
+		)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: copy an array value failed\n" TOY_CC_RESET);
+			Toy_freeValue(original);
+			Toy_freeValue(result);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeValue(original);
+		Toy_freeValue(result);
+	}
+
+	return 0;
+}
 
 int test_value_hashing() {
 	//test value hashing
@@ -132,8 +208,6 @@ int test_value_hashing() {
 		TOY_ARRAY_FREE(array);
 		Toy_freeBucket(&bucket);
 	}
-
-	//URGENT: string hashing, use godbolt
 
 	return 0;
 }
@@ -243,6 +317,142 @@ int test_value_comparison() {
 	return 0;
 }
 
+int test_value_stringify() {
+	//stringify null
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Value value = TOY_VALUE_FROM_NULL();
+
+		//run
+		Toy_String* string = Toy_stringifyValue(&bucket, value);
+
+		//check
+		if (string->type != TOY_STRING_LEAF ||
+			strcmp(string->as.leaf.data, "null") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify 'null' failed\n" TOY_CC_RESET);
+			Toy_freeString(string);
+			Toy_freeValue(value);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeString(string);
+		Toy_freeValue(value);
+		Toy_freeBucket(&bucket);
+	}
+
+	//stringify boolean (true)
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Value value = TOY_VALUE_FROM_BOOLEAN(true);
+
+		//run
+		Toy_String* string = Toy_stringifyValue(&bucket, value);
+
+		//check
+		if (string->type != TOY_STRING_LEAF ||
+			strcmp(string->as.leaf.data, "true") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify boolean 'true' failed\n" TOY_CC_RESET);
+			Toy_freeString(string);
+			Toy_freeValue(value);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeString(string);
+		Toy_freeValue(value);
+		Toy_freeBucket(&bucket);
+	}
+
+	//stringify boolean (false)
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Value value = TOY_VALUE_FROM_BOOLEAN(false);
+
+		//run
+		Toy_String* string = Toy_stringifyValue(&bucket, value);
+
+		//check
+		if (string->type != TOY_STRING_LEAF ||
+			strcmp(string->as.leaf.data, "false") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify boolean 'false' failed\n" TOY_CC_RESET);
+			Toy_freeString(string);
+			Toy_freeValue(value);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeString(string);
+		Toy_freeValue(value);
+		Toy_freeBucket(&bucket);
+	}
+
+	//stringify integer
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Value value = TOY_VALUE_FROM_INTEGER(42);
+
+		//run
+		Toy_String* string = Toy_stringifyValue(&bucket, value);
+
+		//check
+		if (string->type != TOY_STRING_LEAF ||
+			strcmp(string->as.leaf.data, "42") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify integer '42' failed\n" TOY_CC_RESET);
+			Toy_freeString(string);
+			Toy_freeValue(value);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeString(string);
+		Toy_freeValue(value);
+		Toy_freeBucket(&bucket);
+	}
+
+	//stringify float
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Value value = TOY_VALUE_FROM_FLOAT(3.1415f);
+
+		//run
+		Toy_String* string = Toy_stringifyValue(&bucket, value);
+
+		//check
+		if (string->type != TOY_STRING_LEAF ||
+			strcmp(string->as.leaf.data, "3.1415") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify float '3.1415' failed\n" TOY_CC_RESET);
+			Toy_freeString(string);
+			Toy_freeValue(value);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeString(string);
+		Toy_freeValue(value);
+		Toy_freeBucket(&bucket);
+	}
+
+//URGENT: test stringify and string & array
+
+	return 0;
+}
+
 int main() {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
@@ -255,13 +465,13 @@ int main() {
 		total += res;
 	}
 
-	// { //URGENT: test copying
-	// 	res = test_value_copying();
-	// 	if (res == 0) {
-	// 		printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
-	// 	}
-	// 	total += res;
-	// }
+	{
+		res = test_value_copying();
+		if (res == 0) {
+			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
+		}
+		total += res;
+	}
 
 	{
 		res = test_value_hashing();
@@ -287,13 +497,13 @@ int main() {
 		total += res;
 	}
 
-	// { //URGENT: test stringify
-	// 	res = test_value_stringify();
-	// 	if (res == 0) {
-	// 		printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
-	// 	}
-	// 	total += res;
-	// }
+	{
+		res = test_value_stringify();
+		if (res == 0) {
+			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
+		}
+		total += res;
+	}
 
 	//URGENT: arrays
 

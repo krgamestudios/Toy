@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 //utils
 static unsigned int hashUInt(unsigned int x) {
@@ -80,6 +81,9 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 				result->data[i] = Toy_copyValue(array->data[i]);
 			}
 
+			result->capacity = array->capacity;
+			result->count = array->count;
+
 			return TOY_VALUE_FROM_ARRAY(result);
 		}
 
@@ -119,6 +123,7 @@ void Toy_freeValue(Toy_Value value) {
 			}
 
 			TOY_ARRAY_FREE(array);
+			break;
 		}
 
 		case TOY_VALUE_TABLE:
@@ -320,9 +325,21 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 		}
 
 		case TOY_VALUE_FLOAT: {
+			//using printf
 			char buffer[16];
 			sprintf(buffer, "%f", TOY_VALUE_AS_FLOAT(value));
-			return Toy_createString(bucketHandle, buffer);
+
+			//BUGFIX: printf format specificer '%f' will set the precision to 6 decimal places, which means there's trailing zeroes
+			unsigned int length = strlen(buffer);
+
+			//find the decimal, if it exists
+			unsigned int decimal = 0;
+			while (decimal != length && buffer[decimal] != '.') decimal++;
+
+			//wipe the trailing zeros
+			while(decimal != length && buffer[length-1] == '0') buffer[--length] = '\0';
+
+			return Toy_createStringLength(bucketHandle, buffer, length);
 		}
 
 		case TOY_VALUE_STRING:
