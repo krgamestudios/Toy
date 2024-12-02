@@ -663,8 +663,8 @@ int test_scope(Toy_Bucket** bucketHandle) {
 
 			vm.scope == NULL ||
 			Toy_isDeclaredScope(vm.scope, key) == false ||
-			TOY_VALUE_IS_INTEGER(Toy_accessScope(vm.scope, key)) != true ||
-			TOY_VALUE_AS_INTEGER(Toy_accessScope(vm.scope, key)) != 42
+			TOY_VALUE_IS_INTEGER(*Toy_accessScopeAsPointer(vm.scope, key)) != true ||
+			TOY_VALUE_AS_INTEGER(*Toy_accessScopeAsPointer(vm.scope, key)) != 42
 
 		)
 		{
@@ -712,7 +712,7 @@ int test_scope(Toy_Bucket** bucketHandle) {
 
 			vm.scope == NULL ||
 			Toy_isDeclaredScope(vm.scope, key) == false ||
-			TOY_VALUE_IS_NULL(Toy_accessScope(vm.scope, key)) != true
+			TOY_VALUE_IS_NULL(*Toy_accessScopeAsPointer(vm.scope, key)) != true
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected result in 'Toy_VM' when testing scope, source: %s\n" TOY_CC_RESET, source);

@@ -23,6 +23,6 @@ TOY_API Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope
 //manage the contents
 TOY_API void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value);
 TOY_API void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value);
-TOY_API Toy_Value Toy_accessScope(Toy_Scope* scope, Toy_String* key);
+TOY_API Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key);
 
 TOY_API bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key);

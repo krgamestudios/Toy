@@ -208,7 +208,7 @@ static unsigned int writeInstructionBinary(Toy_Routine** rt, Toy_AstBinary ast) 
 	}
 
 	//4-byte alignment
-	EMIT_BYTE(rt, code,TOY_OPCODE_PASS); //checked in compound assignments
+	EMIT_BYTE(rt, code,TOY_OPCODE_PASS); //checked in combined assignments
 	EMIT_BYTE(rt, code,0);
 	EMIT_BYTE(rt, code,0);
 
@@ -263,17 +263,41 @@ static unsigned int writeInstructionGroup(Toy_Routine** rt, Toy_AstGroup ast) {
 }
 
 static unsigned int writeInstructionCompound(Toy_Routine** rt, Toy_AstCompound ast) {
+	unsigned int result = writeRoutineCode(rt, ast.child);
+
+	if (ast.flag == TOY_AST_FLAG_COMPOUND_ARRAY) {
+		//signal how many values to read in as an array value
+		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
+		EMIT_BYTE(rt, code, TOY_VALUE_ARRAY);
+
+		//4-byte alignment
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
+
+		//how many elements
+		EMIT_INT(rt, code, result);
+
+		return 1; //leaves only 1 value on the stack
+	}
+	else {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST compound flag found\n" TOY_CC_RESET);
+		exit(-1);
+		return 0;
+	}
+}
+
+static unsigned int writeInstructionAggregate(Toy_Routine** rt, Toy_AstAggregate ast) {
 	unsigned int result = 0;
 
 	//left, then right
 	result += writeRoutineCode(rt, ast.left);
 	result += writeRoutineCode(rt, ast.right);
 
-	if (ast.flag == TOY_AST_FLAG_COMPOUND_COLLECTION) {
+	if (ast.flag == TOY_AST_FLAG_COLLECTION) {
 		//collections are handled above
 		return result;
 	}
-	else if (ast.flag == TOY_AST_FLAG_COMPOUND_INDEX) {
+	else if (ast.flag == TOY_AST_FLAG_INDEX) {
 		//value[index, length]
 		EMIT_BYTE(rt, code, TOY_OPCODE_INDEX);
 		EMIT_BYTE(rt, code, result);
@@ -285,7 +309,7 @@ static unsigned int writeInstructionCompound(Toy_Routine** rt, Toy_AstCompound a
 		return 1; //leaves only 1 value on the stack
 	}
 	else {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST compound flag found\n" TOY_CC_RESET);
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST aggregate flag found\n" TOY_CC_RESET);
 		exit(-1);
 		return 0;
 	}
@@ -429,10 +453,12 @@ static unsigned int writeInstructionVarDeclare(Toy_Routine** rt, Toy_AstVarDecla
 static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign ast) {
 	unsigned int result = 0;
 
+	//URGENT: check for LHS in index
+
 	//don't treat these as valid values
 	switch (ast.expr->type) {
 		case TOY_AST_BLOCK:
-		case TOY_AST_COMPOUND:
+		case TOY_AST_AGGREGATE:
 		case TOY_AST_ASSERT:
 		case TOY_AST_PRINT:
 		case TOY_AST_VAR_DECLARE:
@@ -594,7 +620,7 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 		return 0;
 	}
 
-	//NOTE: 'result' is used to in 'writeInstructionCompound()'
+	//NOTE: 'result' is used to in 'writeInstructionAggregate()'
 	unsigned int result = 0;
 
 	//determine how to write each instruction based on the Ast
@@ -640,6 +666,10 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 
 		case TOY_AST_COMPOUND:
 			result += writeInstructionCompound(rt, ast->compound);
+			break;
+
+		case TOY_AST_AGGREGATE:
+			result += writeInstructionAggregate(rt, ast->aggregate);
 			break;
 
 		case TOY_AST_ASSERT:

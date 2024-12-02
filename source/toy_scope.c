@@ -7,6 +7,8 @@
 
 #include "toy_print.h"
 
+//URGENT: don't let references get saved into a scope
+
 //utils
 static void incrementRefCount(Toy_Scope* scope) {
 	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
@@ -126,6 +128,8 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	Toy_insertTable(&scope->table, TOY_VALUE_FROM_STRING(Toy_copyString(key)), value);
 }
 
+
+//TODO: check for clearign old values
 void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	if (key->type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
@@ -161,7 +165,7 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	entryPtr->value = value;
 }
 
-Toy_Value Toy_accessScope(Toy_Scope* scope, Toy_String* key) {
+Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key) {
 	if (key->type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
 		exit(-1);
@@ -173,10 +177,10 @@ Toy_Value Toy_accessScope(Toy_Scope* scope, Toy_String* key) {
 		char buffer[key->length + 256];
 		sprintf(buffer, "Undefined variable: %s\n", key->as.name.data);
 		Toy_error(buffer);
-		return TOY_VALUE_FROM_NULL();
+		NULL;
 	}
 
-	return entryPtr->value;
+	return &(entryPtr->value);
 }
 
 bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key) {

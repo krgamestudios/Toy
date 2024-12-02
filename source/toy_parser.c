@@ -117,6 +117,7 @@ static Toy_AstFlag unary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 static Toy_AstFlag binary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag group(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
+static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 
 //precedence definitions
 static ParsingTuple parsingRulesetTable[] = {
@@ -195,7 +196,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	//structural operators
 	{PREC_NONE,group,NULL},// TOY_TOKEN_OPERATOR_PAREN_LEFT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_PAREN_RIGHT,
-	{PREC_GROUP,NULL,compound},// TOY_TOKEN_OPERATOR_BRACKET_LEFT,
+	{PREC_GROUP,compound,aggregate},// TOY_TOKEN_OPERATOR_BRACKET_LEFT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_BRACKET_RIGHT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_BRACE_LEFT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_BRACE_RIGHT,
@@ -208,7 +209,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_COLON,
 
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_SEMICOLON, // ;
-	{PREC_GROUP,NULL,compound},// TOY_TOKEN_OPERATOR_COMMA, // ,
+	{PREC_GROUP,NULL,aggregate},// TOY_TOKEN_OPERATOR_COMMA, // ,
 
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_DOT, // .
 	{PREC_CALL,NULL,binary},// TOY_TOKEN_OPERATOR_CONCAT, // ..
@@ -562,17 +563,16 @@ static Toy_AstFlag group(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 }
 
 static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
-	//infix must advance
-	advance(parser);
+	//read in an array or dictionary aggregate
 
-	if (parser->previous.type == TOY_TOKEN_OPERATOR_COMMA) {
-		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //NOT +1, as compounds are right-recursive
-		return TOY_AST_FLAG_COMPOUND_COLLECTION;
-	}
-	else if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_LEFT) {
+	if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_LEFT) {
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP);
-		consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of index expression");
-		return TOY_AST_FLAG_COMPOUND_INDEX;
+		consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of compound expression");
+		Toy_private_emitAstCompound(bucketHandle, rootHandle, TOY_AST_FLAG_COMPOUND_ARRAY);
+
+		return TOY_AST_FLAG_NONE;
+
+		//TODO: read in a dictionary
 	}
 	else {
 		printError(parser, parser->previous, "Unexpected token passed to compound precedence rule");
@@ -580,6 +580,31 @@ static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 		return TOY_AST_FLAG_NONE;
 	}
 }
+
+static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	//infix must advance
+	advance(parser);
+
+	if (parser->previous.type == TOY_TOKEN_OPERATOR_COMMA) {
+		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //NOT +1, as compounds are right-recursive
+		return TOY_AST_FLAG_COLLECTION;
+	}
+	else if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_LEFT) {
+		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP);
+		consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of index expression");
+		return TOY_AST_FLAG_INDEX;
+	}
+	else {
+		printError(parser, parser->previous, "Unexpected token passed to aggregate precedence rule");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return TOY_AST_FLAG_NONE;
+	}
+}
+
+//TODO: allow trailing commas
+// static Toy_AstFlag noop(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+// 	return return TOY_AST_FLAG_NONE;
+// }
 
 static ParsingTuple* getParsingRule(Toy_TokenType type) {
 	return &parsingRulesetTable[type];
@@ -638,7 +663,7 @@ static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 			Toy_private_emitAstCompare(bucketHandle, rootHandle, flag, ptr);
 		}
 		else if (flag >= 30 && flag <= 39) {
-			Toy_private_emitAstCompound(bucketHandle, rootHandle, flag, ptr);
+			Toy_private_emitAstAggregate(bucketHandle, rootHandle, flag, ptr);
 		}
 		else {
 			Toy_private_emitAstBinary(bucketHandle, rootHandle, flag, ptr);
@@ -668,9 +693,9 @@ static void makeAssertStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 		Toy_private_emitAstPass(bucketHandle, rootHandle);
 	}
 	else {
-		//NOTE: if it's a compound, then it's got a second arg
-		if (ast->type == TOY_AST_COMPOUND) {
-			Toy_private_emitAstAssert(bucketHandle, rootHandle, ast->compound.left, ast->compound.right);
+		//NOTE: if it's an aggregate node, then it's got a second arg
+		if (ast->type == TOY_AST_AGGREGATE) {
+			Toy_private_emitAstAssert(bucketHandle, rootHandle, ast->aggregate.left, ast->aggregate.right);
 		}
 		else {
 			Toy_private_emitAstAssert(bucketHandle, rootHandle, ast, NULL);

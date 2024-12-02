@@ -455,7 +455,7 @@ int test_binary(Toy_Bucket** bucketHandle) {
 	return 0;
 }
 
-int test_compound(Toy_Bucket** bucketHandle) {
+int test_aggregate(Toy_Bucket** bucketHandle) {
 	//test collections (do it first, because it's used below)
 	{
 		char* source = "1, 2, 3;";
@@ -467,27 +467,27 @@ int test_compound(Toy_Bucket** bucketHandle) {
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
 
-			ast->block.child->type != TOY_AST_COMPOUND ||
-			ast->block.child->compound.flag != TOY_AST_FLAG_COMPOUND_COLLECTION ||
+			ast->block.child->type != TOY_AST_AGGREGATE ||
+			ast->block.child->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
 
-			ast->block.child->compound.left == NULL ||
-			ast->block.child->compound.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->compound.left->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->compound.left->value.value) != 1 ||
+			ast->block.child->aggregate.left == NULL ||
+			ast->block.child->aggregate.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.left->value.value) != 1 ||
 
-			ast->block.child->compound.right == NULL ||
-			ast->block.child->compound.right->type != TOY_AST_COMPOUND ||
-			ast->block.child->compound.right->compound.flag != TOY_AST_FLAG_COMPOUND_COLLECTION ||
+			ast->block.child->aggregate.right == NULL ||
+			ast->block.child->aggregate.right->type != TOY_AST_AGGREGATE ||
+			ast->block.child->aggregate.right->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
 
-			ast->block.child->compound.right->compound.left == NULL ||
-			ast->block.child->compound.right->compound.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->compound.left->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->compound.left->value.value) != 2 ||
+			ast->block.child->aggregate.right->aggregate.left == NULL ||
+			ast->block.child->aggregate.right->aggregate.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->aggregate.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->aggregate.left->value.value) != 2 ||
 
-			ast->block.child->compound.right->compound.right == NULL ||
-			ast->block.child->compound.right->compound.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->compound.right->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->compound.right->value.value) != 3 ||
+			ast->block.child->aggregate.right->aggregate.right == NULL ||
+			ast->block.child->aggregate.right->aggregate.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->aggregate.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->aggregate.right->value.value) != 3 ||
 
 			false)
 		{
@@ -507,17 +507,17 @@ int test_compound(Toy_Bucket** bucketHandle) {
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
 
-			ast->block.child->type != TOY_AST_COMPOUND ||
-			ast->block.child->compound.flag != TOY_AST_FLAG_COMPOUND_INDEX ||
+			ast->block.child->type != TOY_AST_AGGREGATE ||
+			ast->block.child->aggregate.flag != TOY_AST_FLAG_INDEX ||
 
-			ast->block.child->compound.left == NULL ||
-			ast->block.child->compound.left->type != TOY_AST_VAR_ACCESS ||
-			ast->block.child->compound.left->varAccess.name->type != TOY_STRING_NAME ||
-			strcmp(ast->block.child->compound.left->varAccess.name->as.name.data, "name") != 0 ||
+			ast->block.child->aggregate.left == NULL ||
+			ast->block.child->aggregate.left->type != TOY_AST_VAR_ACCESS ||
+			ast->block.child->aggregate.left->varAccess.name->type != TOY_STRING_NAME ||
+			strcmp(ast->block.child->aggregate.left->varAccess.name->as.name.data, "name") != 0 ||
 
-			ast->block.child->compound.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->value.value) != 0 ||
+			ast->block.child->aggregate.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->value.value) != 0 ||
 
 			false)
 		{
@@ -537,23 +537,23 @@ int test_compound(Toy_Bucket** bucketHandle) {
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
 
-			ast->block.child->type != TOY_AST_COMPOUND ||
-			ast->block.child->compound.flag != TOY_AST_FLAG_COMPOUND_INDEX ||
+			ast->block.child->type != TOY_AST_AGGREGATE ||
+			ast->block.child->aggregate.flag != TOY_AST_FLAG_INDEX ||
 
-			ast->block.child->compound.left == NULL ||
-			ast->block.child->compound.left->type != TOY_AST_VAR_ACCESS ||
-			ast->block.child->compound.left->varAccess.name->type != TOY_STRING_NAME ||
-			strcmp(ast->block.child->compound.left->varAccess.name->as.name.data, "name") != 0 ||
+			ast->block.child->aggregate.left == NULL ||
+			ast->block.child->aggregate.left->type != TOY_AST_VAR_ACCESS ||
+			ast->block.child->aggregate.left->varAccess.name->type != TOY_STRING_NAME ||
+			strcmp(ast->block.child->aggregate.left->varAccess.name->as.name.data, "name") != 0 ||
 
-			ast->block.child->compound.right->type != TOY_AST_COMPOUND ||
-			ast->block.child->compound.right->compound.flag != TOY_AST_FLAG_COMPOUND_COLLECTION ||
-			ast->block.child->compound.right->compound.left->type != TOY_AST_VALUE ||
+			ast->block.child->aggregate.right->type != TOY_AST_AGGREGATE ||
+			ast->block.child->aggregate.right->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
+			ast->block.child->aggregate.right->aggregate.left->type != TOY_AST_VALUE ||
 
-			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->compound.left->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->compound.left->value.value) != 0 ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->aggregate.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->aggregate.left->value.value) != 0 ||
 
-			TOY_VALUE_IS_INTEGER(ast->block.child->compound.right->compound.right->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->compound.right->compound.right->value.value) != 1 ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->aggregate.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->aggregate.right->value.value) != 1 ||
 
 			false)
 		{
@@ -927,7 +927,7 @@ int main() {
 
 	{
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-		res = test_compound(&bucket);
+		res = test_aggregate(&bucket);
 		Toy_freeBucket(&bucket);
 		if (res == 0) {
 			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);

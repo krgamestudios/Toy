@@ -341,6 +341,8 @@ static void debugStackPrint(Toy_Stack* stack) {
 
 			printf("%s\t", Toy_private_getValueTypeAsCString(v.type));
 
+			v = Toy_unwrapValue(v);
+
 			switch(v.type) {
 				case TOY_VALUE_NULL:
 					printf("null");
@@ -382,6 +384,7 @@ static void debugStackPrint(Toy_Stack* stack) {
 				case TOY_VALUE_OPAQUE:
 				case TOY_VALUE_TYPE:
 				case TOY_VALUE_ANY:
+				case TOY_VALUE_REFERENCE:
 				case TOY_VALUE_UNKNOWN:
 					printf("???");
 					break;
@@ -405,6 +408,9 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 			Toy_Value v = scope->table->data[i].value;
 
 			printf("%s\t%s\t", Toy_private_getValueTypeAsCString(v.type), TOY_VALUE_AS_STRING(k)->as.name.data);
+
+			k = Toy_unwrapValue(k);
+			v = Toy_unwrapValue(v);
 
 			switch(v.type) {
 				case TOY_VALUE_NULL:
@@ -447,6 +453,7 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 				case TOY_VALUE_OPAQUE:
 				case TOY_VALUE_TYPE:
 				case TOY_VALUE_ANY:
+				case TOY_VALUE_REFERENCE:
 				case TOY_VALUE_UNKNOWN:
 					printf("???");
 					break;

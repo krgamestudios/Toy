@@ -40,3 +40,5 @@ TOY_API Toy_Array* Toy_resizeArray(Toy_Array* array, unsigned int capacity);
 #ifndef TOY_ARRAY_PUSHBACK
 #define TOY_ARRAY_PUSHBACK(array, value) (TOY_ARRAY_EXPAND(array),(array)->data[(array)->count++] = (value))
 #endif
+
+//URGENT: check array length from scripts

@@ -5,6 +5,7 @@
 #include "toy_opcodes.h"
 #include "toy_value.h"
 #include "toy_string.h"
+#include "toy_array.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -90,8 +91,34 @@ static void processRead(Toy_VM* vm) {
 		}
 
 		case TOY_VALUE_ARRAY: {
-			//
-			// break;
+			fixAlignment(vm);
+
+			//the number of values to read from the stack
+			unsigned int count = (unsigned int)READ_INT(vm);
+			unsigned int capacity = count > TOY_ARRAY_INITIAL_CAPACITY ? count : TOY_ARRAY_INITIAL_CAPACITY;
+
+			//neat trick to find the next power of two, inclusive (restriction of the array system) TODO: move this into a function
+			capacity--;
+			capacity |= capacity >> 1;
+			capacity |= capacity >> 2;
+			capacity |= capacity >> 4;
+			capacity |= capacity >> 8;
+			capacity |= capacity >> 16;
+			capacity++;
+
+			//create the array and read in the values
+			Toy_Array* array = Toy_resizeArray(NULL, capacity);
+			array->capacity = capacity;
+			array->count = count;
+
+			for (int i = count - 1; i >= 0; i--) { //read in backwards from the stack
+				array->data[i] = Toy_popStack(&vm->stack);
+			}
+
+			//finished
+			value = TOY_VALUE_FROM_ARRAY(array);
+
+			break;
 		}
 
 		case TOY_VALUE_TABLE: {
@@ -174,6 +201,8 @@ static void processAssign(Toy_VM* vm) {
 	//assign it
 	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value);
 
+	//URGENT: complex assignments
+
 	//cleanup
 	Toy_freeValue(name);
 }
@@ -187,9 +216,20 @@ static void processAccess(Toy_VM* vm) {
 		return;
 	}
 
-	//find and push the value
-	Toy_Value value = Toy_accessScope(vm->scope, TOY_VALUE_AS_STRING(name));
-	Toy_pushStack(&vm->stack, Toy_copyValue(value));
+	//find the value
+	Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(name));
+
+	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
+	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr)) {
+		//TODO: more types to be implemented
+		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
+
+		Toy_pushStack(&vm->stack, ref);
+	}
+
+	else {
+		Toy_pushStack(&vm->stack, Toy_copyValue(*valuePtr));
+	}
 
 	//cleanup
 	Toy_freeValue(name);
@@ -198,7 +238,6 @@ static void processAccess(Toy_VM* vm) {
 static void processDuplicate(Toy_VM* vm) {
 	Toy_Value value = Toy_copyValue(Toy_peekStack(&vm->stack));
 	Toy_pushStack(&vm->stack, value);
-	Toy_freeValue(value);
 
 	//check for compound assignments
 	Toy_OpcodeType squeezed = READ_BYTE(vm);
@@ -216,8 +255,15 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 		char buffer[256];
 		snprintf(buffer, 256, "Invalid types '%s' and '%s' passed in arithmetic", Toy_private_getValueTypeAsCString(left.type), Toy_private_getValueTypeAsCString(right.type));
 		Toy_error(buffer);
-		Toy_freeValue(left);
-		Toy_freeValue(right);
+
+		if (TOY_VALUE_IS_REFERENCE(left) != true) {
+			Toy_freeValue(left);
+		}
+
+		if (TOY_VALUE_IS_REFERENCE(right) != true) {
+			Toy_freeValue(right);
+		}
+
 		return;
 	}
 
@@ -297,17 +343,30 @@ static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
 			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_BOOLEAN(!equal) );
 		}
 
-		Toy_freeValue(left);
-		Toy_freeValue(right);
+		if (TOY_VALUE_IS_REFERENCE(left) != true) {
+			Toy_freeValue(left);
+		}
+
+		if (TOY_VALUE_IS_REFERENCE(right) != true) {
+			Toy_freeValue(right);
+		}
+
 		return;
 	}
 
-	if (Toy_checkValuesAreComparable(left, right) == false) {
+	if (Toy_checkValuesAreComparable(left, right) != true) {
 		char buffer[256];
 		snprintf(buffer, 256, "Can't compare value types '%s' and '%s'", Toy_private_getValueTypeAsCString(left.type), Toy_private_getValueTypeAsCString(right.type));
 		Toy_error(buffer);
-		Toy_freeValue(left);
-		Toy_freeValue(right);
+
+		if (TOY_VALUE_IS_REFERENCE(left) != true) {
+			Toy_freeValue(left);
+		}
+
+		if (TOY_VALUE_IS_REFERENCE(right) != true) {
+			Toy_freeValue(right);
+		}
+
 		return;
 	}
 
@@ -333,8 +392,13 @@ static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_BOOLEAN(false));
 	}
 
-	Toy_freeValue(left);
-	Toy_freeValue(right);
+	if (TOY_VALUE_IS_REFERENCE(left) != true) {
+		Toy_freeValue(left);
+	}
+
+	if (TOY_VALUE_IS_REFERENCE(right) != true) {
+		Toy_freeValue(right);
+	}
 }
 
 static void processLogical(Toy_VM* vm, Toy_OpcodeType opcode) {
@@ -382,20 +446,29 @@ static void processJump(Toy_VM* vm) {
 		case TOY_OP_PARAM_JUMP_IF_TRUE: {
 			Toy_Value value = Toy_popStack(&vm->stack);
 			if (Toy_checkValueIsTruthy(value) == true) {
-				Toy_freeValue(value);
+				if (TOY_VALUE_IS_REFERENCE(value) != true) {
+					Toy_freeValue(value);
+				}
 				break;
 			}
-			Toy_freeValue(value);
+
+			if (TOY_VALUE_IS_REFERENCE(value) != true) {
+				Toy_freeValue(value);
+			}
 			return;
 		}
 
 		case TOY_OP_PARAM_JUMP_IF_FALSE: {
 			Toy_Value value = Toy_popStack(&vm->stack);
 			if (Toy_checkValueIsTruthy(value) != true) {
-				Toy_freeValue(value);
+				if (TOY_VALUE_IS_REFERENCE(value) != true) {
+					Toy_freeValue(value);
+				}
 				break;
 			}
-			Toy_freeValue(value);
+			if (TOY_VALUE_IS_REFERENCE(value) != true) {
+				Toy_freeValue(value);
+			}
 			return;
 		}
 	}
@@ -433,7 +506,7 @@ static void processAssert(Toy_VM* vm) {
 	}
 
 	//do the check
-	if (TOY_VALUE_IS_NULL(value) || Toy_checkValueIsTruthy(value) == false) {
+	if (TOY_VALUE_IS_NULL(value) || Toy_checkValueIsTruthy(value) != true) {
 		//on a failure, print the message
 		Toy_String* string = Toy_stringifyValue(&vm->stringBucket, message);
 		char* buffer = Toy_getStringRawBuffer(string);
@@ -446,8 +519,13 @@ static void processAssert(Toy_VM* vm) {
 	}
 
 	//cleanup
-	Toy_freeValue(value);
-	Toy_freeValue(message);
+	if (TOY_VALUE_IS_REFERENCE(value) != true) {
+		Toy_freeValue(value);
+	}
+
+	if (TOY_VALUE_IS_REFERENCE(message) != true) {
+		Toy_freeValue(message);
+	}
 }
 
 static void processPrint(Toy_VM* vm) {
@@ -460,7 +538,10 @@ static void processPrint(Toy_VM* vm) {
 
 	free(buffer);
 	Toy_freeString(string);
-	Toy_freeValue(value);
+
+	if (TOY_VALUE_IS_REFERENCE(value) != true) {
+		Toy_freeValue(value);
+	}
 }
 
 static void processConcat(Toy_VM* vm) {
@@ -469,6 +550,13 @@ static void processConcat(Toy_VM* vm) {
 
 	if (!TOY_VALUE_IS_STRING(left) || !TOY_VALUE_IS_STRING(right)) {
 		Toy_error("Failed to concatenate a value that is not a string");
+
+		if (TOY_VALUE_IS_REFERENCE(left) != true) {
+			Toy_freeValue(left);
+		}
+		if (TOY_VALUE_IS_REFERENCE(right) != true) {
+			Toy_freeValue(right);
+		}
 		return;
 	}
 
@@ -495,7 +583,7 @@ static void processIndex(Toy_VM* vm) {
 	}
 	else {
 		Toy_error("Incorrect number of elements found in index");
-		//TODO: clear stack
+		//URGENT: clear stack, then leave null
 		return;
 	}
 
@@ -504,26 +592,53 @@ static void processIndex(Toy_VM* vm) {
 		//type checks
 		if (!TOY_VALUE_IS_INTEGER(index)) {
 			Toy_error("Failed to index a string");
-			Toy_freeValue(value);
-			Toy_freeValue(index);
-			Toy_freeValue(length);
+			if (TOY_VALUE_IS_REFERENCE(value) != true) {
+				Toy_freeValue(value);
+			}
+			if (TOY_VALUE_IS_REFERENCE(index) != true) {
+				Toy_freeValue(index);
+			}
+			if (TOY_VALUE_IS_REFERENCE(length) != true) {
+				Toy_freeValue(length);
+			}
 			return;
 		}
 
 		if (!(TOY_VALUE_IS_NULL(length) || TOY_VALUE_IS_INTEGER(length))) {
 			Toy_error("Failed to index-length a string");
-			Toy_freeValue(value);
-			Toy_freeValue(index);
-			Toy_freeValue(length);
+			if (TOY_VALUE_IS_REFERENCE(value) != true) {
+				Toy_freeValue(value);
+			}
+			if (TOY_VALUE_IS_REFERENCE(index) != true) {
+				Toy_freeValue(index);
+			}
+			if (TOY_VALUE_IS_REFERENCE(length) != true) {
+				Toy_freeValue(length);
+			}
 			return;
 		}
 
 		//extract values
 		int i = TOY_VALUE_AS_INTEGER(index);
 		int l = TOY_VALUE_IS_INTEGER(length) ? TOY_VALUE_AS_INTEGER(length) : 1;
+		Toy_String* str = TOY_VALUE_AS_STRING(value);
+
+		//check indexing is within bounds
+		if ( (i < 0 || i >= str->length) || (i+l <= 0 || i+l > str->length)) {
+			Toy_error("String index is out of bounds");
+			if (TOY_VALUE_IS_REFERENCE(value) != true) {
+				Toy_freeValue(value);
+			}
+			if (TOY_VALUE_IS_REFERENCE(index) != true) {
+				Toy_freeValue(index);
+			}
+			if (TOY_VALUE_IS_REFERENCE(length) != true) {
+				Toy_freeValue(length);
+			}
+			return;
+		}
 
 		//extract string
-		Toy_String* str = TOY_VALUE_AS_STRING(value);
 		Toy_String* result = NULL;
 
 		//extract cstring, based on type
@@ -545,14 +660,83 @@ static void processIndex(Toy_VM* vm) {
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_STRING(result));
 	}
 
+	else if (TOY_VALUE_IS_ARRAY(value)) {
+		//type checks
+		if (!TOY_VALUE_IS_INTEGER(index)) {
+			Toy_error("Failed to index a string");
+			if (TOY_VALUE_IS_REFERENCE(value) != true) {
+				Toy_freeValue(value);
+			}
+			if (TOY_VALUE_IS_REFERENCE(index) != true) {
+				Toy_freeValue(index);
+			}
+			if (TOY_VALUE_IS_REFERENCE(length) != true) {
+				Toy_freeValue(length);
+			}
+			return;
+		}
+
+		if (!(TOY_VALUE_IS_NULL(length) || TOY_VALUE_IS_INTEGER(length))) {
+			Toy_error("Failed to index-length a string");
+			if (TOY_VALUE_IS_REFERENCE(value) != true) {
+				Toy_freeValue(value);
+			}
+			if (TOY_VALUE_IS_REFERENCE(index) != true) {
+				Toy_freeValue(index);
+			}
+			if (TOY_VALUE_IS_REFERENCE(length) != true) {
+				Toy_freeValue(length);
+			}
+			return;
+		}
+
+		//extract values
+		int i = TOY_VALUE_AS_INTEGER(index);
+		int l = TOY_VALUE_IS_INTEGER(length) ? TOY_VALUE_AS_INTEGER(length) : 1;
+		Toy_Array* array = TOY_VALUE_AS_ARRAY(value);
+
+		//check indexing is within bounds
+		if ( (i < 0 || i >= array->count) || (i+l <= 0 || i+l > array->count)) {
+			Toy_error("Array index is out of bounds");
+			if (TOY_VALUE_IS_REFERENCE(value) != true) {
+				Toy_freeValue(value);
+			}
+			if (TOY_VALUE_IS_REFERENCE(index) != true) {
+				Toy_freeValue(index);
+			}
+			if (TOY_VALUE_IS_REFERENCE(length) != true) {
+				Toy_freeValue(length);
+			}
+			return;
+		}
+
+		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
+		if (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i])) {
+			//TODO: more types to be implemented
+			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(array->data[i]));
+
+			Toy_pushStack(&vm->stack, ref);
+		}
+
+		else {
+			Toy_pushStack(&vm->stack, Toy_copyValue(array->data[i]));
+		}
+	}
+
 	else {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown value type '%s' found in processIndex, exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
 		exit(-1);
 	}
 
-	Toy_freeValue(value);
-	Toy_freeValue(index);
-	Toy_freeValue(length);
+	if (TOY_VALUE_IS_REFERENCE(value) != true) {
+		Toy_freeValue(value);
+	}
+	if (TOY_VALUE_IS_REFERENCE(index) != true) {
+		Toy_freeValue(index);
+	}
+	if (TOY_VALUE_IS_REFERENCE(length) != true) {
+		Toy_freeValue(length);
+	}
 }
 
 static void process(Toy_VM* vm) {

@@ -16,6 +16,7 @@ typedef enum Toy_AstType {
 	TOY_AST_COMPARE,
 	TOY_AST_GROUP,
 	TOY_AST_COMPOUND,
+	TOY_AST_AGGREGATE,
 
 	TOY_AST_ASSERT,
 	TOY_AST_IF_THEN_ELSE,
@@ -58,8 +59,10 @@ typedef enum Toy_AstFlag {
 	TOY_AST_FLAG_COMPARE_GREATER = 24,
 	TOY_AST_FLAG_COMPARE_GREATER_EQUAL = 25,
 
-	TOY_AST_FLAG_COMPOUND_COLLECTION = 30,
-	TOY_AST_FLAG_COMPOUND_INDEX = 31,
+	TOY_AST_FLAG_COMPOUND_ARRAY = 30,
+	// TOY_AST_FLAG_COMPOUND_TABLE = 31,
+	TOY_AST_FLAG_COLLECTION = 32,
+	TOY_AST_FLAG_INDEX = 33,
 
 	TOY_AST_FLAG_AND = 40,
 	TOY_AST_FLAG_OR = 41,
@@ -117,9 +120,15 @@ typedef struct Toy_AstGroup {
 typedef struct Toy_AstCompound {
 	Toy_AstType type;
 	Toy_AstFlag flag;
+	Toy_Ast* child;
+} Toy_AstCompound;
+
+typedef struct Toy_AstAggregate {
+	Toy_AstType type;
+	Toy_AstFlag flag;
 	Toy_Ast* left;
 	Toy_Ast* right;
-} Toy_AstCompound;
+} Toy_AstAggregate;
 
 typedef struct Toy_AstAssert {
 	Toy_AstType type;
@@ -191,7 +200,8 @@ union Toy_Ast {                     //32 | 64 BITNESS
 	Toy_AstBinary binary;           //16 | 24
 	Toy_AstCompare compare;         //16 | 24
 	Toy_AstGroup group;             //8  | 16
-	Toy_AstCompound compound;       //16 | 24
+	Toy_AstCompound compound;       //12 | 16
+	Toy_AstAggregate aggregate;     //16 | 24
 	Toy_AstAssert assert;           //16 | 24
 	Toy_AstIfThenElse ifThenElse;   //16 | 32
 	Toy_AstWhileThen whileThen;     //16 | 24
@@ -214,7 +224,8 @@ void Toy_private_emitAstUnary(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, To
 void Toy_private_emitAstBinary(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag, Toy_Ast* right);
 void Toy_private_emitAstCompare(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag, Toy_Ast* right);
 void Toy_private_emitAstGroup(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
-void Toy_private_emitAstCompound(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag, Toy_Ast* right);
+void Toy_private_emitAstCompound(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag);
+void Toy_private_emitAstAggregate(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag, Toy_Ast* right);
 
 void Toy_private_emitAstAssert(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* child, Toy_Ast* msg);
 void Toy_private_emitAstIfThenElse(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* condBranch, Toy_Ast* thenBranch, Toy_Ast* elseBranch);

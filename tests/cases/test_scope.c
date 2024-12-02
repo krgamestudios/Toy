@@ -329,7 +329,7 @@ int test_scope_elements() {
 			return -1;
 		}
 
-		Toy_Value result = Toy_accessScope(scope, hello2);
+		Toy_Value* result = Toy_accessScopeAsPointer(scope, hello2);
 
 		//check integer
 		if (scope == NULL ||
@@ -338,8 +338,8 @@ int test_scope_elements() {
 			scope->table->capacity != 8 ||
 			scope->refCount != 1 ||
 
-			TOY_VALUE_IS_INTEGER(result) != true ||
-			TOY_VALUE_AS_INTEGER(result) != 42 ||
+			TOY_VALUE_IS_INTEGER(*result) != true ||
+			TOY_VALUE_AS_INTEGER(*result) != 42 ||
 
 			false)
 		{
@@ -354,7 +354,7 @@ int test_scope_elements() {
 		//assign values
 		Toy_assignScope(scope, hello1, TOY_VALUE_FROM_FLOAT(3.1415f));
 
-		Toy_Value resultTwo = Toy_accessScope(scope, hello2);
+		Toy_Value* resultTwo = Toy_accessScopeAsPointer(scope, hello2);
 
 		//check float
 		if (scope == NULL ||
@@ -363,8 +363,8 @@ int test_scope_elements() {
 			scope->table->capacity != 8 ||
 			scope->refCount != 1 ||
 
-			TOY_VALUE_IS_FLOAT(resultTwo) != true ||
-			TOY_VALUE_AS_FLOAT(resultTwo) != 3.1415f ||
+			TOY_VALUE_IS_FLOAT(*resultTwo) != true ||
+			TOY_VALUE_AS_FLOAT(*resultTwo) != 3.1415f ||
 
 			false)
 		{
@@ -399,10 +399,10 @@ int test_scope_elements() {
 
 		{
 			//check it's accessible
-			Toy_Value result1 = Toy_accessScope(scope, hello);
+			Toy_Value* result1 = Toy_accessScopeAsPointer(scope, hello);
 
-			if (TOY_VALUE_IS_INTEGER(result1) != true ||
-				TOY_VALUE_AS_INTEGER(result1) != 42)
+			if (TOY_VALUE_IS_INTEGER(*result1) != true ||
+				TOY_VALUE_AS_INTEGER(*result1) != 42)
 			{
 				fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to access from an ancestor Toy_Scope\n" TOY_CC_RESET);
 				Toy_freeString(hello);
@@ -416,10 +416,10 @@ int test_scope_elements() {
 
 		{
 			//check it's shadowed correctly
-			Toy_Value result2 = Toy_accessScope(scope, hello);
+			Toy_Value* result2 = Toy_accessScopeAsPointer(scope, hello);
 
-			if (TOY_VALUE_IS_FLOAT(result2) != true ||
-				TOY_VALUE_AS_FLOAT(result2) != 3.1415f)
+			if (TOY_VALUE_IS_FLOAT(*result2) != true ||
+				TOY_VALUE_AS_FLOAT(*result2) != 3.1415f)
 			{
 				fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to shadow an entry in Toy_Scope\n" TOY_CC_RESET);
 				Toy_freeString(hello);
@@ -433,10 +433,10 @@ int test_scope_elements() {
 
 		{
 			//check it's recovered correctly
-			Toy_Value result3 = Toy_accessScope(scope, hello);
+			Toy_Value* result3 = Toy_accessScopeAsPointer(scope, hello);
 
-			if (TOY_VALUE_IS_INTEGER(result3) != true ||
-				TOY_VALUE_AS_INTEGER(result3) != 42)
+			if (TOY_VALUE_IS_INTEGER(*result3) != true ||
+				TOY_VALUE_AS_INTEGER(*result3) != 42)
 			{
 				fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to recover an entry in Toy_Scope\n" TOY_CC_RESET);
 				Toy_freeString(hello);
@@ -450,10 +450,10 @@ int test_scope_elements() {
 
 		{
 			//check it's assigned correctly
-			Toy_Value result4 = Toy_accessScope(scope, hello);
+			Toy_Value* result4 = Toy_accessScopeAsPointer(scope, hello);
 
-			if (TOY_VALUE_IS_INTEGER(result4) != true ||
-				TOY_VALUE_AS_INTEGER(result4) != 8891)
+			if (TOY_VALUE_IS_INTEGER(*result4) != true ||
+				TOY_VALUE_AS_INTEGER(*result4) != 8891)
 			{
 				fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to assign to an ancestor in Toy_Scope\n" TOY_CC_RESET);
 				Toy_freeString(hello);
@@ -467,10 +467,10 @@ int test_scope_elements() {
 
 		{
 			//check it's in the correct state
-			Toy_Value result5 = Toy_accessScope(scope, hello);
+			Toy_Value* result5 = Toy_accessScopeAsPointer(scope, hello);
 
-			if (TOY_VALUE_IS_INTEGER(result5) != true ||
-				TOY_VALUE_AS_INTEGER(result5) != 8891)
+			if (TOY_VALUE_IS_INTEGER(*result5) != true ||
+				TOY_VALUE_AS_INTEGER(*result5) != 8891)
 			{
 				fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to access an altered entry of an ancestor in Toy_Scope\n" TOY_CC_RESET);
 				Toy_freeString(hello);

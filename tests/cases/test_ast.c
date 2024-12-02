@@ -23,7 +23,8 @@ int test_sizeof_ast_64bit() {
 	TEST_SIZEOF(Toy_AstBinary, 24);
 	TEST_SIZEOF(Toy_AstCompare, 24);
 	TEST_SIZEOF(Toy_AstGroup, 16);
-	TEST_SIZEOF(Toy_AstCompound, 24);
+	TEST_SIZEOF(Toy_AstCompound, 16);
+	TEST_SIZEOF(Toy_AstAggregate, 24);
 	TEST_SIZEOF(Toy_AstAssert, 24);
 	TEST_SIZEOF(Toy_AstIfThenElse, 32);
 	TEST_SIZEOF(Toy_AstWhileThen, 24);
@@ -61,7 +62,8 @@ int test_sizeof_ast_32bit() {
 	TEST_SIZEOF(Toy_AstBinary, 16);
 	TEST_SIZEOF(Toy_AstCompare, 16);
 	TEST_SIZEOF(Toy_AstGroup, 8);
-	TEST_SIZEOF(Toy_AstCompound, 16);
+	TEST_SIZEOF(Toy_AstCompound, 12);
+	TEST_SIZEOF(Toy_AstAggregate, 16);
 	TEST_SIZEOF(Toy_AstAssert, 12);
 	TEST_SIZEOF(Toy_AstIfThenElse, 16);
 	TEST_SIZEOF(Toy_AstWhileThen, 12);
@@ -194,33 +196,33 @@ int test_type_emission(Toy_Bucket** bucketHandle) {
 		}
 	}
 
-	//emit compound
+	//emit aggregate
 	{
 		//build the AST
 		Toy_Ast* ast = NULL;
 		Toy_Ast* right = NULL;
 		Toy_private_emitAstValue(bucketHandle, &ast, TOY_VALUE_FROM_INTEGER(42));
 		Toy_private_emitAstValue(bucketHandle, &right, TOY_VALUE_FROM_INTEGER(69));
-		Toy_private_emitAstCompound(bucketHandle, &ast, TOY_AST_FLAG_COMPOUND_COLLECTION, right);
+		Toy_private_emitAstAggregate(bucketHandle, &ast, TOY_AST_FLAG_COLLECTION, right);
 
 		//check if it worked
 		if (
 			ast == NULL ||
-			ast->type != TOY_AST_COMPOUND ||
+			ast->type != TOY_AST_AGGREGATE ||
 
-			ast->compound.left == NULL ||
-			ast->compound.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->compound.left->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->compound.left->value.value) != 42 ||
+			ast->aggregate.left == NULL ||
+			ast->aggregate.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->aggregate.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->aggregate.left->value.value) != 42 ||
 
-			ast->compound.right == NULL ||
-			ast->compound.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->compound.right->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->compound.right->value.value) != 69 ||
+			ast->aggregate.right == NULL ||
+			ast->aggregate.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->aggregate.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->aggregate.right->value.value) != 69 ||
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to emit a compound as 'Toy_Ast', state unknown\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to emit an aggregate as 'Toy_Ast', state unknown\n" TOY_CC_RESET);
 			return -1;
 		}
 	}
