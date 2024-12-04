@@ -170,9 +170,11 @@ int test_var_assign(Toy_Bucket** bucketHandle) {
 			ast->block.child == NULL || \
 			ast->block.child->type != TOY_AST_VAR_ASSIGN || \
 			ast->block.child->varAssign.flag != ARG_FLAG || \
-			ast->block.child->varAssign.name == NULL || \
-			ast->block.child->varAssign.name->type != TOY_STRING_NAME || \
-			strcmp(ast->block.child->varAssign.name->as.name.data, ARG_NAME) != 0 || \
+			ast->block.child->varAssign.target == NULL || \
+			ast->block.child->varAssign.target->type != TOY_AST_VALUE || \
+			TOY_VALUE_IS_STRING(ast->block.child->varAssign.target->value.value) != true ||\
+			TOY_VALUE_AS_STRING(ast->block.child->varAssign.target->value.value)->type != TOY_STRING_NAME ||\
+			strcmp(TOY_VALUE_AS_STRING(ast->block.child->varAssign.target->value.value)->as.name.data, ARG_NAME) != 0 || \
 			ast->block.child->varAssign.expr == NULL || \
 			ast->block.child->varAssign.expr->type != TOY_AST_VALUE || \
 			TOY_VALUE_IS_INTEGER(ast->block.child->varAssign.expr->value.value) == false || \
@@ -512,8 +514,11 @@ int test_aggregate(Toy_Bucket** bucketHandle) {
 
 			ast->block.child->aggregate.left == NULL ||
 			ast->block.child->aggregate.left->type != TOY_AST_VAR_ACCESS ||
-			ast->block.child->aggregate.left->varAccess.name->type != TOY_STRING_NAME ||
-			strcmp(ast->block.child->aggregate.left->varAccess.name->as.name.data, "name") != 0 ||
+			ast->block.child->aggregate.left->varAccess.child == NULL ||
+			ast->block.child->aggregate.left->varAccess.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value) != true ||
+			TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->type != TOY_STRING_NAME ||
+			strcmp(TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->as.name.data, "name") != 0 ||
 
 			ast->block.child->aggregate.right->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->value.value) != true ||
@@ -542,8 +547,13 @@ int test_aggregate(Toy_Bucket** bucketHandle) {
 
 			ast->block.child->aggregate.left == NULL ||
 			ast->block.child->aggregate.left->type != TOY_AST_VAR_ACCESS ||
-			ast->block.child->aggregate.left->varAccess.name->type != TOY_STRING_NAME ||
-			strcmp(ast->block.child->aggregate.left->varAccess.name->as.name.data, "name") != 0 ||
+
+			ast->block.child->aggregate.left->varAccess.child == NULL ||
+			ast->block.child->aggregate.left->varAccess.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value) != true ||
+			TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->type != TOY_STRING_NAME ||
+
+			strcmp(TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->as.name.data, "name") != 0 ||
 
 			ast->block.child->aggregate.right->type != TOY_AST_AGGREGATE ||
 			ast->block.child->aggregate.right->aggregate.flag != TOY_AST_FLAG_COLLECTION ||

@@ -396,18 +396,23 @@ int test_type_emission(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = NULL;
 		Toy_Ast* right = NULL;
 		Toy_String* name = Toy_createNameStringLength(bucketHandle, "foobar", 6, TOY_VALUE_INTEGER, false);
+		Toy_private_emitAstValue(bucketHandle, &ast, TOY_VALUE_FROM_STRING(name));
 		Toy_private_emitAstValue(bucketHandle, &right, TOY_VALUE_FROM_INTEGER(69));
-		Toy_private_emitAstVariableAssignment(bucketHandle, &ast, name, TOY_AST_FLAG_ASSIGN, right);
+		Toy_private_emitAstVariableAssignment(bucketHandle, &ast, TOY_AST_FLAG_ASSIGN, right);
 
 		//check if it worked
 		if (
 			ast == NULL ||
 			ast->type != TOY_AST_VAR_ASSIGN ||
 			ast->varAssign.flag != TOY_AST_FLAG_ASSIGN ||
-			ast->varAssign.name == NULL ||
-			ast->varAssign.name->type != TOY_STRING_NAME ||
-			strcmp(ast->varAssign.name->as.name.data, "foobar") != 0 ||
-			ast->varAssign.name->as.name.type != TOY_VALUE_INTEGER ||
+			ast->varAssign.target == NULL ||
+			ast->varAssign.target->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->varAssign.target->value.value) != true ||
+			TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->type != TOY_STRING_NAME ||
+			strcmp(TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->as.name.data, "foobar") != 0 ||
+
+			TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->as.name.type != TOY_VALUE_INTEGER ||
+
 			ast->varAssign.expr->type != TOY_AST_VALUE ||
 			TOY_VALUE_AS_INTEGER(ast->varAssign.expr->value.value) != 69)
 		{
@@ -420,18 +425,20 @@ int test_type_emission(Toy_Bucket** bucketHandle) {
 	{
 		//build the AST
 		Toy_Ast* ast = NULL;
-		Toy_Ast* right = NULL;
 		Toy_String* name = Toy_createNameStringLength(bucketHandle, "foobar", 6, TOY_VALUE_INTEGER, false);
-		Toy_private_emitAstVariableAccess(bucketHandle, &ast, name);
+		Toy_private_emitAstValue(bucketHandle, &ast, TOY_VALUE_FROM_STRING(name));
+		Toy_private_emitAstVariableAccess(bucketHandle, &ast);
 
 		//check if it worked
 		if (
 			ast == NULL ||
 			ast->type != TOY_AST_VAR_ACCESS ||
-			ast->varAccess.name == NULL ||
-			ast->varAccess.name->type != TOY_STRING_NAME ||
-			strcmp(ast->varAccess.name->as.name.data, "foobar") != 0 ||
-			ast->varAccess.name->as.name.type != TOY_VALUE_INTEGER)
+			ast->varAccess.child == NULL ||
+			ast->varAccess.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->varAccess.child->value.value) != true ||
+			TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->type != TOY_STRING_NAME ||
+			strcmp(TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->as.name.data, "foobar") != 0 ||
+			TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->as.name.type != TOY_VALUE_INTEGER)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to emit an access as 'Toy_Ast', state unknown\n" TOY_CC_RESET);
 			return -1;

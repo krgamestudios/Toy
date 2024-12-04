@@ -140,7 +140,7 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 
 	if (entryPtr == NULL) {
 		char buffer[key->length + 256];
-		sprintf(buffer, "Undefined variable: %s", key->as.name.data);
+		sprintf(buffer, "Undefined variable: %s\n", key->as.name.data);
 		Toy_error(buffer);
 		return;
 	}

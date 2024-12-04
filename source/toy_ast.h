@@ -171,13 +171,13 @@ typedef struct Toy_AstVarDeclare {
 typedef struct Toy_AstVarAssign {
 	Toy_AstType type;
 	Toy_AstFlag flag;
-	Toy_String* name;
+	Toy_Ast* target;
 	Toy_Ast* expr;
 } Toy_AstVarAssign;
 
 typedef struct Toy_AstVarAccess {
 	Toy_AstType type;
-	Toy_String* name;
+	Toy_Ast* child;
 } Toy_AstVarAccess;
 
 typedef struct Toy_AstPass {
@@ -235,8 +235,8 @@ void Toy_private_emitAstContinue(Toy_Bucket** bucketHandle, Toy_Ast** rootHandle
 void Toy_private_emitAstPrint(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 
 void Toy_private_emitAstVariableDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_Ast* expr);
-void Toy_private_emitAstVariableAssignment(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_AstFlag flag, Toy_Ast* expr);
-void Toy_private_emitAstVariableAccess(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name);
+void Toy_private_emitAstVariableAssignment(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_AstFlag flag, Toy_Ast* expr);
+void Toy_private_emitAstVariableAccess(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 
 void Toy_private_emitAstPass(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 void Toy_private_emitAstError(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);

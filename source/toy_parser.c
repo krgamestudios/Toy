@@ -266,8 +266,12 @@ static Toy_ValueType readType(Toy_Parser* parser) {
 }
 
 static Toy_AstFlag nameString(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	//emit the name string
 	Toy_String* name = Toy_createNameStringLength(bucketHandle, parser->previous.lexeme, parser->previous.length, TOY_VALUE_UNKNOWN, false);
+	Toy_Value value = TOY_VALUE_FROM_STRING(name);
+	Toy_private_emitAstValue(bucketHandle, rootHandle, value);
 
+	//check for an assignment
 	Toy_AstFlag flag = TOY_AST_FLAG_NONE;
 
 	if (match(parser, TOY_TOKEN_OPERATOR_ASSIGN)) {
@@ -289,16 +293,16 @@ static Toy_AstFlag nameString(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy
 		flag = TOY_AST_FLAG_MODULO_ASSIGN;
 	}
 
-	//assignment
+	//emit the assignment if found
 	if (flag != TOY_AST_FLAG_NONE) {
 		Toy_Ast* expr = NULL;
 		parsePrecedence(bucketHandle, parser, &expr, PREC_ASSIGNMENT); //this makes chained assignment possible, I think
-		Toy_private_emitAstVariableAssignment(bucketHandle, rootHandle, name, flag, expr);
+		Toy_private_emitAstVariableAssignment(bucketHandle, rootHandle, flag, expr);
 		return TOY_AST_FLAG_NONE;
 	}
 
-	//assume it's an access
-	Toy_private_emitAstVariableAccess(bucketHandle, rootHandle, name);
+	//assume it's an access instead
+	Toy_private_emitAstVariableAccess(bucketHandle, rootHandle);
 	return TOY_AST_FLAG_NONE;
 }
 
@@ -643,9 +647,6 @@ static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 			return;
 		}
 
-		//grab this for name storage
-		Toy_Token prevToken = parser->previous;
-
 		Toy_Ast* ptr = NULL;
 		Toy_AstFlag flag = infix(bucketHandle, parser, &ptr);
 
@@ -656,8 +657,7 @@ static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 		}
 		//eww, gross
 		else if (flag >= 10 && flag <= 19) {
-			Toy_String* name = Toy_createNameStringLength(bucketHandle, prevToken.lexeme, prevToken.length, TOY_VALUE_UNKNOWN, false);
-			Toy_private_emitAstVariableAssignment(bucketHandle, rootHandle, name, flag, ptr);
+			Toy_private_emitAstVariableAssignment(bucketHandle, rootHandle, flag, ptr);
 		}
 		else if (flag >= 20 && flag <= 29) {
 			Toy_private_emitAstCompare(bucketHandle, rootHandle, flag, ptr);

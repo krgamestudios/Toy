@@ -471,27 +471,36 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 			break;
 	}
 
-	//name, duplicate, right, opcode
-	if (ast.flag == TOY_AST_FLAG_ASSIGN) {
+	//target, based on type
+	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value) && TOY_VALUE_AS_STRING(ast.target->value.value)->type == TOY_STRING_NAME) {
+		//name string
+		Toy_String* target = TOY_VALUE_AS_STRING(ast.target->value.value);
+
+		//emit the name string
 		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
 		EMIT_BYTE(rt, code, TOY_VALUE_STRING);
 		EMIT_BYTE(rt, code, TOY_STRING_NAME);
-		EMIT_BYTE(rt, code, ast.name->length); //store the length (max 255)
+		EMIT_BYTE(rt, code, target->length); //store the length (max 255)
 
-		emitString(rt, ast.name);
+		emitString(rt, target);
+	}
+	else {
+		//URGENT: assigning to an array member
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: TODO at %s %d\n" TOY_CC_RESET, __FILE__, __LINE__);
+		(*rt)->panic = true;
+		return 0;
+	}
+
+	//determine RHS, include duplication if needed
+	if (ast.flag == TOY_AST_FLAG_ASSIGN) {
 		result += writeRoutineCode(rt, ast.expr);
 
 		EMIT_BYTE(rt, code, TOY_OPCODE_ASSIGN);
-		EMIT_BYTE(rt, code, 0);
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_ADD_ASSIGN) {
-		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
-		EMIT_BYTE(rt, code, TOY_VALUE_STRING);
-		EMIT_BYTE(rt, code, TOY_STRING_NAME);
-		EMIT_BYTE(rt, code, ast.name->length); //store the length (max 255)
-
-		emitString(rt, ast.name);
-
 		EMIT_BYTE(rt, code,TOY_OPCODE_DUPLICATE);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ACCESS); //squeezed
 		EMIT_BYTE(rt, code,0);
@@ -501,15 +510,10 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_ADD);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_SUBTRACT_ASSIGN) {
-		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
-		EMIT_BYTE(rt, code, TOY_VALUE_STRING);
-		EMIT_BYTE(rt, code, TOY_STRING_NAME);
-		EMIT_BYTE(rt, code, ast.name->length); //store the length (max 255)
-
-		emitString(rt, ast.name);
-
 		EMIT_BYTE(rt, code,TOY_OPCODE_DUPLICATE);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ACCESS); //squeezed
 		EMIT_BYTE(rt, code,0);
@@ -519,15 +523,10 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_SUBTRACT);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_MULTIPLY_ASSIGN) {
-		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
-		EMIT_BYTE(rt, code, TOY_VALUE_STRING);
-		EMIT_BYTE(rt, code, TOY_STRING_NAME);
-		EMIT_BYTE(rt, code, ast.name->length); //store the length (max 255)
-
-		emitString(rt, ast.name);
-
 		EMIT_BYTE(rt, code,TOY_OPCODE_DUPLICATE);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ACCESS); //squeezed
 		EMIT_BYTE(rt, code,0);
@@ -537,15 +536,10 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_MULTIPLY);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_DIVIDE_ASSIGN) {
-		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
-		EMIT_BYTE(rt, code, TOY_VALUE_STRING);
-		EMIT_BYTE(rt, code, TOY_STRING_NAME);
-		EMIT_BYTE(rt, code, ast.name->length); //store the length (max 255)
-
-		emitString(rt, ast.name);
-
 		EMIT_BYTE(rt, code,TOY_OPCODE_DUPLICATE);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ACCESS); //squeezed
 		EMIT_BYTE(rt, code,0);
@@ -555,15 +549,10 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_DIVIDE);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_MODULO_ASSIGN) {
-		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
-		EMIT_BYTE(rt, code, TOY_VALUE_STRING);
-		EMIT_BYTE(rt, code, TOY_STRING_NAME);
-		EMIT_BYTE(rt, code, ast.name->length); //store the length (max 255)
-
-		emitString(rt, ast.name);
-
 		EMIT_BYTE(rt, code,TOY_OPCODE_DUPLICATE);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ACCESS); //squeezed
 		EMIT_BYTE(rt, code,0);
@@ -573,6 +562,8 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_MODULO);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
 	}
 
 	else {
@@ -580,21 +571,24 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		exit(-1);
 	}
 
-	//4-byte alignment
-	EMIT_BYTE(rt, code,0);
-	EMIT_BYTE(rt, code,0);
-
 	return result;
 }
 
 static unsigned int writeInstructionAccess(Toy_Routine** rt, Toy_AstVarAccess ast) {
+	if (!(ast.child->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.child->value.value) && TOY_VALUE_AS_STRING(ast.child->value.value)->type == TOY_STRING_NAME)) {
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Found a non-name-string in a value node when trying to write access\n" TOY_CC_RESET);
+		exit(-1);
+	}
+
+	Toy_String* name = TOY_VALUE_AS_STRING(ast.child->value.value);
+
 	//push the name
 	EMIT_BYTE(rt, code, TOY_OPCODE_READ);
 	EMIT_BYTE(rt, code, TOY_VALUE_STRING);
 	EMIT_BYTE(rt, code, TOY_STRING_NAME);
-	EMIT_BYTE(rt, code, ast.name->length); //store the length (max 255)
+	EMIT_BYTE(rt, code, name->length); //store the length (max 255)
 
-	emitString(rt, ast.name);
+	emitString(rt, name);
 
 	//convert name to value
 	EMIT_BYTE(rt, code, TOY_OPCODE_ACCESS);
