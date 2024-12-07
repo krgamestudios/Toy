@@ -567,8 +567,7 @@ static Toy_AstFlag group(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 }
 
 static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
-	//read in an array or dictionary aggregate
-
+	//read in an array or dictionary compound definition
 	if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_LEFT) {
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP);
 		consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of compound expression");
@@ -589,6 +588,7 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 	//infix must advance
 	advance(parser);
 
+	//aggregates are a collection of parts, expressing a larger idea
 	if (parser->previous.type == TOY_TOKEN_OPERATOR_COMMA) {
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //NOT +1, as compounds are right-recursive
 		return TOY_AST_FLAG_COLLECTION;

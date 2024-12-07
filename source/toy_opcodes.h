@@ -1,12 +1,15 @@
 #pragma once
 
 typedef enum Toy_OpcodeType {
+	//This offsets the opcode values, so I can see TOY_OPCODE_READ in GDB clearly
+	TOY_OPCODE_UNUSED = 0,
+
 	//variable instructions
 	TOY_OPCODE_READ,
 	TOY_OPCODE_DECLARE,
 	TOY_OPCODE_ASSIGN,
+	TOY_OPCODE_ASSIGN_COMPOUND, //assign to a compound's internals
 	TOY_OPCODE_ACCESS,
-
 	TOY_OPCODE_DUPLICATE, //duplicate the top of the stack
 
 	//arithmetic instructions

@@ -453,8 +453,6 @@ static unsigned int writeInstructionVarDeclare(Toy_Routine** rt, Toy_AstVarDecla
 static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign ast) {
 	unsigned int result = 0;
 
-	//URGENT: check for LHS in index
-
 	//don't treat these as valid values
 	switch (ast.expr->type) {
 		case TOY_AST_BLOCK:
@@ -463,7 +461,7 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		case TOY_AST_PRINT:
 		case TOY_AST_VAR_DECLARE:
 			//emit a compiler error, set the panic flag and skip out
-			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Malformed assignment\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Malformed assignment value\n" TOY_CC_RESET);
 			(*rt)->panic = true;
 			return 0;
 
@@ -471,7 +469,7 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 			break;
 	}
 
-	//target, based on type
+	//target is a name string
 	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value) && TOY_VALUE_AS_STRING(ast.target->value.value)->type == TOY_STRING_NAME) {
 		//name string
 		Toy_String* target = TOY_VALUE_AS_STRING(ast.target->value.value);
@@ -484,9 +482,24 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 
 		emitString(rt, target);
 	}
+
+	//target is an indexing of some compound value
+	else if (ast.target->type == TOY_AST_AGGREGATE && ast.target->aggregate.flag == TOY_AST_FLAG_INDEX) {
+		writeRoutineCode(rt, ast.target->aggregate.left); //any deeper indexing will just work, using reference values
+		writeRoutineCode(rt, ast.target->aggregate.right); //key
+		writeRoutineCode(rt, ast.expr); //value
+
+		EMIT_BYTE(rt, code, TOY_OPCODE_ASSIGN_COMPOUND); //uses the top three values on the stack
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
+
+		return 0;
+	}
+
 	else {
-		//URGENT: assigning to an array member
-		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: TODO at %s %d\n" TOY_CC_RESET, __FILE__, __LINE__);
+		//unknown target
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Malformed assignment target\n" TOY_CC_RESET);
 		(*rt)->panic = true;
 		return 0;
 	}

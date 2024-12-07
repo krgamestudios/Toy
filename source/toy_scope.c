@@ -7,8 +7,6 @@
 
 #include "toy_print.h"
 
-//URGENT: don't let references get saved into a scope
-
 //utils
 static void incrementRefCount(Toy_Scope* scope) {
 	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
@@ -110,9 +108,9 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 
 	//type check
 	Toy_ValueType kt = Toy_getNameStringType(key);
-	if (kt != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && kt != value.type) {
+	if (kt != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && kt != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->length + 256];
-		sprintf(buffer, "Incorrect value type assigned to in variable declaration '%s' (expected %d, got %d)", key->as.name.data, (int)kt, (int)value.type);
+		sprintf(buffer, "Incorrect value type in declaration of '%s' (expected %s, got %s)", key->as.name.data, Toy_private_getValueTypeAsCString(kt), Toy_private_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}
@@ -147,9 +145,9 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 
 	//type check
 	Toy_ValueType kt = Toy_getNameStringType( TOY_VALUE_AS_STRING(entryPtr->key) );
-	if (kt != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && kt != value.type) {
+	if (kt != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && kt != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->length + 256];
-		sprintf(buffer, "Incorrect value type assigned to in variable assignment '%s' (expected %d, got %d)", key->as.name.data, (int)kt, (int)value.type);
+		sprintf(buffer, "Incorrect value type in assignment of '%s' (expected %s, got %s)", key->as.name.data, Toy_private_getValueTypeAsCString(kt), Toy_private_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}

@@ -195,16 +195,66 @@ static void processAssign(Toy_VM* vm) {
 	//check name string type
 	if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->type != TOY_STRING_NAME) {
 		Toy_error("Invalid assignment target");
+		Toy_freeValue(name);
+		Toy_freeValue(value);
 		return;
 	}
 
 	//assign it
-	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value);
-
-	//URGENT: complex assignments
+	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value); //scope now owns value, doesn't need to be freed
 
 	//cleanup
 	Toy_freeValue(name);
+}
+
+static void processAssignCompound(Toy_VM* vm) {
+	//get the value, key, target
+	Toy_Value value = Toy_popStack(&vm->stack);
+	Toy_Value key = Toy_popStack(&vm->stack);
+	Toy_Value target = Toy_popStack(&vm->stack);
+
+	//shake out variable names
+	if (TOY_VALUE_IS_STRING(target) && TOY_VALUE_AS_STRING(target)->type == TOY_STRING_NAME) {
+		Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(target));
+		Toy_freeValue(target);
+		target = TOY_REFERENCE_FROM_POINTER(valuePtr);
+	}
+
+	//assign based on target's type
+	if (TOY_VALUE_IS_ARRAY(target)) {
+		if (TOY_VALUE_IS_INTEGER(key) != true) {
+			Toy_error("Bad key type for assignment target");
+			Toy_freeValue(target);
+			Toy_freeValue(key);
+			Toy_freeValue(value);
+			return;
+		}
+
+		Toy_Array* array = TOY_VALUE_AS_ARRAY(target);
+		int index = TOY_VALUE_AS_INTEGER(key);
+
+		//bounds check
+		if (index < 0 || index >= array->count) {
+			Toy_error("Index of assignment target out of bounds");
+			Toy_freeValue(target);
+			Toy_freeValue(key);
+			Toy_freeValue(value);
+		}
+
+		//set the value
+		array->data[index] = Toy_copyValue(Toy_unwrapValue(value));
+
+		//cleanup
+		Toy_freeValue(value);
+	}
+
+	else {
+		Toy_error("Invalid assignment target");
+		Toy_freeValue(target);
+		Toy_freeValue(key);
+		Toy_freeValue(value);
+		return;
+	}
 }
 
 static void processAccess(Toy_VM* vm) {
@@ -760,6 +810,10 @@ static void process(Toy_VM* vm) {
 				processAssign(vm);
 				break;
 
+			case TOY_OPCODE_ASSIGN_COMPOUND:
+				processAssignCompound(vm);
+				break;
+
 			case TOY_OPCODE_ACCESS:
 				processAccess(vm);
 				break;
@@ -828,6 +882,7 @@ static void process(Toy_VM* vm) {
 				processIndex(vm);
 				break;
 
+			case TOY_OPCODE_UNUSED:
 			case TOY_OPCODE_PASS:
 			case TOY_OPCODE_ERROR:
 			case TOY_OPCODE_EOF:
