@@ -197,7 +197,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_NONE,group,NULL},// TOY_TOKEN_OPERATOR_PAREN_LEFT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_PAREN_RIGHT,
 	{PREC_GROUP,compound,aggregate},// TOY_TOKEN_OPERATOR_BRACKET_LEFT,
-	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_BRACKET_RIGHT,
+	{PREC_NONE,compound,aggregate},// TOY_TOKEN_OPERATOR_BRACKET_RIGHT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_BRACE_LEFT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_BRACE_RIGHT,
 
@@ -569,13 +569,33 @@ static Toy_AstFlag group(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	//read in an array or dictionary compound definition
 	if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_LEFT) {
+		//BUGFIX: special case for empty arrays
+		if (match(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT)) {
+			Toy_private_emitAstPass(bucketHandle, rootHandle);
+			Toy_private_emitAstCompound(bucketHandle, rootHandle, TOY_AST_FLAG_COMPOUND_ARRAY);
+			return TOY_AST_FLAG_NONE;
+		}
+
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP);
+
+		//BUGFIX: special case for trailing commas
+		if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_RIGHT && parser->current.type != TOY_TOKEN_OPERATOR_BRACKET_RIGHT) {
+			Toy_private_emitAstCompound(bucketHandle, rootHandle, TOY_AST_FLAG_COMPOUND_ARRAY);
+			//NOTE: will probably need tweaking for tables
+			return TOY_AST_FLAG_NONE;
+		}
+
 		consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of compound expression");
 		Toy_private_emitAstCompound(bucketHandle, rootHandle, TOY_AST_FLAG_COMPOUND_ARRAY);
 
 		return TOY_AST_FLAG_NONE;
 
-		//TODO: read in a dictionary
+		//TODO: read in a table
+	}
+	else if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_RIGHT) {
+		//allows for trailing commas
+		Toy_private_emitAstPass(bucketHandle, rootHandle);
+		return TOY_AST_FLAG_NONE;
 	}
 	else {
 		printError(parser, parser->previous, "Unexpected token passed to compound precedence rule");
@@ -597,6 +617,10 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP);
 		consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of index expression");
 		return TOY_AST_FLAG_INDEX;
+	}
+	else if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_RIGHT) {
+		Toy_private_emitAstPass(bucketHandle, rootHandle);
+		return TOY_AST_FLAG_NONE;
 	}
 	else {
 		printError(parser, parser->previous, "Unexpected token passed to aggregate precedence rule");

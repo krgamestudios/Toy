@@ -15,3 +15,12 @@ barr[1][1] = 99;
 
 assert barr == [[1, 2, 3],[4,99,6],[7,8,9]], "2-D array failed";
 
+//test trailing commas
+var a = [1, 2, 3, ];
+
+print a;
+
+//test empty arrays
+var b = [];
+
+print b;

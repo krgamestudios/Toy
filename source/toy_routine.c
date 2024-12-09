@@ -715,11 +715,11 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 			result += writeInstructionAccess(rt, ast->varAccess);
 			break;
 
-		//meta instructions are disallowed
 		case TOY_AST_PASS:
-			//NOTE: this *should* be disallowed, but for now it's required for testing
+			//NO-OP
 			break;
 
+		//meta instructions are disallowed
 		case TOY_AST_ERROR:
 			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Unknown 'error'\n" TOY_CC_RESET);
 			(*rt)->panic = true;
