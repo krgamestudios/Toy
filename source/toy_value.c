@@ -226,7 +226,7 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 
 				for (unsigned int i = 0; i < leftArray->count; i++) {
 					//any mismatch is an easy difference
-					if (Toy_checkValuesAreEqual(leftArray->data[i], rightArray->data[i])) {
+					if (Toy_checkValuesAreEqual(leftArray->data[i], rightArray->data[i]) != true) {
 						return false;
 					}
 				}

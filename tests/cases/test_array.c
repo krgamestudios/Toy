@@ -6,30 +6,30 @@
 int test_array() {
 	//test allocation and free
 	{
-		Toy_Array* array = Toy_resizeArray(NULL, 1);
-		array = Toy_resizeArray(array, 0);
+		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		TOY_ARRAY_FREE(array);
 	}
 
 	//test initial data
 	{
-		Toy_Array* array = Toy_resizeArray(NULL, 10);
+		Toy_Array* array = TOY_ARRAY_ALLOCATE();
 
 		//check you can access the memory
 		array->data[1] = TOY_VALUE_FROM_INTEGER(42);
 
-		Toy_resizeArray(array, 0);
+		TOY_ARRAY_FREE(array);
 	}
 
 	//test multiple arrays (no overlaps or conflicts)
 	{
-		Toy_Array* array1 = Toy_resizeArray(NULL, 10);
-		Toy_Array* array2 = Toy_resizeArray(NULL, 10);
+		Toy_Array* array1 = TOY_ARRAY_ALLOCATE();
+		Toy_Array* array2 = TOY_ARRAY_ALLOCATE();
 
 		array1->data[1] = TOY_VALUE_FROM_INTEGER(42);
 		array2->data[1] = TOY_VALUE_FROM_INTEGER(42);
 
-		Toy_resizeArray(array1, 0);
-		Toy_resizeArray(array2, 0);
+		TOY_ARRAY_FREE(array1);
+		TOY_ARRAY_FREE(array2);
 	}
 
 	return 0;

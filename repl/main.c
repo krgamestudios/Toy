@@ -111,12 +111,21 @@ static void printCallback(const char* msg) {
 }
 
 static void errorAndExitCallback(const char* msg) {
-	fprintf(stderr, "%s\n", msg);
+	fprintf(stderr, "Error: %s\n", msg);
 	exit(-1);
 }
 
 static void errorAndContinueCallback(const char* msg) {
-	fprintf(stderr, "%s\n", msg);
+	fprintf(stderr, "Error: %s\n", msg);
+}
+
+static void assertFailureAndExitCallback(const char* msg) {
+	fprintf(stderr, "Assert Failure: %s\n", msg);
+	exit(-1);
+}
+
+static void assertFailureAndContinueCallback(const char* msg) {
+	fprintf(stderr, "Assert Failure: %s\n", msg);
 }
 
 static void noOpCallback(const char* msg) {
@@ -263,7 +272,7 @@ int repl(const char* filepath) {
 	//output options
 	Toy_setPrintCallback(printCallback);
 	Toy_setErrorCallback(errorAndContinueCallback);
-	Toy_setAssertFailureCallback(errorAndContinueCallback);
+	Toy_setAssertFailureCallback(assertFailureAndContinueCallback);
 
 	//vars to use
 	char prompt[256];
@@ -472,7 +481,7 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 int main(int argc, const char* argv[]) {
 	Toy_setPrintCallback(printCallback);
 	Toy_setErrorCallback(errorAndExitCallback);
-	Toy_setAssertFailureCallback(errorAndExitCallback);
+	Toy_setAssertFailureCallback(assertFailureAndExitCallback);
 
 	//if there's args, process them
 	CmdLine cmd = parseCmdLine(argc, argv);

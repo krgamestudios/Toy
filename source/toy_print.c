@@ -10,9 +10,13 @@ static void errDefault(const char* msg) {
 	fprintf(stderr, "%s", msg);
 }
 
+static void assertDefault(const char* msg) {
+	fprintf(stderr, "%s", msg);
+}
+
 static Toy_callbackType printCallback = outDefault;
 static Toy_callbackType errorCallback = errDefault;
-static Toy_callbackType assertCallback = errDefault;
+static Toy_callbackType assertCallback = assertDefault;
 
 void Toy_print(const char* msg) {
 	printCallback(msg);
@@ -47,5 +51,5 @@ void Toy_resetErrorCallback() {
 }
 
 void Toy_resetAssertFailureCallback() {
-	assertCallback = errDefault;
+	assertCallback = assertDefault;
 }

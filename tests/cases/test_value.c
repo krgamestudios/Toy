@@ -6,6 +6,7 @@
 #include "toy_array.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 int test_value_creation() {
@@ -166,6 +167,8 @@ int test_value_copying() {
 		Toy_freeValue(result);
 	}
 
+	//arrays can't be compared
+
 	return 0;
 }
 
@@ -253,6 +256,37 @@ int test_value_equality() {
 		Toy_freeBucket(&bucket);
 	}
 
+	//again with arrays
+	{
+		//setup
+		Toy_Array* array1 = TOY_ARRAY_ALLOCATE();
+		TOY_ARRAY_PUSHBACK(array1, TOY_VALUE_FROM_INTEGER(42));
+		TOY_ARRAY_PUSHBACK(array1, TOY_VALUE_FROM_INTEGER(69));
+		TOY_ARRAY_PUSHBACK(array1, TOY_VALUE_FROM_INTEGER(8891));
+
+		Toy_Value value1 = TOY_VALUE_FROM_ARRAY(array1);
+
+		Toy_Array* array2 = TOY_ARRAY_ALLOCATE();
+		TOY_ARRAY_PUSHBACK(array2, TOY_VALUE_FROM_INTEGER(42));
+		TOY_ARRAY_PUSHBACK(array2, TOY_VALUE_FROM_INTEGER(69));
+		TOY_ARRAY_PUSHBACK(array2, TOY_VALUE_FROM_INTEGER(8891));
+
+		Toy_Value value2 = TOY_VALUE_FROM_ARRAY(array2);
+
+
+		if (Toy_checkValuesAreEqual(value1, value2) != true)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: array values are not equal\n" TOY_CC_RESET);
+			Toy_freeValue(value1);
+			Toy_freeValue(value2);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeValue(value1);
+		Toy_freeValue(value2);
+	}
+
 	return 0;
 }
 
@@ -313,6 +347,8 @@ int test_value_comparison() {
 		//cleanup
 		Toy_freeBucket(&bucket);
 	}
+
+	//arrays can't be compared
 
 	return 0;
 }
@@ -448,7 +484,57 @@ int test_value_stringify() {
 		Toy_freeBucket(&bucket);
 	}
 
-//URGENT: test stringify and string & array
+	//stringify strings
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+
+		Toy_Value value = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world!"));
+		Toy_String* string = Toy_stringifyValue(&bucket, value);
+		char* buffer = Toy_getStringRawBuffer(string);
+
+		if (buffer == NULL || strcmp(buffer, "Hello world!") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify string 'Hello world!' failed\n" TOY_CC_RESET);
+			free(buffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		free(buffer);
+		Toy_freeBucket(&bucket);
+	}
+
+	//stringify array
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+
+		//setup
+		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
+		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(8891));
+
+		Toy_Value value = TOY_VALUE_FROM_ARRAY(array);
+		Toy_String* string = Toy_stringifyValue(&bucket, value);
+		char* buffer = Toy_getStringRawBuffer(string);
+
+		if (buffer == NULL || strcmp(buffer, "[42,69,8891]") != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify array '[42,69,8891]' failed\n" TOY_CC_RESET);
+			free(buffer);
+			TOY_ARRAY_FREE(array);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		free(buffer);
+		TOY_ARRAY_FREE(array);
+		Toy_freeBucket(&bucket);
+	}
 
 	return 0;
 }
@@ -505,7 +591,7 @@ int main() {
 		total += res;
 	}
 
-	//URGENT: arrays
+	//TODO: references
 
 	return total;
 }

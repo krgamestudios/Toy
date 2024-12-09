@@ -1,6 +1,4 @@
-
-
-//moment of truth
+//standard example
 var counter: int = 1;
 
 while (counter <= 100) {
@@ -15,11 +13,11 @@ while (counter <= 100) {
 	}
 
 	//finally
-	if (result == "") {
-		print counter;
+	if (result != "") {
+		print result;
 	}
 	else {
-		print result;
+		print counter;
 	}
 
 	counter += 1;
