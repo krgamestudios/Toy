@@ -1,0 +1,10 @@
+//example of the fibonacci sequence
+fn fib(n: int) {
+	if (n < 2) return n;
+	return fib(n-1) + fib(n-2);
+}
+
+//NOTE: type coercion syntax hasn't been decided on yet
+for (var i = 1; i <= 10; i++) {
+	print i .. ":" .. fib(i);
+}

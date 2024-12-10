@@ -8,5 +8,5 @@ var b = [];
 
 print b;
 
-//deep
-assert [[1, 2, 3],[4,99,6],[7,8,9]], "2-D array failed";
+
+//TODO: prevent circular references

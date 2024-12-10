@@ -1,0 +1,7 @@
+
+//find the leap years
+fn isLeapYear(n: int) {
+	if (n % 400) return true;
+	if (n % 100) return false;
+	return n % 4 == 0;
+}

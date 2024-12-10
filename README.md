@@ -12,51 +12,84 @@ This repository holds the reference implementation for Toy version 2.x, written 
 
 # Nifty Features
 
-* Simple C-like syntax
+* Simple C-like/JS-like syntax
 * Intermediate AST representation
 * Strong, but optional type system
-* First-class functions and types
-* Extensible via external libraries
-* Can re-direct output, error and assertion failure messages
-* Open source under the zlib license
+* First-class functions
+* Extensible with importable native code
+* Can re-direct output, error and assert failure messages
+* Open-Source under the Zlib license
 
 # Syntax
 
+The following examples aren't fully functional yet, see [timetable](#timetable).
+
 ```toy
-//print is a built-in keyword, that can handle complex expressions
-print 6 * 7;
+//fizzbuzz example
+for (var counter: int = 1; counter <= 100; i++) {
+	var result: string = "";
 
-//strings can be concatenated with the .. operator, and substringed with the [] operator
-print "Hello" .. "world!"[3, 3]; //[index, length] - this prints "low"
+	if (counter % 3 == 0) {
+		result = result .. "fizz";
+	}
 
-//variables are declared easily
-var foobar = 42;
+	if (counter % 5 == 0) {
+		result = result .. "buzz";
+	}
 
-//scopes allow for shadowing and rebinding
-{
-	var foobar = foobar * 7;
-}
-
-//the types default to 'any' but can be specified if needed (same with constants)
-var immutable: string const = "Foobar";
-
-//the assert keyword can check an expression, and takes an optional second parameter
-assert immutable == "Fizzbuzz", "This message is sent to the terminal by default";
-
-//if and while works
-var count = 1;
-while (count <= 10) {
-	if (count % 2 == 0) {
-		print "even";
+	if (result != "") {
+		print result;
 	}
 	else {
-		print "odd";
+		print counter;
 	}
-	count += 1;
+}
+```
+
+```toy
+//find the nth fibonacci number
+fn fib(n: int) {
+	if (n < 2) return n;
+	return fib(n-1) + fib(n-2);
 }
 
-//NOTE: This section will be expanded as more features are implemented
+for (var i = 1; i <= 10; i++) {
+	print i .. ":" .. fib(i); //type coercion syntax isn't final
+}
 ```
+
+```toy
+//closures!
+fn makeCounter() {
+	var count = 0;
+
+	fn next() {
+		return ++count;
+	}
+
+	return next;
+}
+
+var tally = makeCounter();
+
+print tally(); //1
+print tally(); //2
+print tally(); //3
+```
+
+# Timetable
+
+Here's a rough goal for the upcoming milestones, at which time I'll review and revise my projections. In terms of alpha/beta, the libraries mark the beginning of the beta stage.
+
+Feature | Time Span | Review Date |
+--- | --- | --- |
+[Arrays & Tables](https://github.com/Ratstail91/Toy/issues/155) | 3 weeks | 3rd Jan |
+Types | 2 weeks | 17th Jan |
+Slice Notation | 2 weeks | 31st Jan |
+[Control Flow](https://github.com/Ratstail91/Toy/issues/152) | 1 month | 28th Feb |
+Functions | 1 month | 28th March |
+External Libraries | - | - |
+Native Libraries | - | - |
 
 # Building
 
@@ -64,15 +97,19 @@ Supported platforms are: `linux-latest`, `windows-latest`, `macos-latest`, using
 
 To build the shared library, run `make source`.  
 To build the shared library and repl, run `make repl`.  
-To build and run the standard available tests, run `make tests`.  
+To build and run the test suites, run `make tests` (`make tests-gdb` and `make tests-valgrind` options are also available).  
 
 # Tools
 
-*Coming Soon, see [#126](https://github.com/Ratstail91/Toy/discussions/126) for details.*
+*Coming Soon - see [#126](https://github.com/Ratstail91/Toy/discussions/126) for details.*
+
+# Documentation
+
+*Coming Soon - I want the features mostly set in stone first.*
 
 # License
 
-This source code is covered by the zlib license (see [LICENSE.md](LICENSE.md)).
+This source code is covered by the Zlib license (see [LICENSE.md](LICENSE.md)).
 
 # Contributors and Special Thanks
 
@@ -83,8 +120,8 @@ For a guide on how you can contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
 @add00 - v1 Library support  
 @gruelingpine185 - Unofficial v1 MacOS support  
 @solar-mist - v1 Minor bugfixes  
-The Ratbags - Feedback  
-@munificent - For [writing the book](http://craftinginterpreters.com/) that sparked my interest in langdev
+Various Anons - Feedback  
+@munificent - For [writing the book](http://craftinginterpreters.com/) that sparked my interest in langdev  
 
 # Patreon Supporters
 
