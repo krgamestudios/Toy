@@ -41,5 +41,10 @@ TOY_API Toy_Array* Toy_resizeArray(Toy_Array* array, unsigned int capacity);
 #define TOY_ARRAY_PUSHBACK(array, value) (TOY_ARRAY_EXPAND(array), (array)->data[(array)->count++] = (value))
 #endif
 
-//URGENT: get array length in scripts (dot operator?)
-//URGENT: array as a type
+//TODO: array.getLength()
+//TODO: array.pushFront(x)
+//TODO: array.pushBack(x)
+//TODO: array.popFront()
+//TODO: array.popBack()
+//TODO: array.toString()
+

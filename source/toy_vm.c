@@ -3,9 +3,6 @@
 
 #include "toy_print.h"
 #include "toy_opcodes.h"
-#include "toy_value.h"
-#include "toy_string.h"
-#include "toy_array.h"
 
 #include <stdio.h>
 #include <stdlib.h>

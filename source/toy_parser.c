@@ -567,7 +567,7 @@ static Toy_AstFlag group(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 }
 
 static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
-	//read in an array or dictionary compound definition
+	//read in an array or table compound definition
 	if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_LEFT) {
 		//BUGFIX: special case for empty arrays
 		if (match(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT)) {

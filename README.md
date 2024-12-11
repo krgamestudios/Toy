@@ -54,7 +54,7 @@ fn fib(n: int) {
 }
 
 for (var i = 1; i <= 10; i++) {
-	print i .. ":" .. fib(i); //type coercion syntax isn't final
+	print i.toString() .. ":" .. fib(i).toString();
 }
 ```
 

@@ -1,30 +1,22 @@
 # Test Instructions
 
-To run these tests, execute the following commands from the repo's root:
+To run these tests, execute one of the following commands from the repo's root:
 
 `make tests`  
-`make test-cases`  
-`make test-integrations`  
-
-Alternatively, to run these tests under GDB, execute the following commands from the repo's root:
-
 `make tests-gdb`  
-`make test-cases-gdb`  
-`make test-integrations-gdb`  
-
-Remember that `make clean` will remove the build artifacts after testing, and `make tests` and `make-tests-gdb` automatically invoke `make clean` before they begin.
+`make tests-valgrind`  
 
 ## Benchmarks
 
-For testing and comparing different potential solutions. This may be left in an incomplete state, so it might not work out of the box.
+For testing and comparing different potential solutions. These may be left in an incomplete state, so they might not work out of the box.
 
 ## Cases
 
-For testing individual pieces of the source code in isolation. These are essentially the unit tests.
+For testing individual pieces of the source code in isolation. These are essentially the unit tests, and are used by the CI pipeline.
 
 ## Integrations
 
-This compiles the source and repl files into a library and executable, then runs each `*.toy` file through the repl to ensure the Toy code works in practice. These are essentially integration tests.
+For testing Toy's processes as a complete whole. This will automatically build the repl, and is used by the CI pipeline.
 
 ## Mustfails
 

@@ -2,7 +2,7 @@
 
 I'm extremely appreciative to have people contribute their time and expertise towards this project. Before I get into the details, let me give some high level goals:
 
-* Toy is intended to work as an embedded scripting language inside a game engine, tentatively titled "Box".
+* Toy is intended to work as an embedded scripting language inside a game engine, tentatively titled "Box", but should be general enough to use anywhere.
 * Toy's goal is to allow for a great degree of modability for any games developed with the Box engine.
 * As such, using Toy itself should be easy for novice and veteran coders.
 * Toy is developed with a focus on speed, efficient resource management, and portability.
@@ -12,28 +12,70 @@ I'm extremely appreciative to have people contribute their time and expertise to
 
 First, the main development branch of Toy is 'v2', with the branches 'v1' and 'v1-docs' kept for reference.
 
-v2 is a ground-up rewrite, with additions, changes and deletions to the language that make sense. If you want to discuss the direction things are going, the [Discussions Tab](https://github.com/Ratstail91/Toy/discussions) is perfect for that.
+v2 is a ground-up rewrite, with additions, changes and deletions to the language that make sense. If you want to discuss the direction things are going, the [Discussions Tab](https://github.com/Ratstail91/Toy/discussions) is perfect for that (though, maybe a bit outdated at times).
 
-The [Issue Tracker](https://github.com/Ratstail91/Toy/issues) is a good place to see what tasks and issues are currently waiting to be addressed. The [toy.h](https://github.com/Ratstail91/Toy/blob/v2/source/toy.h) source file is a quick way to see what building blocks are available in the source code. There are also a number of comments prepended with `TODO` scattered throughout the source code, as reminders of planned features.
+The [Issue Tracker](https://github.com/Ratstail91/Toy/issues) is a good place to see what tasks and issues are currently waiting to be addressed. The [toy.h](https://github.com/Ratstail91/Toy/blob/v2/source/toy.h) source file is a quick way to see what building blocks are available in the source code. There are also a number of comments prepended with `URGENT` or `TODO` scattered throughout the source code, as reminders to myself.
 
 The [tests directory](https://github.com/Ratstail91/Toy/tree/v2/tests), which holds a collection of automated tests for the CI pipeline, can be a good way to see how those parts are used. Likewise, the [REPL](https://github.com/Ratstail91/Toy/tree/v2/repl) shows a practical usage of Toy.
 
-*v2 is under heavy development, and as such may not be in a working state yet. Your patience and feedback can help, but missing features such as a documentation website are coming, eventually.*
+*v2 is under heavy development, and as such may not be in a working state yet. Your patience and feedback can help, but a documentation website is coming... eventually.*
 
 # Building Blocks
 
-These data structures should be as independent as they can be, but there are some dependencies:
+The flow from source code to runtime is below - Toy_Bytecode is a thin wrapper for Toy_Routine, that produces the final output.
+
+```mermaid
+graph LR
+    source[source code]@{ shape: flag }
+    Toy_Lexer@{ shape: card }
+    Toy_Parser@{ shape: card }
+
+    source --->|bound to| Toy_Lexer
+    Toy_Lexer --->|bound to| Toy_Parser
+```
+
+```mermaid
+graph LR
+    Toy_Parser@{ shape: card }
+    Toy_Ast@{ shape: card }
+    Toy_Bytecode@{ shape: card }
+
+    Toy_Parser --->|generates| Toy_Ast
+    Toy_Ast --->|compiled to| Toy_Bytecode
+```
+
+```mermaid
+graph LR
+    intermediate[outputted bytecode]@{ shape: flag }
+    Toy_VM@{ shape: card }
+
+    intermediate --->|used by| Toy_VM
+```
+
+The main data structures used at runtime tend to have a top-down dependency graph, as shown below - `Toy_Scope` isn't shown, as it acts more as a wrapper around `Toy_Table`.
 
 ```mermaid
 graph TB
+    Toy_Bucket@{ shape: card }
+    Toy_Value@{ shape: card }
+    Toy_String@{ shape: card }
+    Toy_Array@{ shape: card }
+    Toy_Stack@{ shape: card }
+    Toy_Table@{ shape: card }
+    Toy_VM@{ shape: card }
+
     Toy_Bucket ---> Toy_String
     Toy_Value ---> Toy_String
+    Toy_Value ---> Toy_Array
     Toy_Value ---> Toy_Stack
     Toy_Value ---> Toy_Table
-    Toy_Value ---> Toy_Array
+    Toy_Bucket ---> Toy_VM
+    Toy_String ---> Toy_VM
+    Toy_Array ---> Toy_VM
+    Toy_Stack ---> Toy_VM
+    Toy_Table ---> Toy_VM
+    Toy_Value ---> Toy_VM
 ```
-
-In addition, [toy_common.h](https://github.com/Ratstail91/Toy/blob/v2/source/toy_common.h) grants platform portability and version info, while [toy_console_colors.h](https://github.com/Ratstail91/Toy/blob/v2/source/toy_console_colors.h) provides string constants as macros that can help with console output (where supported).
 
 # Coding Habits
 
@@ -135,8 +177,9 @@ The directories in the repository's root have certain intended uses. If you find
 | .github | Meta information used by GitHub, such as CI workflows and issue templates. |
 | .notes | General storage for any kind of scratch notes or reminders, or random bits of source code that aren't needed. Rough ideas and plans are usually found here, but may be outdated. |
 | lib | The source directory for various libraries external to Toy, but which can be made available by the host and accessed with the `import` keyword. |
-| scripts | Storage for various example scripts written in Toy that can be loaded and executed by the repl. |
-| source | The source directory for the core of the Toy programming language. |
-| tests | The source directory for the testing systems. Within, `cases/` is used for test cases, `benchmarks/` for benchmarking, etc. |
+| repl | The source directory for the default utility provided with the language. It can be used from the command line, and supports several configuration options. |
+| scripts | Storage for various example and WIP scripts written in Toy that can be loaded and executed by the repl. |
+| source | The source directory for the core of the Toy Programming Language. |
+| tests | The source directory for the standard tests. Within, `cases/` is used for test cases, `benchmarks/` for benchmarking, etc. |
 | tools | The source directory for various standalone tools. |
 

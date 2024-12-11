@@ -4,8 +4,13 @@
 
 #include "toy_bytecode.h"
 #include "toy_bucket.h"
-#include "toy_stack.h"
 #include "toy_scope.h"
+
+#include "toy_value.h"
+#include "toy_string.h"
+#include "toy_stack.h"
+#include "toy_array.h"
+#include "toy_table.h"
 
 typedef struct Toy_VM {
 	//raw instructions to be executed
