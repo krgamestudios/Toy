@@ -10,7 +10,7 @@
 #include <string.h>
 
 //utils
-static void expand(void** handle, unsigned int* capacity, unsigned int* count, unsigned int amount) {
+static void expand(unsigned char** handle, unsigned int* capacity, unsigned int* count, unsigned int amount) {
 	if ((*count) + amount > (*capacity)) {
 		while ((*count) + amount > (*capacity)) {
 			(*capacity) = (*capacity) < 8 ? 8 : (*capacity) * 2;
@@ -24,12 +24,12 @@ static void expand(void** handle, unsigned int* capacity, unsigned int* count, u
 	}
 }
 
-static void emitByte(void** handle, unsigned int* capacity, unsigned int* count, unsigned char byte) {
+static void emitByte(unsigned char** handle, unsigned int* capacity, unsigned int* count, unsigned char byte) {
 	expand(handle, capacity, count, 1);
 	((unsigned char*)(*handle))[(*count)++] = byte;
 }
 
-static void emitInt(void** handle, unsigned int* capacity, unsigned int* count, unsigned int bytes) {
+static void emitInt(unsigned char** handle, unsigned int* capacity, unsigned int* count, unsigned int bytes) {
 	char* ptr = (char*)&bytes;
 	emitByte(handle, capacity, count, *(ptr++));
 	emitByte(handle, capacity, count, *(ptr++));
@@ -37,7 +37,7 @@ static void emitInt(void** handle, unsigned int* capacity, unsigned int* count, 
 	emitByte(handle, capacity, count, *(ptr++));
 }
 
-static void emitFloat(void** handle, unsigned int* capacity, unsigned int* count, float bytes) {
+static void emitFloat(unsigned char** handle, unsigned int* capacity, unsigned int* count, float bytes) {
 	char* ptr = (char*)&bytes;
 	emitByte(handle, capacity, count, *(ptr++));
 	emitByte(handle, capacity, count, *(ptr++));
@@ -47,11 +47,11 @@ static void emitFloat(void** handle, unsigned int* capacity, unsigned int* count
 
 //write instructions based on the AST types
 #define EMIT_BYTE(rt, part, byte) \
-	emitByte((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), byte)
+	emitByte((&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), byte)
 #define EMIT_INT(rt, part, bytes) \
-	emitInt((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), bytes)
+	emitInt((&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), bytes)
 #define EMIT_FLOAT(rt, part, bytes) \
-	emitFloat((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), bytes)
+	emitFloat((&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), bytes)
 
 //skip bytes, but return the address
 #define SKIP_BYTE(rt, part) (EMIT_BYTE(rt, part, 0), ((*rt)->part##Count - 1))
@@ -59,7 +59,7 @@ static void emitFloat(void** handle, unsigned int* capacity, unsigned int* count
 
 //overwrite a pre-existing position
 #define OVERWRITE_INT(rt, part, addr, bytes) \
-	emitInt((void**)(&((*rt)->part)), &((*rt)->part##Capacity), &(addr), bytes);
+	emitInt((&((*rt)->part)), &((*rt)->part##Capacity), &(addr), bytes);
 
 //simply get the address (always an integer)
 #define CURRENT_ADDRESS(rt, part) ((*rt)->part##Count)
@@ -80,7 +80,7 @@ static unsigned int emitString(Toy_Routine** rt, Toy_String* str) {
 	unsigned int startAddr = (*rt)->dataCount;
 
 	//move the string into the data section
-	expand((void**)(&((*rt)->data)), &((*rt)->dataCapacity), &((*rt)->dataCount), length);
+	expand((&((*rt)->data)), &((*rt)->dataCapacity), &((*rt)->dataCount), length);
 
 	if (str->type == TOY_STRING_NODE) {
 		char* buffer = Toy_getStringRawBuffer(str);
@@ -750,7 +750,7 @@ static void* writeRoutine(Toy_Routine* rt, Toy_Ast* ast) {
 	}
 
 	//write the header and combine the parts
-	void* buffer = NULL;
+	unsigned char* buffer = NULL;
 	unsigned int capacity = 0, count = 0;
 	// int paramAddr = 0, subsAddr = 0;
 	int codeAddr = 0;
@@ -766,23 +766,23 @@ static void* writeRoutine(Toy_Routine* rt, Toy_Ast* ast) {
 	//generate blank spaces, cache their positions in the *Addr variables (for storing the start positions)
 	if (rt->paramCount > 0) {
 		// paramAddr = count;
-		emitInt((void**)&buffer, &capacity, &count, 0); //params
+		emitInt(&buffer, &capacity, &count, 0); //params
 	}
 	if (rt->codeCount > 0) {
 		codeAddr = count;
-		emitInt((void**)&buffer, &capacity, &count, 0); //code
+		emitInt(&buffer, &capacity, &count, 0); //code
 	}
 	if (rt->jumpsCount > 0) {
 		jumpsAddr = count;
-		emitInt((void**)&buffer, &capacity, &count, 0); //jumps
+		emitInt(&buffer, &capacity, &count, 0); //jumps
 	}
 	if (rt->dataCount > 0) {
 		dataAddr = count;
-		emitInt((void**)&buffer, &capacity, &count, 0); //data
+		emitInt(&buffer, &capacity, &count, 0); //data
 	}
 	if (rt->subsCount > 0) {
 		// subsAddr = count;
-		emitInt((void**)&buffer, &capacity, &count, 0); //subs
+		emitInt(&buffer, &capacity, &count, 0); //subs
 	}
 
 	//append various parts to the buffer

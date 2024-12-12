@@ -18,7 +18,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 		Toy_private_emitAstPass(bucketHandle, &ast);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -66,7 +66,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -114,7 +114,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -166,7 +166,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -218,7 +218,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -271,7 +271,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -324,7 +324,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* header = (int*)buffer;
@@ -350,7 +350,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* code = buffer + 32; //8 values in the header, each 4 bytes
+		unsigned char* code = buffer + 32; //8 values in the header, each 4 bytes
 
 		//check code
 		if (
@@ -374,7 +374,7 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* jumps = code + 12;
+		unsigned char* jumps = code + 12;
 
 		//check jumps
 		if (
@@ -430,7 +430,7 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -495,7 +495,7 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -560,7 +560,7 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -625,7 +625,7 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -720,7 +720,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -778,7 +778,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -841,7 +841,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -931,7 +931,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -1045,7 +1045,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -1102,7 +1102,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* header = (int*)buffer;
@@ -1128,7 +1128,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* code = buffer + 32; //8 values in the header, each 4 bytes
+		unsigned char* code = buffer + 32; //8 values in the header, each 4 bytes
 
 		//check code
 		if (
@@ -1161,7 +1161,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* jumps = code + 20;
+		unsigned char* jumps = code + 20;
 
 		//check jumps
 		if (
@@ -1209,7 +1209,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		void* buffer = Toy_compileRoutine(ast);
+		unsigned char* buffer = Toy_compileRoutine(ast);
 
 		//check header
 		int* header = (int*)buffer;
@@ -1235,7 +1235,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* code = buffer + 32; //8 values in the header, each 4 bytes
+		unsigned char* code = buffer + 32; //8 values in the header, each 4 bytes
 
 		//check code
 		if (
@@ -1268,7 +1268,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* jumps = code + 20;
+		unsigned char* jumps = code + 20;
 
 		//check jumps
 		if (

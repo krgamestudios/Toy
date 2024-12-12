@@ -42,7 +42,7 @@ unsigned char* readFile(char* path, int* size) {
 	}
 
 	//read the file
-	if (fread(buffer, sizeof(unsigned char), *size, file) < *size) {
+	if (fread(buffer, sizeof(unsigned char), *size, file) < (unsigned int)(*size)) {
 		fclose(file);
 		*size = -2; //singal a read error
 		return NULL;
@@ -130,10 +130,12 @@ static void assertFailureAndContinueCallback(const char* msg) {
 
 static void noOpCallback(const char* msg) {
 	//NO-OP
+	(void)msg;
 }
 
 static void silentExitCallback(const char* msg) {
 	//NO-OP
+	(void)msg;
 	exit(-1);
 }
 
@@ -151,6 +153,7 @@ typedef struct CmdLine {
 } CmdLine;
 
 void usageCmdLine(int argc, const char* argv[]) {
+	(void)argc;
 	printf("Usage: %s [ -h | -v | -f source.toy ]\n\n", argv[0]);
 }
 
@@ -169,6 +172,8 @@ void helpCmdLine(int argc, const char* argv[]) {
 }
 
 void versionCmdLine(int argc, const char* argv[]) {
+	(void)argc;
+	(void)argv;
 	printf("The Toy Programming Language, Version %d.%d.%d %s\n\n", TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, TOY_VERSION_BUILD);
 
 	//copy/pasted from the license file - there's a way to include it directly, but it's too finnicky to bother
@@ -344,72 +349,37 @@ int repl(const char* filepath) {
 static void debugStackPrint(Toy_Stack* stack) {
 	//DEBUG: if there's anything on the stack, print it
 	if (stack->count > 0) {
-		printf("Stack Dump\n-------------------------\ntype\tvalue\n");
-		for (int i = 0; i < stack->count; i++) {
-			Toy_Value v = ((Toy_Value*)(stack + 1))[i];
+		Toy_Bucket* stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
+		printf("Stack Dump\n-------------------------\ntype\tvalue\n");
+		for (unsigned int i = 0; i < stack->count; i++) {
+			Toy_Value v = ((Toy_Value*)(stack + 1))[i]; //'stack + 1' is a naughty trick
+
+			//print type
 			printf("%s\t", Toy_private_getValueTypeAsCString(v.type));
 
-			v = Toy_unwrapValue(v);
-
-			switch(v.type) {
-				case TOY_VALUE_NULL:
-					printf("null");
-					break;
-
-				case TOY_VALUE_BOOLEAN:
-					printf("%s", TOY_VALUE_AS_BOOLEAN(v) ? "true" : "false");
-					break;
-
-				case TOY_VALUE_INTEGER:
-					printf("%d", TOY_VALUE_AS_INTEGER(v));
-					break;
-
-				case TOY_VALUE_FLOAT:
-					printf("%f", TOY_VALUE_AS_FLOAT(v));
-					break;
-
-				case TOY_VALUE_STRING: {
-					Toy_String* str = TOY_VALUE_AS_STRING(v);
-
-					//print based on type
-					if (str->type == TOY_STRING_NODE) {
-						char* buffer = Toy_getStringRawBuffer(str);
-						printf("%s", buffer);
-						free(buffer);
-					}
-					else if (str->type == TOY_STRING_LEAF) {
-						printf("%s", str->as.leaf.data);
-					}
-					else if (str->type == TOY_STRING_NAME) {
-						printf("%s", str->as.name.data);
-					}
-					break;
-				}
-
-				case TOY_VALUE_ARRAY:
-				case TOY_VALUE_TABLE:
-				case TOY_VALUE_FUNCTION:
-				case TOY_VALUE_OPAQUE:
-				case TOY_VALUE_TYPE:
-				case TOY_VALUE_ANY:
-				case TOY_VALUE_REFERENCE:
-				case TOY_VALUE_UNKNOWN:
-					printf("???");
-					break;
-			}
+			//print value
+			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
+			char* buffer = Toy_getStringRawBuffer(string);
+			printf("%s", buffer);
+			free(buffer);
+			Toy_freeString(string);
 
 			printf("\n");
 		}
+
+		Toy_freeBucket(&stringBucket);
 	}
 }
 
 static void debugScopePrint(Toy_Scope* scope, int depth) {
 	//DEBUG: if there's anything in the scope, print it
 	if (scope->table->count > 0) {
+		Toy_Bucket* stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+
 		printf("Scope %d Dump\n-------------------------\ntype\tname\tvalue\n", depth);
-		for (int i = 0; i < scope->table->capacity; i++) {
-			if ( (TOY_VALUE_IS_STRING(scope->table->data[i].key) && TOY_VALUE_AS_STRING(scope->table->data[i].key)->type == TOY_STRING_NAME) == false) {
+		for (unsigned int i = 0; i < scope->table->capacity; i++) {
+			if ( (TOY_VALUE_IS_STRING(scope->table->data[i].key) && TOY_VALUE_AS_STRING(scope->table->data[i].key)->type == TOY_STRING_NAME) != true) {
 				continue;
 			}
 
@@ -418,58 +388,17 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 
 			printf("%s\t%s\t", Toy_private_getValueTypeAsCString(v.type), TOY_VALUE_AS_STRING(k)->as.name.data);
 
-			k = Toy_unwrapValue(k);
-			v = Toy_unwrapValue(v);
-
-			switch(v.type) {
-				case TOY_VALUE_NULL:
-					printf("null");
-					break;
-
-				case TOY_VALUE_BOOLEAN:
-					printf("%s", TOY_VALUE_AS_BOOLEAN(v) ? "true" : "false");
-					break;
-
-				case TOY_VALUE_INTEGER:
-					printf("%d", TOY_VALUE_AS_INTEGER(v));
-					break;
-
-				case TOY_VALUE_FLOAT:
-					printf("%f", TOY_VALUE_AS_FLOAT(v));
-					break;
-
-				case TOY_VALUE_STRING: {
-					Toy_String* str = TOY_VALUE_AS_STRING(v);
-
-					//print based on type
-					if (str->type == TOY_STRING_NODE) {
-						char* buffer = Toy_getStringRawBuffer(str);
-						printf("%s", buffer);
-						free(buffer);
-					}
-					else if (str->type == TOY_STRING_LEAF) {
-						printf("%s", str->as.leaf.data);
-					}
-					else if (str->type == TOY_STRING_NAME) {
-						printf("%s\nWarning: The above value is a name string", str->as.name.data);
-					}
-					break;
-				}
-
-				case TOY_VALUE_ARRAY:
-				case TOY_VALUE_TABLE:
-				case TOY_VALUE_FUNCTION:
-				case TOY_VALUE_OPAQUE:
-				case TOY_VALUE_TYPE:
-				case TOY_VALUE_ANY:
-				case TOY_VALUE_REFERENCE:
-				case TOY_VALUE_UNKNOWN:
-					printf("???");
-					break;
-			}
+			//print value
+			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
+			char* buffer = Toy_getStringRawBuffer(string);
+			printf("%s", buffer);
+			free(buffer);
+			Toy_freeString(string);
 
 			printf("\n");
 		}
+
+		Toy_freeBucket(&stringBucket);
 	}
 
 	if (scope->next != NULL) {
