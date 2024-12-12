@@ -25,10 +25,10 @@ int test_buckets() {
 		Toy_Bucket* bucket = Toy_allocateBucket(sizeof(int) * 32);
 
 		//grab some memory
-		int* a = Toy_partitionBucket(&bucket, sizeof(int));
-		int* b = Toy_partitionBucket(&bucket, sizeof(int));
-		int* c = Toy_partitionBucket(&bucket, sizeof(int));
-		int* d = Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
 
 		//check
 		if (bucket == NULL || bucket->count != 4 * sizeof(int)) {
@@ -46,12 +46,12 @@ int test_buckets() {
 		Toy_Bucket* bucket = Toy_allocateBucket(sizeof(int) * 4);
 
 		//grab some memory
-		int* a = Toy_partitionBucket(&bucket, sizeof(int));
-		int* b = Toy_partitionBucket(&bucket, sizeof(int));
-		int* c = Toy_partitionBucket(&bucket, sizeof(int));
-		int* d = Toy_partitionBucket(&bucket, sizeof(int));
-		int* e = Toy_partitionBucket(&bucket, sizeof(int));
-		int* f = Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
+		Toy_partitionBucket(&bucket, sizeof(int));
 
 		//checks - please note that the top-most bucket is what is being filled - older buckets are further along
 		if (

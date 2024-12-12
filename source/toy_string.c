@@ -230,7 +230,7 @@ char* Toy_getStringRawBuffer(Toy_String* str) {
 	}
 
 	//BUGFIX: Make sure it's aligned, and there's space for the null
-	int len = (str->length + 3) & ~3;
+	unsigned int len = (str->length + 3) & ~3;
 	if (len == str->length) {
 		len += 4;
 	}

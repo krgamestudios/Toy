@@ -82,7 +82,7 @@ Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	incrementRefCount(newScope);
 
 	//forcibly copy the contents
-	for (int i = 0; i < scope->table->capacity; i++) {
+	for (unsigned int i = 0; i < scope->table->capacity; i++) {
 		if (!TOY_VALUE_IS_NULL(scope->table->data[i].key)) {
 			Toy_insertTable(&newScope->table, Toy_copyValue(scope->table->data[i].key), Toy_copyValue(scope->table->data[i].value));
 		}

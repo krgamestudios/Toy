@@ -74,7 +74,7 @@ Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int new
 	}
 
 	//for each entry in the old table, copy it into the new table
-	for (int i = 0; i < oldTable->capacity; i++) {
+	for (unsigned int i = 0; i < oldTable->capacity; i++) {
 		if (!TOY_VALUE_IS_NULL(oldTable->data[i].key)) {
 			probeAndInsert(&newTable, oldTable->data[i].key, oldTable->data[i].value);
 		}

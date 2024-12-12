@@ -231,7 +231,7 @@ static void processAssignCompound(Toy_VM* vm) {
 		int index = TOY_VALUE_AS_INTEGER(key);
 
 		//bounds check
-		if (index < 0 || index >= array->count) {
+		if (index < 0 || (unsigned int)index >= array->count) {
 			Toy_error("Index of assignment target out of bounds");
 			Toy_freeValue(target);
 			Toy_freeValue(key);
@@ -671,7 +671,7 @@ static void processIndex(Toy_VM* vm) {
 		Toy_String* str = TOY_VALUE_AS_STRING(value);
 
 		//check indexing is within bounds
-		if ( (i < 0 || i >= str->length) || (i+l <= 0 || i+l > str->length)) {
+		if ( (i < 0 || (unsigned int)i >= str->length) || (i+l <= 0 || (unsigned int)(i+l) > str->length)) {
 			Toy_error("String index is out of bounds");
 			if (TOY_VALUE_IS_REFERENCE(value) != true) {
 				Toy_freeValue(value);
@@ -743,7 +743,7 @@ static void processIndex(Toy_VM* vm) {
 		Toy_Array* array = TOY_VALUE_AS_ARRAY(value);
 
 		//check indexing is within bounds
-		if ( (i < 0 || i >= array->count) || (i+l <= 0 || i+l > array->count)) {
+		if ( (i < 0 || (unsigned int)i >= array->count) || (i+l <= 0 || (unsigned int)(i+l) > array->count)) {
 			Toy_error("Array index is out of bounds");
 			if (TOY_VALUE_IS_REFERENCE(value) != true) {
 				Toy_freeValue(value);

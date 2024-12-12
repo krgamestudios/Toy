@@ -406,6 +406,7 @@ static unsigned int writeInstructionWhileThen(Toy_Routine** rt, Toy_AstWhileThen
 
 static unsigned int writeInstructionBreak(Toy_Routine** rt, Toy_AstBreak ast) {
 	//TODO: implement break
+	(void)ast;
 	fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Keyword 'break' not yet implemented\n" TOY_CC_RESET);
 	(*rt)->panic = true;
 
@@ -414,6 +415,7 @@ static unsigned int writeInstructionBreak(Toy_Routine** rt, Toy_AstBreak ast) {
 
 static unsigned int writeInstructionContinue(Toy_Routine** rt, Toy_AstContinue ast) {
 	//TODO: implement continue
+	(void)ast;
 	fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Keyword 'continue' not yet implemented\n" TOY_CC_RESET);
 	(*rt)->panic = true;
 

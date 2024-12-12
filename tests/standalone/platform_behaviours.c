@@ -40,7 +40,7 @@ unsigned char* readFile(char* path, int* size) {
 	}
 
 	//read the file
-	if (fread(buffer, sizeof(unsigned char), *size, file) < *size) {
+	if (fread(buffer, sizeof(unsigned char), *size, file) < (unsigned int)(*size)) {
 		fclose(file);
 		*size = -2; //singal a read error
 		return NULL;

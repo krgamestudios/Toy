@@ -1,12 +1,2 @@
 set breakpoint pending on
 
-break main if argc > 1
-
-command 1
-set $i=0
-while($i < argc)
-	p argv[$i++]
-end
-continue
-end
-

@@ -400,7 +400,6 @@ int test_string_equality() {
 		Toy_Bucket* bucket = Toy_allocateBucket(1024);
 		Toy_String* helloWorldOne = Toy_createString(&bucket, "Hello world");
 		Toy_String* helloWorldTwo = Toy_concatStrings(&bucket, Toy_createString(&bucket, "Hello "), Toy_createString(&bucket, "world"));
-		Toy_String* helloEveryone = Toy_createString(&bucket, "Hello everyone");
 
 		int result = 0; //for print the errors
 

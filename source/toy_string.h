@@ -30,7 +30,7 @@ typedef struct Toy_String {             //32 | 64 BITNESS
 
 		struct {
 			Toy_ValueType type;         //4  | 4
-			bool constant;               //1  | 1
+			bool constant;              //1  | 1
 			char data[];                //-  | -
 		} name;                         //8  | 8
 	} as;                               //8  | 16

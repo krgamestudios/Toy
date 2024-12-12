@@ -5,7 +5,7 @@
 
 int counter = 0;
 
-void count(const char* msg) {
+void count(const char*) {
 	counter++;
 }
 

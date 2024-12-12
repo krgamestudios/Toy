@@ -1,6 +1,6 @@
 #compiler settings
 CC=gcc
-CFLAGS+=-std=c17 -g -Wall -Werror -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable -Wformat=2
+#CFLAGS+=-std=c17 -g -Wall -Werror -Wextra -Wformat=2
 LIBS+=-lm -lToy
 LDFLAGS+=-Wl,-rpath,'$$ORIGIN'
 

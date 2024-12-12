@@ -19,7 +19,6 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -68,7 +67,6 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -117,7 +115,6 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -170,7 +167,6 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -223,7 +219,6 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -277,7 +272,6 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -331,7 +325,6 @@ int test_routine_expressions(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* header = (int*)buffer;
@@ -438,7 +431,6 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -504,7 +496,6 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -570,7 +561,6 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -636,7 +626,6 @@ int test_routine_binary(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -732,7 +721,6 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -791,7 +779,6 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -855,7 +842,6 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -946,7 +932,6 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -1061,7 +1046,6 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -1119,7 +1103,6 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* header = (int*)buffer;
@@ -1227,7 +1210,6 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 
 		//run
 		void* buffer = Toy_compileRoutine(ast);
-		int len = ((int*)buffer)[0];
 
 		//check header
 		int* header = (int*)buffer;
