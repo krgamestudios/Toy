@@ -630,7 +630,7 @@ static void processIndex(Toy_VM* vm) {
 	}
 	else {
 		Toy_error("Incorrect number of elements found in index");
-		//URGENT: clear stack, then leave null
+		//TODO: clear stack, then leave null?
 		return;
 	}
 

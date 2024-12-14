@@ -374,7 +374,10 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 			//find the decimal, if it exists
 			unsigned int decimal = 0;
-			while (decimal != length && buffer[decimal] != '.') decimal++;
+			while (decimal != length && buffer[decimal] != '.' && buffer[decimal] != ',') decimal++; //'.' and ',' supports more locales
+
+			//locales are hard, sorry!
+			if (decimal != length && buffer[decimal] == ',') buffer[decimal] = '.';
 
 			//wipe the trailing zeros
 			while(decimal != length && buffer[length-1] == '0') buffer[--length] = '\0';
