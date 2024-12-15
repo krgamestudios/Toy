@@ -71,7 +71,7 @@ static void emitToJumpTable(Toy_Routine** rt, unsigned int startAddr) {
 
 static unsigned int emitString(Toy_Routine** rt, Toy_String* str) {
 	//4-byte alignment
-	unsigned int length = str->length + 1;
+	unsigned int length = str->info.length + 1;
 	if (length % 4 != 0) {
 		length += 4 - (length % 4); //ceil
 	}
@@ -82,16 +82,16 @@ static unsigned int emitString(Toy_Routine** rt, Toy_String* str) {
 	//move the string into the data section
 	expand((&((*rt)->data)), &((*rt)->dataCapacity), &((*rt)->dataCount), length);
 
-	if (str->type == TOY_STRING_NODE) {
+	if (str->info.type == TOY_STRING_NODE) {
 		char* buffer = Toy_getStringRawBuffer(str);
-		memcpy((*rt)->data + (*rt)->dataCount, buffer, str->length + 1);
+		memcpy((*rt)->data + (*rt)->dataCount, buffer, str->info.length + 1);
 		free(buffer);
 	}
-	else if (str->type == TOY_STRING_LEAF) {
-		memcpy((*rt)->data + (*rt)->dataCount, str->as.leaf.data, str->length + 1);
+	else if (str->info.type == TOY_STRING_LEAF) {
+		memcpy((*rt)->data + (*rt)->dataCount, str->leaf.data, str->info.length + 1);
 	}
-	else if (str->type == TOY_STRING_NAME) {
-		memcpy((*rt)->data + (*rt)->dataCount, str->as.name.data, str->length + 1);
+	else if (str->info.type == TOY_STRING_NAME) {
+		memcpy((*rt)->data + (*rt)->dataCount, str->name.data, str->info.length + 1);
 	}
 
 	(*rt)->dataCount += length;
@@ -443,9 +443,9 @@ static unsigned int writeInstructionVarDeclare(Toy_Routine** rt, Toy_AstVarDecla
 
 	//delcare with the given name string
 	EMIT_BYTE(rt, code, TOY_OPCODE_DECLARE);
-	EMIT_BYTE(rt, code, Toy_getNameStringType(ast.name));
-	EMIT_BYTE(rt, code, ast.name->length); //quick optimisation to skip a 'strlen()' call
-	EMIT_BYTE(rt, code, Toy_getNameStringConstant(ast.name) ? 1 : 0); //check for constness
+	EMIT_BYTE(rt, code, Toy_getNameStringVarType(ast.name));
+	EMIT_BYTE(rt, code, ast.name->info.length); //quick optimisation to skip a 'strlen()' call
+	EMIT_BYTE(rt, code, Toy_getNameStringVarConstant(ast.name) ? 1 : 0); //check for constness
 
 	emitString(rt, ast.name);
 
@@ -472,7 +472,7 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 	}
 
 	//target is a name string
-	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value) && TOY_VALUE_AS_STRING(ast.target->value.value)->type == TOY_STRING_NAME) {
+	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value) && TOY_VALUE_AS_STRING(ast.target->value.value)->info.type == TOY_STRING_NAME) {
 		//name string
 		Toy_String* target = TOY_VALUE_AS_STRING(ast.target->value.value);
 
@@ -480,7 +480,7 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
 		EMIT_BYTE(rt, code, TOY_VALUE_STRING);
 		EMIT_BYTE(rt, code, TOY_STRING_NAME);
-		EMIT_BYTE(rt, code, target->length); //store the length (max 255)
+		EMIT_BYTE(rt, code, target->info.length); //store the length (max 255)
 
 		emitString(rt, target);
 	}
@@ -590,7 +590,7 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 }
 
 static unsigned int writeInstructionAccess(Toy_Routine** rt, Toy_AstVarAccess ast) {
-	if (!(ast.child->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.child->value.value) && TOY_VALUE_AS_STRING(ast.child->value.value)->type == TOY_STRING_NAME)) {
+	if (!(ast.child->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.child->value.value) && TOY_VALUE_AS_STRING(ast.child->value.value)->info.type == TOY_STRING_NAME)) {
 		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Found a non-name-string in a value node when trying to write access\n" TOY_CC_RESET);
 		exit(-1);
 	}
@@ -601,7 +601,7 @@ static unsigned int writeInstructionAccess(Toy_Routine** rt, Toy_AstVarAccess as
 	EMIT_BYTE(rt, code, TOY_OPCODE_READ);
 	EMIT_BYTE(rt, code, TOY_VALUE_STRING);
 	EMIT_BYTE(rt, code, TOY_STRING_NAME);
-	EMIT_BYTE(rt, code, name->length); //store the length (max 255)
+	EMIT_BYTE(rt, code, name->info.length); //store the length (max 255)
 
 	emitString(rt, name);
 

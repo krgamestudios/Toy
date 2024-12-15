@@ -10,7 +10,7 @@ void count(const char* msg) {
 	counter++;
 }
 
-int test_callbacks() {
+int test_callbacks(void) {
 	//set a custom print callback, invoke it, and reset
 	{
 		//setup
@@ -95,7 +95,7 @@ int test_callbacks() {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

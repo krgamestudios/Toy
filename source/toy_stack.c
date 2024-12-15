@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-Toy_Stack* Toy_allocateStack() {
+Toy_Stack* Toy_allocateStack(void) {
 	Toy_Stack* stack = malloc(TOY_STACK_INITIAL_CAPACITY * sizeof(Toy_Value) + sizeof(Toy_Stack));
 
 	if (stack == NULL) {

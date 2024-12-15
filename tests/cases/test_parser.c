@@ -114,8 +114,8 @@ int test_var_declare(Toy_Bucket** bucketHandle) {
 			ast->block.child->type != TOY_AST_VAR_DECLARE ||
 
 			ast->block.child->varDeclare.name == NULL ||
-			ast->block.child->varDeclare.name->type != TOY_STRING_NAME ||
-			strcmp(ast->block.child->varDeclare.name->as.name.data, "answer") != 0 ||
+			ast->block.child->varDeclare.name->info.type != TOY_STRING_NAME ||
+			strcmp(ast->block.child->varDeclare.name->name.data, "answer") != 0 ||
 
 			ast->block.child->varDeclare.expr == NULL ||
 			ast->block.child->varDeclare.expr->type != TOY_AST_VALUE ||
@@ -141,8 +141,8 @@ int test_var_declare(Toy_Bucket** bucketHandle) {
 			ast->block.child->type != TOY_AST_VAR_DECLARE ||
 
 			ast->block.child->varDeclare.name == NULL ||
-			ast->block.child->varDeclare.name->type != TOY_STRING_NAME ||
-			strcmp(ast->block.child->varDeclare.name->as.name.data, "empty") != 0 ||
+			ast->block.child->varDeclare.name->info.type != TOY_STRING_NAME ||
+			strcmp(ast->block.child->varDeclare.name->name.data, "empty") != 0 ||
 
 			ast->block.child->varDeclare.expr == NULL ||
 			ast->block.child->varDeclare.expr->type != TOY_AST_VALUE ||
@@ -173,8 +173,8 @@ int test_var_assign(Toy_Bucket** bucketHandle) {
 			ast->block.child->varAssign.target == NULL || \
 			ast->block.child->varAssign.target->type != TOY_AST_VALUE || \
 			TOY_VALUE_IS_STRING(ast->block.child->varAssign.target->value.value) != true ||\
-			TOY_VALUE_AS_STRING(ast->block.child->varAssign.target->value.value)->type != TOY_STRING_NAME ||\
-			strcmp(TOY_VALUE_AS_STRING(ast->block.child->varAssign.target->value.value)->as.name.data, ARG_NAME) != 0 || \
+			TOY_VALUE_AS_STRING(ast->block.child->varAssign.target->value.value)->info.type != TOY_STRING_NAME ||\
+			strcmp(TOY_VALUE_AS_STRING(ast->block.child->varAssign.target->value.value)->name.data, ARG_NAME) != 0 || \
 			ast->block.child->varAssign.expr == NULL || \
 			ast->block.child->varAssign.expr->type != TOY_AST_VALUE || \
 			TOY_VALUE_IS_INTEGER(ast->block.child->varAssign.expr->value.value) == false || \
@@ -316,8 +316,8 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast->block.child == NULL ||
 			ast->block.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_STRING(ast->block.child->value.value)->type != TOY_STRING_LEAF ||
-			strcmp(TOY_VALUE_AS_STRING(ast->block.child->value.value)->as.leaf.data, "Hello world!") != 0)
+			TOY_VALUE_AS_STRING(ast->block.child->value.value)->info.type != TOY_STRING_LEAF ||
+			strcmp(TOY_VALUE_AS_STRING(ast->block.child->value.value)->leaf.data, "Hello world!") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with string value 'Hello world!'\n" TOY_CC_RESET);
 			return -1;
@@ -517,8 +517,8 @@ int test_aggregate(Toy_Bucket** bucketHandle) {
 			ast->block.child->aggregate.left->varAccess.child == NULL ||
 			ast->block.child->aggregate.left->varAccess.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value) != true ||
-			TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->type != TOY_STRING_NAME ||
-			strcmp(TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->as.name.data, "name") != 0 ||
+			TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->info.type != TOY_STRING_NAME ||
+			strcmp(TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->name.data, "name") != 0 ||
 
 			ast->block.child->aggregate.right->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->value.value) != true ||
@@ -551,9 +551,9 @@ int test_aggregate(Toy_Bucket** bucketHandle) {
 			ast->block.child->aggregate.left->varAccess.child == NULL ||
 			ast->block.child->aggregate.left->varAccess.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value) != true ||
-			TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->type != TOY_STRING_NAME ||
+			TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->info.type != TOY_STRING_NAME ||
 
-			strcmp(TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->as.name.data, "name") != 0 ||
+			strcmp(TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->name.data, "name") != 0 ||
 
 			ast->block.child->aggregate.right->type != TOY_AST_AGGREGATE ||
 			ast->block.child->aggregate.right->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
@@ -622,8 +622,8 @@ int test_keywords(Toy_Bucket** bucketHandle) {
 			ast->block.child->assert.message == NULL ||
 			ast->block.child->assert.message->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->assert.message->value.value) == false ||
-			TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->as.leaf.data, "foo", 3) != 0)
+			TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->info.type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->leaf.data, "foo", 3) != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
 			return -1;
@@ -645,8 +645,8 @@ int test_keywords(Toy_Bucket** bucketHandle) {
 			ast->block.child->print.child == NULL ||
 			ast->block.child->print.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->print.child->value.value) == false ||
-			TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->as.leaf.data, "foo", 3) != 0)
+			TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->info.type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->leaf.data, "foo", 3) != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
 			return -1;
@@ -678,8 +678,8 @@ int test_keywords(Toy_Bucket** bucketHandle) {
 			ast->block.child->ifThenElse.thenBranch->block.child->print.child == NULL ||
 			ast->block.child->ifThenElse.thenBranch->block.child->print.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value) == false ||
-			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->as.leaf.data, "foo", 3) != 0 ||
+			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->info.type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->leaf.data, "foo", 3) != 0 ||
 
 			ast->block.child->ifThenElse.elseBranch != NULL)
 		{
@@ -713,8 +713,8 @@ int test_keywords(Toy_Bucket** bucketHandle) {
 			ast->block.child->ifThenElse.thenBranch->block.child->print.child == NULL ||
 			ast->block.child->ifThenElse.thenBranch->block.child->print.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value) == false ||
-			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->as.leaf.data, "foo", 3) != 0 ||
+			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->info.type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.thenBranch->block.child->print.child->value.value)->leaf.data, "foo", 3) != 0 ||
 
 			ast->block.child->ifThenElse.elseBranch == NULL ||
 			ast->block.child->ifThenElse.elseBranch->type != TOY_AST_BLOCK ||
@@ -723,8 +723,8 @@ int test_keywords(Toy_Bucket** bucketHandle) {
 			ast->block.child->ifThenElse.elseBranch->block.child->print.child == NULL ||
 			ast->block.child->ifThenElse.elseBranch->block.child->print.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->ifThenElse.elseBranch->block.child->print.child->value.value) == false ||
-			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.elseBranch->block.child->print.child->value.value)->type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.elseBranch->block.child->print.child->value.value)->as.leaf.data, "bar", 3) != 0 ||
+			TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.elseBranch->block.child->print.child->value.value)->info.type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->ifThenElse.elseBranch->block.child->print.child->value.value)->leaf.data, "bar", 3) != 0 ||
 
 			false)
 		{
@@ -881,7 +881,7 @@ int test_precedence(Toy_Bucket** bucketHandle) {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

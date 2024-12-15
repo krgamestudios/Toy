@@ -9,7 +9,7 @@ typedef struct Toy_Stack { //32 | 64 BITNESS
 	Toy_Value data[];      //-  | -
 } Toy_Stack;               //8  | 8
 
-TOY_API Toy_Stack* Toy_allocateStack();
+TOY_API Toy_Stack* Toy_allocateStack(void);
 TOY_API void Toy_freeStack(Toy_Stack* stack);
 
 TOY_API void Toy_pushStack(Toy_Stack** stackHandle, Toy_Value value);

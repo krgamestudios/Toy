@@ -92,7 +92,7 @@ Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 }
 
 void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
-	if (key->type != TOY_STRING_NAME) {
+	if (key->info.type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
 		exit(-1);
 	}
@@ -100,25 +100,25 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	Toy_TableEntry* entryPtr = lookupScope(scope, key, Toy_hashString(key), false);
 
 	if (entryPtr != NULL) {
-		char buffer[key->length + 256];
-		sprintf(buffer, "Can't redefine a variable: %s", key->as.name.data);
+		char buffer[key->info.length + 256];
+		sprintf(buffer, "Can't redefine a variable: %s", key->name.data);
 		Toy_error(buffer);
 		return;
 	}
 
 	//type check
-	Toy_ValueType kt = Toy_getNameStringType(key);
+	Toy_ValueType kt = Toy_getNameStringVarType(key);
 	if (kt != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && kt != value.type && value.type != TOY_VALUE_REFERENCE) {
-		char buffer[key->length + 256];
-		sprintf(buffer, "Incorrect value type in declaration of '%s' (expected %s, got %s)", key->as.name.data, Toy_private_getValueTypeAsCString(kt), Toy_private_getValueTypeAsCString(value.type));
+		char buffer[key->info.length + 256];
+		sprintf(buffer, "Incorrect value type in declaration of '%s' (expected %s, got %s)", key->name.data, Toy_private_getValueTypeAsCString(kt), Toy_private_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}
 
 	//constness check
-	if (Toy_getNameStringConstant(key) && value.type == TOY_VALUE_NULL) {
-		char buffer[key->length + 256];
-		sprintf(buffer, "Can't declare %s as const with value 'null'", key->as.name.data);
+	if (Toy_getNameStringVarConstant(key) && value.type == TOY_VALUE_NULL) {
+		char buffer[key->info.length + 256];
+		sprintf(buffer, "Can't declare %s as const with value 'null'", key->name.data);
 		Toy_error(buffer);
 		return;
 	}
@@ -129,7 +129,7 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 
 //TODO: check for clearign old values
 void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
-	if (key->type != TOY_STRING_NAME) {
+	if (key->info.type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
 		exit(-1);
 	}
@@ -137,25 +137,25 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	Toy_TableEntry* entryPtr = lookupScope(scope, key, Toy_hashString(key), true);
 
 	if (entryPtr == NULL) {
-		char buffer[key->length + 256];
-		sprintf(buffer, "Undefined variable: %s\n", key->as.name.data);
+		char buffer[key->info.length + 256];
+		sprintf(buffer, "Undefined variable: %s\n", key->name.data);
 		Toy_error(buffer);
 		return;
 	}
 
 	//type check
-	Toy_ValueType kt = Toy_getNameStringType( TOY_VALUE_AS_STRING(entryPtr->key) );
+	Toy_ValueType kt = Toy_getNameStringVarType( TOY_VALUE_AS_STRING(entryPtr->key) );
 	if (kt != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && kt != value.type && value.type != TOY_VALUE_REFERENCE) {
-		char buffer[key->length + 256];
-		sprintf(buffer, "Incorrect value type in assignment of '%s' (expected %s, got %s)", key->as.name.data, Toy_private_getValueTypeAsCString(kt), Toy_private_getValueTypeAsCString(value.type));
+		char buffer[key->info.length + 256];
+		sprintf(buffer, "Incorrect value type in assignment of '%s' (expected %s, got %s)", key->name.data, Toy_private_getValueTypeAsCString(kt), Toy_private_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}
 
 	//constness check
-	if (Toy_getNameStringConstant( TOY_VALUE_AS_STRING(entryPtr->key) )) {
-		char buffer[key->length + 256];
-		sprintf(buffer, "Can't assign to const %s", key->as.name.data);
+	if (Toy_getNameStringVarConstant( TOY_VALUE_AS_STRING(entryPtr->key) )) {
+		char buffer[key->info.length + 256];
+		sprintf(buffer, "Can't assign to const %s", key->name.data);
 		Toy_error(buffer);
 		return;
 	}
@@ -164,7 +164,7 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 }
 
 Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key) {
-	if (key->type != TOY_STRING_NAME) {
+	if (key->info.type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
 		exit(-1);
 	}
@@ -172,8 +172,8 @@ Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key) {
 	Toy_TableEntry* entryPtr = lookupScope(scope, key, Toy_hashString(key), true);
 
 	if (entryPtr == NULL) {
-		char buffer[key->length + 256];
-		sprintf(buffer, "Undefined variable: %s\n", key->as.name.data);
+		char buffer[key->info.length + 256];
+		sprintf(buffer, "Undefined variable: %s\n", key->name.data);
 		Toy_error(buffer);
 		NULL;
 	}
@@ -182,7 +182,7 @@ Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key) {
 }
 
 bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key) {
-	if (key->type != TOY_STRING_NAME) {
+	if (key->info.type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
 		exit(-1);
 	}

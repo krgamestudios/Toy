@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-int test_stack_basics() {
+int test_stack_basics(void) {
 	//allocate and free the stack
 	{
 		Toy_Stack* stack = Toy_allocateStack();
@@ -82,7 +82,7 @@ int test_stack_basics() {
 	return 0;
 }
 
-int test_stack_stress() {
+int test_stack_stress(void) {
 	//stress the stack's contents
 	{
 		Toy_Stack* stack = Toy_allocateStack();
@@ -109,7 +109,7 @@ int test_stack_stress() {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

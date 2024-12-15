@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-int test_array() {
+int test_array(void) {
 	//test allocation and free
 	{
 		Toy_Array* array = TOY_ARRAY_ALLOCATE();
@@ -35,7 +35,7 @@ int test_array() {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

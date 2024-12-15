@@ -13,7 +13,7 @@ TOY_API void Toy_setPrintCallback(Toy_callbackType cb);
 TOY_API void Toy_setErrorCallback(Toy_callbackType cb);
 TOY_API void Toy_setAssertFailureCallback(Toy_callbackType cb);
 
-TOY_API void Toy_resetPrintCallback();
-TOY_API void Toy_resetErrorCallback();
-TOY_API void Toy_resetAssertFailureCallback();
+TOY_API void Toy_resetPrintCallback(void);
+TOY_API void Toy_resetErrorCallback(void);
+TOY_API void Toy_resetAssertFailureCallback(void);
 

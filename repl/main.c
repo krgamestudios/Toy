@@ -379,14 +379,14 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 
 		printf("Scope %d Dump\n-------------------------\ntype\tname\tvalue\n", depth);
 		for (unsigned int i = 0; i < scope->table->capacity; i++) {
-			if ( (TOY_VALUE_IS_STRING(scope->table->data[i].key) && TOY_VALUE_AS_STRING(scope->table->data[i].key)->type == TOY_STRING_NAME) != true) {
+			if ( (TOY_VALUE_IS_STRING(scope->table->data[i].key) && TOY_VALUE_AS_STRING(scope->table->data[i].key)->info.type == TOY_STRING_NAME) != true) {
 				continue;
 			}
 
 			Toy_Value k = scope->table->data[i].key;
 			Toy_Value v = scope->table->data[i].value;
 
-			printf("%s\t%s\t", Toy_private_getValueTypeAsCString(v.type), TOY_VALUE_AS_STRING(k)->as.name.data);
+			printf("%s\t%s\t", Toy_private_getValueTypeAsCString(v.type), TOY_VALUE_AS_STRING(k)->name.data);
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));

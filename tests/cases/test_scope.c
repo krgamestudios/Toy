@@ -9,7 +9,7 @@
 
 
 
-int test_scope_allocation() {
+int test_scope_allocation(void) {
 	//allocate and free a scope
 	{
 		//setup
@@ -297,7 +297,7 @@ int test_scope_allocation() {
 	return 0;
 }
 
-int test_scope_elements() {
+int test_scope_elements(void) {
 	//allocate, access and assign an element
 	{
 		//setup
@@ -489,7 +489,7 @@ int test_scope_elements() {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

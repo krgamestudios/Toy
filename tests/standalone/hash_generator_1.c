@@ -8,7 +8,7 @@ static unsigned int hashUInt(unsigned int x) {
     return x;
 }
 
-int main() {
+int main(void) {
     //print the index/hash pairs
     for (unsigned int i = 0; i < 100; i++) {
         unsigned int h = hashUInt(i);

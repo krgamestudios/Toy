@@ -190,7 +190,7 @@ static void processAssign(Toy_VM* vm) {
 	Toy_Value name = Toy_popStack(&vm->stack);
 
 	//check name string type
-	if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->type != TOY_STRING_NAME) {
+	if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
 		Toy_error("Invalid assignment target");
 		Toy_freeValue(name);
 		Toy_freeValue(value);
@@ -211,7 +211,7 @@ static void processAssignCompound(Toy_VM* vm) {
 	Toy_Value target = Toy_popStack(&vm->stack);
 
 	//shake out variable names
-	if (TOY_VALUE_IS_STRING(target) && TOY_VALUE_AS_STRING(target)->type == TOY_STRING_NAME) {
+	if (TOY_VALUE_IS_STRING(target) && TOY_VALUE_AS_STRING(target)->info.type == TOY_STRING_NAME) {
 		Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(target));
 		Toy_freeValue(target);
 		target = TOY_REFERENCE_FROM_POINTER(valuePtr);
@@ -258,7 +258,7 @@ static void processAccess(Toy_VM* vm) {
 	Toy_Value name = Toy_popStack(&vm->stack);
 
 	//check name string type
-	if (!TOY_VALUE_IS_STRING(name) && TOY_VALUE_AS_STRING(name)->type != TOY_STRING_NAME) {
+	if (!TOY_VALUE_IS_STRING(name) && TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
 		Toy_error("Invalid access target");
 		return;
 	}
@@ -671,7 +671,7 @@ static void processIndex(Toy_VM* vm) {
 		Toy_String* str = TOY_VALUE_AS_STRING(value);
 
 		//check indexing is within bounds
-		if ( (i < 0 || (unsigned int)i >= str->length) || (i+l <= 0 || (unsigned int)(i+l) > str->length)) {
+		if ( (i < 0 || (unsigned int)i >= str->info.length) || (i+l <= 0 || (unsigned int)(i+l) > str->info.length)) {
 			Toy_error("String index is out of bounds");
 			if (TOY_VALUE_IS_REFERENCE(value) != true) {
 				Toy_freeValue(value);
@@ -689,11 +689,11 @@ static void processIndex(Toy_VM* vm) {
 		Toy_String* result = NULL;
 
 		//extract cstring, based on type
-		if (str->type == TOY_STRING_LEAF) {
-			const char* cstr = str->as.leaf.data;
+		if (str->info.type == TOY_STRING_LEAF) {
+			const char* cstr = str->leaf.data;
 			result = Toy_createStringLength(&vm->stringBucket, cstr + i, l);
 		}
-		else if (str->type == TOY_STRING_NODE) {
+		else if (str->info.type == TOY_STRING_NODE) {
 			char* cstr = Toy_getStringRawBuffer(str);
 			result = Toy_createStringLength(&vm->stringBucket, cstr + i, l);
 			free(cstr);

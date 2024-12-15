@@ -5,7 +5,7 @@
 
 //forward declarations
 struct Toy_Bucket;
-struct Toy_String;
+union Toy_String_t;
 struct Toy_Array;
 
 typedef enum Toy_ValueType {
@@ -32,7 +32,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 		bool boolean;                  //1  | 1
 		int integer;                   //4  | 4
 		float number;                  //4  | 4
-		struct Toy_String* string;     //4  | 8
+		union Toy_String_t* string;     //4  | 8
 		struct Toy_Array* array;       //4  | 8
 		//TODO: more types go here
 		//TODO: consider 'stack' as a possible addition
@@ -84,7 +84,7 @@ TOY_API bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right);
 TOY_API int Toy_compareValues(Toy_Value left, Toy_Value right);
 
 //convert the value to a string - values that *are* strings are simply copied
-TOY_API struct Toy_String* Toy_stringifyValue(struct Toy_Bucket** bucketHandle, Toy_Value value);
+TOY_API union Toy_String_t* Toy_stringifyValue(struct Toy_Bucket** bucketHandle, Toy_Value value);
 
 //for debugging
 TOY_API const char* Toy_private_getValueTypeAsCString(Toy_ValueType type);

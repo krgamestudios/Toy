@@ -85,7 +85,7 @@ Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int new
 	return newTable;
 }
 
-Toy_Table* Toy_allocateTable() {
+Toy_Table* Toy_allocateTable(void) {
 	return Toy_private_adjustTableCapacity(NULL, TOY_TABLE_INITIAL_CAPACITY);
 }
 

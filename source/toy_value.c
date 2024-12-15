@@ -452,3 +452,4 @@ const char* Toy_private_getValueTypeAsCString(Toy_ValueType type) {
 
 	return NULL;
 }
+

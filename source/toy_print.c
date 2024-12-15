@@ -42,14 +42,14 @@ void Toy_setAssertFailureCallback(Toy_callbackType cb) {
 	assertCallback = cb;
 }
 
-void Toy_resetPrintCallback() {
+void Toy_resetPrintCallback(void) {
 	printCallback = outDefault;
 }
 
-void Toy_resetErrorCallback() {
+void Toy_resetErrorCallback(void) {
 	errorCallback = errDefault;
 }
 
-void Toy_resetAssertFailureCallback() {
+void Toy_resetAssertFailureCallback(void) {
 	assertCallback = assertDefault;
 }

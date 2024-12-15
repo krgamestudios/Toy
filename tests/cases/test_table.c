@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-int test_table_allocation() {
+int test_table_allocation(void) {
 	//allocate and free a table
 	{
 		//setup
@@ -24,7 +24,7 @@ int test_table_allocation() {
 	return 0;
 }
 
-int test_table_simple_insert_lookup_and_remove() {
+int test_table_simple_insert_lookup_and_remove(void) {
 	//simple insert
 	{
 		//setup
@@ -86,7 +86,7 @@ int test_table_simple_insert_lookup_and_remove() {
 	TOY_VALUE_AS_INTEGER(table->data[i].value) != v || \
 	table->data[i].psl != p
 
-int test_table_contents_no_expansion() {
+int test_table_contents_no_expansion(void) {
 	//single insert
 	{
 		//setup
@@ -302,7 +302,7 @@ int test_table_contents_no_expansion() {
 	return 0;
 }
 
-int test_table_contents_with_expansions() {
+int test_table_contents_with_expansions(void) {
 	//simple expansion
 	{
 		//setup
@@ -569,7 +569,7 @@ int test_table_contents_with_expansions() {
 	return 0;
 }
 
-int test_table_expansions_under_stress() {
+int test_table_expansions_under_stress(void) {
 	//multiple expansions, find one value
 	{
 		//setup
@@ -605,7 +605,7 @@ int test_table_expansions_under_stress() {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

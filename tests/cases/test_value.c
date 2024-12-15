@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int test_value_creation() {
+int test_value_creation(void) {
 	//test for the correct size
 	{
 #if TOY_BITNESS == 64
@@ -52,8 +52,8 @@ int test_value_creation() {
 		Toy_Value greeting = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world!"));
 
 		if (TOY_VALUE_IS_STRING(greeting) == false ||
-			TOY_VALUE_AS_STRING(greeting)->type != TOY_STRING_LEAF ||
-			strcmp(TOY_VALUE_AS_STRING(greeting)->as.leaf.data, "Hello world!") != 0
+			TOY_VALUE_AS_STRING(greeting)->info.type != TOY_STRING_LEAF ||
+			strcmp(TOY_VALUE_AS_STRING(greeting)->leaf.data, "Hello world!") != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: 'string' value failed\n" TOY_CC_RESET);
@@ -95,7 +95,7 @@ int test_value_creation() {
 	return 0;
 }
 
-int test_value_copying() {
+int test_value_copying(void) {
 	//test simple integer copy
 	{
 		Toy_Value original = TOY_VALUE_FROM_INTEGER(42);
@@ -118,9 +118,9 @@ int test_value_copying() {
 		Toy_Value result = Toy_copyValue(original);
 
 		if (TOY_VALUE_IS_STRING(result) == false ||
-			TOY_VALUE_AS_STRING(result)->type != TOY_STRING_LEAF ||
-			strcmp(TOY_VALUE_AS_STRING(result)->as.leaf.data, "Hello world!") != 0 ||
-			TOY_VALUE_AS_STRING(result)->refCount != 2
+			TOY_VALUE_AS_STRING(result)->info.type != TOY_STRING_LEAF ||
+			strcmp(TOY_VALUE_AS_STRING(result)->leaf.data, "Hello world!") != 0 ||
+			TOY_VALUE_AS_STRING(result)->info.refCount != 2
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: copy a string value failed\n" TOY_CC_RESET);
@@ -172,7 +172,7 @@ int test_value_copying() {
 	return 0;
 }
 
-int test_value_hashing() {
+int test_value_hashing(void) {
 	//test value hashing
 	{
 		//setup
@@ -197,7 +197,7 @@ int test_value_hashing() {
 			Toy_hashValue(f) != 0 ||
 			Toy_hashValue(i) != 4147366645 ||
 			Toy_hashValue(s) != 994097935 ||
-			TOY_VALUE_AS_STRING(s)->cachedHash == 0 ||
+			TOY_VALUE_AS_STRING(s)->info.cachedHash == 0 ||
 			Toy_hashValue(a) != 2544446955
 			)
 		{
@@ -215,7 +215,7 @@ int test_value_hashing() {
 	return 0;
 }
 
-int test_value_equality() {
+int test_value_equality(void) {
 	//test value equality
 	{
 		Toy_Value answer = TOY_VALUE_FROM_INTEGER(42);
@@ -290,7 +290,7 @@ int test_value_equality() {
 	return 0;
 }
 
-int test_value_comparison() {
+int test_value_comparison(void) {
 	//test value comparable
 	{
 		Toy_Value answer = TOY_VALUE_FROM_INTEGER(42);
@@ -353,7 +353,7 @@ int test_value_comparison() {
 	return 0;
 }
 
-int test_value_stringify() {
+int test_value_stringify(void) {
 	//stringify null
 	{
 		//setup
@@ -364,8 +364,8 @@ int test_value_stringify() {
 		Toy_String* string = Toy_stringifyValue(&bucket, value);
 
 		//check
-		if (string->type != TOY_STRING_LEAF ||
-			strcmp(string->as.leaf.data, "null") != 0)
+		if (string->info.type != TOY_STRING_LEAF ||
+			strcmp(string->leaf.data, "null") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify 'null' failed\n" TOY_CC_RESET);
 			Toy_freeString(string);
@@ -390,8 +390,8 @@ int test_value_stringify() {
 		Toy_String* string = Toy_stringifyValue(&bucket, value);
 
 		//check
-		if (string->type != TOY_STRING_LEAF ||
-			strcmp(string->as.leaf.data, "true") != 0)
+		if (string->info.type != TOY_STRING_LEAF ||
+			strcmp(string->leaf.data, "true") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify boolean 'true' failed\n" TOY_CC_RESET);
 			Toy_freeString(string);
@@ -416,8 +416,8 @@ int test_value_stringify() {
 		Toy_String* string = Toy_stringifyValue(&bucket, value);
 
 		//check
-		if (string->type != TOY_STRING_LEAF ||
-			strcmp(string->as.leaf.data, "false") != 0)
+		if (string->info.type != TOY_STRING_LEAF ||
+			strcmp(string->leaf.data, "false") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify boolean 'false' failed\n" TOY_CC_RESET);
 			Toy_freeString(string);
@@ -442,8 +442,8 @@ int test_value_stringify() {
 		Toy_String* string = Toy_stringifyValue(&bucket, value);
 
 		//check
-		if (string->type != TOY_STRING_LEAF ||
-			strcmp(string->as.leaf.data, "42") != 0)
+		if (string->info.type != TOY_STRING_LEAF ||
+			strcmp(string->leaf.data, "42") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify integer '42' failed\n" TOY_CC_RESET);
 			Toy_freeString(string);
@@ -468,8 +468,8 @@ int test_value_stringify() {
 		Toy_String* string = Toy_stringifyValue(&bucket, value);
 
 		//check
-		if (string->type != TOY_STRING_LEAF ||
-			strcmp(string->as.leaf.data, "3.1415") != 0)
+		if (string->info.type != TOY_STRING_LEAF ||
+			strcmp(string->leaf.data, "3.1415") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify float '3.1415' failed\n" TOY_CC_RESET);
 			Toy_freeString(string);
@@ -539,7 +539,7 @@ int test_value_stringify() {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

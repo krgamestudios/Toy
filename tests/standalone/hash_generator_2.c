@@ -8,7 +8,7 @@ static unsigned int hashUInt(unsigned int x) {
     return x;
 }
 
-int main() {
+int main(void) {
     //find the first number with a specific hash, then print the c-code
     for (unsigned int h = 0; h < 20; h++) {
         for (unsigned int i = 0; i < 100; i++) {

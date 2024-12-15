@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-int test_buckets() {
+int test_buckets(void) {
 	//test initializing and freeing a bucket
 	{
 		//init
@@ -72,7 +72,7 @@ int test_buckets() {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

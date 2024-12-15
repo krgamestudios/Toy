@@ -103,7 +103,7 @@ int getFileName(char* dest, const char* src) {
 	return len;
 }
 
-int main() {
+int main(void) {
 	//check the platform
 	printf("Platform: ");
 #if defined(__linux__)

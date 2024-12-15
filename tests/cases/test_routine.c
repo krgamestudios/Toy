@@ -1307,7 +1307,7 @@ int test_routine_keywords(Toy_Bucket** bucketHandle) {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

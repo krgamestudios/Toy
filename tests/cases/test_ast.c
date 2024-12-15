@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int test_sizeof_ast_64bit() {
+int test_sizeof_ast_64bit(void) {
 	//NOTE: This could've covered both bitness sizes as TEST_SIZEOF(type, bit32, bit32)
 #define TEST_SIZEOF(type, size) \
 	if (sizeof(type) != size) { \
@@ -44,7 +44,7 @@ int test_sizeof_ast_64bit() {
 	return -err;
 }
 
-int test_sizeof_ast_32bit() {
+int test_sizeof_ast_32bit(void) {
 #define TEST_SIZEOF(type, size) \
 	if (sizeof(type) != size) { \
 		fprintf(stderr, TOY_CC_ERROR "ERROR: sizeof(" #type ") is %d, expected %d\n" TOY_CC_RESET, (int)sizeof(type), size); \
@@ -376,8 +376,8 @@ int test_type_emission(Toy_Bucket** bucketHandle) {
 			ast->type != TOY_AST_VAR_DECLARE ||
 
 			ast->varDeclare.name == NULL ||
-			ast->varDeclare.name->type != TOY_STRING_NAME ||
-			strcmp(ast->varDeclare.name->as.name.data, "foobar") != 0 ||
+			ast->varDeclare.name->info.type != TOY_STRING_NAME ||
+			strcmp(ast->varDeclare.name->name.data, "foobar") != 0 ||
 
 			ast->varDeclare.expr != NULL)
 		{
@@ -408,10 +408,10 @@ int test_type_emission(Toy_Bucket** bucketHandle) {
 			ast->varAssign.target == NULL ||
 			ast->varAssign.target->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->varAssign.target->value.value) != true ||
-			TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->type != TOY_STRING_NAME ||
-			strcmp(TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->as.name.data, "foobar") != 0 ||
+			TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->info.type != TOY_STRING_NAME ||
+			strcmp(TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->name.data, "foobar") != 0 ||
 
-			TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->as.name.type != TOY_VALUE_INTEGER ||
+			TOY_VALUE_AS_STRING(ast->varAssign.target->value.value)->name.varType != TOY_VALUE_INTEGER ||
 
 			ast->varAssign.expr->type != TOY_AST_VALUE ||
 			TOY_VALUE_AS_INTEGER(ast->varAssign.expr->value.value) != 69)
@@ -436,9 +436,9 @@ int test_type_emission(Toy_Bucket** bucketHandle) {
 			ast->varAccess.child == NULL ||
 			ast->varAccess.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->varAccess.child->value.value) != true ||
-			TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->type != TOY_STRING_NAME ||
-			strcmp(TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->as.name.data, "foobar") != 0 ||
-			TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->as.name.type != TOY_VALUE_INTEGER)
+			TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->info.type != TOY_STRING_NAME ||
+			strcmp(TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->name.data, "foobar") != 0 ||
+			TOY_VALUE_AS_STRING(ast->varAccess.child->value.value)->name.varType != TOY_VALUE_INTEGER)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to emit an access as 'Toy_Ast', state unknown\n" TOY_CC_RESET);
 			return -1;
@@ -491,7 +491,7 @@ int test_type_emission(Toy_Bucket** bucketHandle) {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

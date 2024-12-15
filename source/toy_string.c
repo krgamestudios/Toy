@@ -10,29 +10,29 @@
 
 static void deepCopyUtil(char* dest, Toy_String* str) {
 	//sometimes, "clever" can be a bad thing...
-	if (str->type == TOY_STRING_NODE) {
-		deepCopyUtil(dest, str->as.node.left);
-		deepCopyUtil(dest + str->as.node.left->length, str->as.node.right);
+	if (str->info.type == TOY_STRING_NODE) {
+		deepCopyUtil(dest, str->node.left);
+		deepCopyUtil(dest + str->node.left->info.length, str->node.right);
 	}
 
 	else {
-		memcpy(dest, str->as.leaf.data, str->length);
+		memcpy(dest, str->leaf.data, str->info.length);
 	}
 }
 
 static void incrementRefCount(Toy_String* str) {
-	str->refCount++;
-	if (str->type == TOY_STRING_NODE) {
-		incrementRefCount(str->as.node.left);
-		incrementRefCount(str->as.node.right);
+	str->info.refCount++;
+	if (str->info.type == TOY_STRING_NODE) {
+		incrementRefCount(str->node.left);
+		incrementRefCount(str->node.right);
 	}
 }
 
 static void decrementRefCount(Toy_String* str) {
-	str->refCount--;
-	if (str->type == TOY_STRING_NODE) {
-		decrementRefCount(str->as.node.left);
-		decrementRefCount(str->as.node.right);
+	str->info.refCount--;
+	if (str->info.type == TOY_STRING_NODE) {
+		decrementRefCount(str->node.left);
+		decrementRefCount(str->node.right);
 	}
 }
 
@@ -55,12 +55,12 @@ static Toy_String* partitionStringLength(Toy_Bucket** bucketHandle, const char* 
 
 	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String) + length + 1);
 
-	ret->type = TOY_STRING_LEAF;
-	ret->length = length;
-	ret->refCount = 1;
-	ret->cachedHash = 0; //don't calc until needed
-	memcpy(ret->as.leaf.data, cstring, length + 1);
-	ret->as.leaf.data[length] = '\0';
+	ret->info.type = TOY_STRING_LEAF;
+	ret->info.length = length;
+	ret->info.refCount = 1;
+	ret->info.cachedHash = 0; //don't calc until needed
+	memcpy(ret->leaf.data, cstring, length + 1);
+	ret->leaf.data[length] = '\0';
 
 	return ret;
 }
@@ -91,34 +91,34 @@ Toy_String* Toy_createStringLength(Toy_Bucket** bucketHandle, const char* cstrin
 	return result;
 }
 
-Toy_String* Toy_createNameStringLength(Toy_Bucket** bucketHandle, const char* cname, unsigned int length, Toy_ValueType type, bool constant) {
+Toy_String* Toy_createNameStringLength(Toy_Bucket** bucketHandle, const char* cname, unsigned int length, Toy_ValueType varType, bool constant) {
 	//name strings can't be broken up
 	if (sizeof(Toy_String) + length + 1 > (*bucketHandle)->capacity) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't partition enough space for a name string, requested %d length (%d total) but buckets have a capacity of %d\n" TOY_CC_RESET, (int)length, (int)(sizeof(Toy_String) + length + 1), (int)((*bucketHandle)->capacity));
 		exit(-1);
 	}
 
-	if (type == TOY_VALUE_NULL) {
+	if (varType == TOY_VALUE_NULL) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't declare a name string with type 'null'\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
 	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String) + length + 1);
 
-	ret->type = TOY_STRING_NAME;
-	ret->length = length;
-	ret->refCount = 1;
-	ret->cachedHash = 0; //don't calc until needed
-	memcpy(ret->as.name.data, cname, length + 1);
-	ret->as.name.data[length] = '\0';
-	ret->as.name.type = type;
-	ret->as.name.constant = constant;
+	ret->info.type = TOY_STRING_NAME;
+	ret->info.length = length;
+	ret->info.refCount = 1;
+	ret->info.cachedHash = 0; //don't calc until needed
+	memcpy(ret->name.data, cname, length + 1);
+	ret->name.data[length] = '\0';
+	ret->name.varType = varType;
+	ret->name.varConstant = constant;
 
 	return ret;
 }
 
 Toy_String* Toy_copyString(Toy_String* str) {
-	if (str->refCount == 0) {
+	if (str->info.refCount == 0) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy a string with refcount of zero\n" TOY_CC_RESET);
 		exit(-1);
 	}
@@ -127,60 +127,60 @@ Toy_String* Toy_copyString(Toy_String* str) {
 }
 
 Toy_String* Toy_deepCopyString(Toy_Bucket** bucketHandle, Toy_String* str) {
-	if (str->refCount == 0) {
+	if (str->info.refCount == 0) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't deep copy a string with refcount of zero\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
 	//handle deep copies of strings that are too long for the bucket capacity NOTE: slow, could replace this at some point
-	if (sizeof(Toy_String) + str->length + 1 > (*bucketHandle)->capacity) {
+	if (sizeof(Toy_String) + str->info.length + 1 > (*bucketHandle)->capacity) {
 		char* buffer = Toy_getStringRawBuffer(str);
-		Toy_String* result = Toy_createStringLength(bucketHandle, buffer, str->length); //handles the fragmenting
+		Toy_String* result = Toy_createStringLength(bucketHandle, buffer, str->info.length); //handles the fragmenting
 		free(buffer);
 		return result;
 	}
 
-	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String) + str->length + 1);
+	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String) + str->info.length + 1);
 
-	if (str->type == TOY_STRING_NODE || str->type == TOY_STRING_LEAF) {
-		ret->type = TOY_STRING_LEAF;
-		ret->length = str->length;
-		ret->refCount = 1;
-		ret->cachedHash = str->cachedHash;
-		deepCopyUtil(ret->as.leaf.data, str); //copy each leaf into the buffer
-		ret->as.leaf.data[ret->length] = '\0';
+	if (str->info.type == TOY_STRING_NODE || str->info.type == TOY_STRING_LEAF) {
+		ret->info.type = TOY_STRING_LEAF;
+		ret->info.length = str->info.length;
+		ret->info.refCount = 1;
+		ret->info.cachedHash = str->info.cachedHash;
+		deepCopyUtil(ret->leaf.data, str); //copy each leaf into the buffer
+		ret->leaf.data[ret->info.length] = '\0';
 	}
 	else {
-		ret->type = TOY_STRING_NAME;
-		ret->length = str->length;
-		ret->refCount = 1;
-		ret->cachedHash = str->cachedHash;
-		memcpy(ret->as.name.data, str->as.name.data, str->length + 1);
-		ret->as.name.data[ret->length] = '\0';
+		ret->info.type = TOY_STRING_NAME;
+		ret->info.length = str->info.length;
+		ret->info.refCount = 1;
+		ret->info.cachedHash = str->info.cachedHash;
+		memcpy(ret->name.data, str->name.data, str->info.length + 1);
+		ret->name.data[ret->info.length] = '\0';
 	}
 
 	return ret;
 }
 
 Toy_String* Toy_concatStrings(Toy_Bucket** bucketHandle, Toy_String* left, Toy_String* right) {
-	if (left->type == TOY_STRING_NAME || right->type == TOY_STRING_NAME) {
+	if (left->info.type == TOY_STRING_NAME || right->info.type == TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't concatenate a name string\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
-	if (left->refCount == 0 || right->refCount == 0) {
+	if (left->info.refCount == 0 || right->info.refCount == 0) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't concatenate a string with refcount of zero\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
 	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String));
 
-	ret->type = TOY_STRING_NODE;
-	ret->length = left->length + right->length;
-	ret->refCount = 1;
-	ret->cachedHash = 0; //don't calc until needed
-	ret->as.node.left = left;
-	ret->as.node.right = right;
+	ret->info.type = TOY_STRING_NODE;
+	ret->info.length = left->info.length + right->info.length;
+	ret->info.refCount = 1;
+	ret->info.cachedHash = 0; //don't calc until needed
+	ret->node.left = left;
+	ret->node.right = right;
 
 	incrementRefCount(left);
 	incrementRefCount(right);
@@ -193,52 +193,52 @@ void Toy_freeString(Toy_String* str) {
 }
 
 unsigned int Toy_getStringLength(Toy_String* str) {
-	return str->length;
+	return str->info.length;
 }
 
 unsigned int Toy_getStringRefCount(Toy_String* str) {
-	return str->refCount;
+	return str->info.refCount;
 }
 
-Toy_ValueType Toy_getNameStringType(Toy_String* str) {
-	if (str->type != TOY_STRING_NAME) {
+Toy_ValueType Toy_getNameStringVarType(Toy_String* str) {
+	if (str->info.type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't get the variable type of a non-name string\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
-	return str->as.name.type;
+	return str->name.varType;
 }
 
-Toy_ValueType Toy_getNameStringConstant(Toy_String* str) {
-	if (str->type != TOY_STRING_NAME) {
+Toy_ValueType Toy_getNameStringVarConstant(Toy_String* str) {
+	if (str->info.type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't get the variable constness of a non-name string\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
-	return str->as.name.constant;
+	return str->name.varConstant;
 }
 
 char* Toy_getStringRawBuffer(Toy_String* str) {
-	if (str->type == TOY_STRING_NAME) {
+	if (str->info.type == TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't get raw string buffer of a name string\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
-	if (str->refCount == 0) {
+	if (str->info.refCount == 0) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't get raw string buffer of a string with refcount of zero\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
 	//BUGFIX: Make sure it's aligned, and there's space for the null
-	unsigned int len = (str->length + 3) & ~3;
-	if (len == str->length) {
+	unsigned int len = (str->info.length + 3) & ~3;
+	if (len == str->info.length) { //nulls aren't counted
 		len += 4;
 	}
 
 	char* buffer = malloc(len);
 
 	deepCopyUtil(buffer, str);
-	buffer[str->length] = '\0';
+	buffer[str->info.length] = '\0';
 
 	return buffer;
 }
@@ -253,21 +253,21 @@ static int deepCompareUtil(Toy_String* left, Toy_String* right, const char** lef
 	}
 
 	//BUGFIX: if we're not currently iterating through the left leaf (and leftHead is not null), skip out
-	if (left->type == TOY_STRING_LEAF && (*leftHead) != NULL && (**leftHead) != '\0' && ((*leftHead) < left->as.leaf.data || (*leftHead) > (left->as.leaf.data + left->length)) ) {
+	if (left->info.type == TOY_STRING_LEAF && (*leftHead) != NULL && (**leftHead) != '\0' && ((*leftHead) < left->leaf.data || (*leftHead) > (left->leaf.data + left->info.length)) ) {
 		return result;
 	}
 
 	//BUGFIX: if we're not currently iterating through the right leaf (and rightHead is not null), skip out
-	if (right->type == TOY_STRING_LEAF && (*rightHead) != NULL && (**rightHead) != '\0' && ((*rightHead) < right->as.leaf.data || (*rightHead) > (right->as.leaf.data + right->length)) ) {
+	if (right->info.type == TOY_STRING_LEAF && (*rightHead) != NULL && (**rightHead) != '\0' && ((*rightHead) < right->leaf.data || (*rightHead) > (right->leaf.data + right->info.length)) ) {
 		return result;
 	}
 
 	//dig into left
-	if (left->type == TOY_STRING_NODE) {
-		if ((result = deepCompareUtil(left->as.node.left, right, leftHead, rightHead)) != 0) {
+	if (left->info.type == TOY_STRING_NODE) {
+		if ((result = deepCompareUtil(left->node.left, right, leftHead, rightHead)) != 0) {
 			return result;
 		}
-		if ((result = deepCompareUtil(left->as.node.right, right, leftHead, rightHead)) != 0) {
+		if ((result = deepCompareUtil(left->node.right, right, leftHead, rightHead)) != 0) {
 			return result;
 		}
 
@@ -276,12 +276,12 @@ static int deepCompareUtil(Toy_String* left, Toy_String* right, const char** lef
 	}
 
 	//dig into right
-	if (right->type == TOY_STRING_NODE) {
-		if ((result = deepCompareUtil(left, right->as.node.left, leftHead, rightHead)) != 0) {
+	if (right->info.type == TOY_STRING_NODE) {
+		if ((result = deepCompareUtil(left, right->node.left, leftHead, rightHead)) != 0) {
 			return result;
 		}
 
-		if ((result = deepCompareUtil(left, right->as.node.right, leftHead, rightHead)) != 0) {
+		if ((result = deepCompareUtil(left, right->node.right, leftHead, rightHead)) != 0) {
 			return result;
 		}
 
@@ -290,14 +290,14 @@ static int deepCompareUtil(Toy_String* left, Toy_String* right, const char** lef
 	}
 
 	//keep comparing the leaves
-	if (left->type == TOY_STRING_LEAF && right->type == TOY_STRING_LEAF) {
+	if (left->info.type == TOY_STRING_LEAF && right->info.type == TOY_STRING_LEAF) {
 		//initial head states can be null, or null characters
 		if ((*leftHead) == NULL || (**leftHead) == '\0') {
-			(*leftHead) = left->as.leaf.data;
+			(*leftHead) = left->leaf.data;
 		}
 
 		if ((*rightHead) == NULL || (**rightHead) == '\0') {
-			(*rightHead) = right->as.leaf.data;
+			(*rightHead) = right->leaf.data;
 		}
 
 		//compare and increment
@@ -318,17 +318,17 @@ static int deepCompareUtil(Toy_String* left, Toy_String* right, const char** lef
 
 int Toy_compareStrings(Toy_String* left, Toy_String* right) {
 	//BUGFIX: since deepCompareUtil() can't handle strings of length zero, insert a check here
-	if (left->length == 0 || right->length == 0) {
-		return left->length - right->length;
+	if (left->info.length == 0 || right->info.length == 0) {
+		return left->info.length - right->info.length;
 	}
 
-	if (left->type == TOY_STRING_NAME || right->type == TOY_STRING_NAME) {
-		if (left->type != right->type) {
+	if (left->info.type == TOY_STRING_NAME || right->info.type == TOY_STRING_NAME) {
+		if (left->info.type != right->info.type) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't compare a name string to a non-name string\n" TOY_CC_RESET);
 			exit(-1);
 		}
 
-		return strncmp(left->as.name.data, right->as.name.data, left->length);
+		return strncmp(left->name.data, right->name.data, left->info.length);
 	}
 
 	//util pointers
@@ -339,21 +339,21 @@ int Toy_compareStrings(Toy_String* left, Toy_String* right) {
 }
 
 unsigned int Toy_hashString(Toy_String* str) {
-	if (str->cachedHash != 0) {
-		return str->cachedHash;
+	if (str->info.cachedHash != 0) {
+		return str->info.cachedHash;
 	}
-	else if (str->type == TOY_STRING_NODE) {
+	else if (str->info.type == TOY_STRING_NODE) {
 		//TODO: I wonder if it would be possible to discretely swap the composite node string with a new leaf string here? Would that speed up other parts of the code by not having to walk the tree in future? - needs to be benchmarked
 		char* buffer = Toy_getStringRawBuffer(str);
-		str->cachedHash = hashCString(buffer);
+		str->info.cachedHash = hashCString(buffer);
 		free(buffer);
 	}
-	else if (str->type == TOY_STRING_LEAF) {
-		str->cachedHash = hashCString(str->as.leaf.data);
+	else if (str->info.type == TOY_STRING_LEAF) {
+		str->info.cachedHash = hashCString(str->leaf.data);
 	}
-	else if (str->type == TOY_STRING_NAME) {
-		str->cachedHash = hashCString(str->as.name.data);
+	else if (str->info.type == TOY_STRING_NAME) {
+		str->info.cachedHash = hashCString(str->name.data);
 	}
 
-	return str->cachedHash;
+	return str->info.cachedHash;
 }

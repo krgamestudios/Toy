@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-int test_sizeof_string_64bit() {
+int test_sizeof_string_64bit(void) {
 	//test for the correct size
 	{
 		if (sizeof(Toy_String) != 32) {
@@ -19,7 +19,7 @@ int test_sizeof_string_64bit() {
 	return 0;
 }
 
-int test_sizeof_string_32bit() {
+int test_sizeof_string_32bit(void) {
 	//test for the correct size
 	{
 		if (sizeof(Toy_String) != 24) {
@@ -31,7 +31,7 @@ int test_sizeof_string_32bit() {
 	return 0;
 }
 
-int test_string_allocation() {
+int test_string_allocation(void) {
 	//allocate a single string from a c-string
 	{
 		//setup
@@ -41,10 +41,10 @@ int test_string_allocation() {
 		Toy_String* str = Toy_createString(&bucket, cstring);
 
 		//check
-		if (str->type != TOY_STRING_LEAF ||
-			str->length != 11 ||
-			str->refCount != 1 ||
-			strcmp(str->as.leaf.data, "Hello world") != 0)
+		if (str->info.type != TOY_STRING_LEAF ||
+			str->info.length != 11 ||
+			str->info.refCount != 1 ||
+			strcmp(str->leaf.data, "Hello world") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate a Toy_String with a private bucket\n" TOY_CC_RESET);
 			Toy_freeBucket(&bucket);
@@ -88,9 +88,9 @@ int test_string_allocation() {
 
 		if (str != shallow ||
 			str == deep ||
-			shallow->refCount != 2 ||
-			deep->refCount != 1 ||
-			strcmp(shallow->as.leaf.data, deep->as.leaf.data) != 0)
+			shallow->info.refCount != 2 ||
+			deep->info.refCount != 1 ||
+			strcmp(shallow->leaf.data, deep->leaf.data) != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to copy a string correctly\n" TOY_CC_RESET);
 			Toy_freeBucket(&bucket);
@@ -114,9 +114,9 @@ int test_string_allocation() {
 
 		if (str != shallow ||
 			str == deep ||
-			shallow->refCount != 2 ||
-			deep->refCount != 1 ||
-			strcmp(shallow->as.name.data, deep->as.name.data) != 0)
+			shallow->info.refCount != 2 ||
+			deep->info.refCount != 1 ||
+			strcmp(shallow->name.data, deep->name.data) != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to copy a name string correctly\n" TOY_CC_RESET);
 			Toy_freeBucket(&bucket);
@@ -135,10 +135,10 @@ int test_string_allocation() {
 		Toy_String* str = Toy_createString(&bucket, cstring);
 
 		//check
-		if (str->type != TOY_STRING_LEAF ||
-			str->length != 0 ||
-			str->refCount != 1 ||
-			strcmp(str->as.leaf.data, "") != 0)
+		if (str->info.type != TOY_STRING_LEAF ||
+			str->info.length != 0 ||
+			str->info.refCount != 1 ||
+			strcmp(str->leaf.data, "") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate a Toy_String with zero length\n" TOY_CC_RESET);
 			Toy_freeBucket(&bucket);
@@ -154,7 +154,7 @@ int test_string_allocation() {
 	return 0;
 }
 
-int test_string_concatenation() {
+int test_string_concatenation(void) {
 	//one big bucket o' fun
 	Toy_Bucket* bucket = Toy_allocateBucket(1024);
 
@@ -168,10 +168,10 @@ int test_string_concatenation() {
 		Toy_String* result = Toy_concatStrings(&bucket, first, second);
 
 		//check the refcounts
-		if (first->refCount != 2 ||
-			second->refCount != 2 ||
-			result->refCount != 1 ||
-			result->length != 11)
+		if (first->info.refCount != 2 ||
+			second->info.refCount != 2 ||
+			result->info.refCount != 1 ||
+			result->info.length != 11)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected state for string refcounts after concatenation\n" TOY_CC_RESET);
 			Toy_freeBucket(&bucket);
@@ -183,10 +183,10 @@ int test_string_concatenation() {
 		Toy_freeString(second);
 
 		//check the refcounts again
-		if (first->refCount != 1 ||
-			second->refCount != 1 ||
-			result->refCount != 1 ||
-			result->length != 11)
+		if (first->info.refCount != 1 ||
+			second->info.refCount != 1 ||
+			result->info.refCount != 1 ||
+			result->info.length != 11)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected state for string refcounts after concatenation and free\n" TOY_CC_RESET);
 			Toy_freeBucket(&bucket);
@@ -228,7 +228,7 @@ int test_string_concatenation() {
 	return 0;
 }
 
-int test_string_with_stressed_bucket() {
+int test_string_with_stressed_bucket(void) {
 	//how much is that dog in the window?
 	{
 		//test data: 36 characters total, 44 with spaces
@@ -256,8 +256,8 @@ int test_string_with_stressed_bucket() {
 		}
 
 		//check
-		if (ptr->refCount != 9 ||
-			str->length != 36)
+		if (ptr->info.refCount != 9 ||
+			str->info.length != 36)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected state of the string after stress test\n" TOY_CC_RESET);
 			Toy_freeBucket(&bucket);
@@ -293,7 +293,7 @@ int test_string_with_stressed_bucket() {
 	return 0;
 }
 
-int test_string_equality() {
+int test_string_equality(void) {
 	//simple string equality (no concats)
 	{
 		//setup
@@ -700,7 +700,7 @@ int test_string_equality() {
 	return 0;
 }
 
-int test_string_diffs() {
+int test_string_diffs(void) {
 	//simple string diffs (no concats)
 	{
 		//setup
@@ -791,7 +791,7 @@ int test_string_diffs() {
 	return 0;
 }
 
-int test_string_fragmenting() {
+int test_string_fragmenting(void) {
 	//allocate a long string
 	{
 		//setup
@@ -803,9 +803,9 @@ int test_string_fragmenting() {
 		Toy_String* str = Toy_createString(&bucket, cstring);
 
 		//check
-		if (str->type != TOY_STRING_NODE ||
-			str->length != 445 ||
-			str->refCount != 1)
+		if (str->info.type != TOY_STRING_NODE ||
+			str->info.length != 445 ||
+			str->info.refCount != 1)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to fragment a string within Toy_String\n" TOY_CC_RESET);
 			Toy_freeString(str);
@@ -821,7 +821,7 @@ int test_string_fragmenting() {
 	return 0;
 }
 
-int main() {
+int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
 

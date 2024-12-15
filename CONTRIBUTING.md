@@ -143,10 +143,10 @@ typedef struct Toy_Thing {
 	int member;
 } Toy_Thing;
 
-TOY_API void Toy_useThing();
+TOY_API void Toy_useThing(void);
 
 #define TOY_USE_OTHER_THING() Toy_private_useOtherThing()
-TOY_API void Toy_private_useOtherThing();
+TOY_API void Toy_private_useOtherThing(void);
 ```
 
 ## Data Type Sizes
