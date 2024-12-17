@@ -960,7 +960,7 @@ void Toy_bindVMToModule(Toy_VM* vm, unsigned char* module) {
 		vm->stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 	}
 	if (vm->scopeBucket == NULL) {
-		vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 	}
 	if (vm->stack == NULL) {
 		vm->stack = Toy_allocateStack();

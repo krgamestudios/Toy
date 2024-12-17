@@ -6,7 +6,7 @@
 // - It can only expand until it is freed
 // - It cannot be copied around within RAM
 // - It cannot allocate more memory than it has capacity
-// If each of these rules are followed, the bucket is actually more efficient than any other option
+// If each of these rules are followed, this is actually more efficient than other options
 
 //a custom allocator
 typedef struct Toy_Bucket {  //32 | 64 BITNESS
@@ -20,27 +20,37 @@ TOY_API Toy_Bucket* Toy_allocateBucket(unsigned int capacity);
 TOY_API void* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount);
 TOY_API void Toy_freeBucket(Toy_Bucket** bucketHandle);
 
-//some useful sizes, could be swapped out as needed
-#ifndef TOY_BUCKET_TINY
-#define TOY_BUCKET_TINY (1024 * 2)
+//standard capacity sizes
+#ifndef TOY_BUCKET_1KB
+#define TOY_BUCKET_1KB (1 << 10)
 #endif
 
-#ifndef TOY_BUCKET_SMALL
-#define TOY_BUCKET_SMALL (1024 * 4)
+#ifndef TOY_BUCKET_2KB
+#define TOY_BUCKET_2KB (1 << 11)
 #endif
 
-#ifndef TOY_BUCKET_MEDIUM
-#define TOY_BUCKET_MEDIUM (1024 * 8)
+#ifndef TOY_BUCKET_4KB
+#define TOY_BUCKET_4KB (1 << 12)
 #endif
 
-#ifndef TOY_BUCKET_LARGE
-#define TOY_BUCKET_LARGE (1024 * 16)
+#ifndef TOY_BUCKET_8KB
+#define TOY_BUCKET_8KB (1 << 13)
 #endif
 
-#ifndef TOY_BUCKET_HUGE
-#define TOY_BUCKET_HUGE (1024 * 32)
+#ifndef TOY_BUCKET_16KB
+#define TOY_BUCKET_16KB (1 << 14)
 #endif
 
+#ifndef TOY_BUCKET_32KB
+#define TOY_BUCKET_32KB (1 << 15)
+#endif
+
+#ifndef TOY_BUCKET_64KB
+#define TOY_BUCKET_64KB (1 << 16)
+#endif
+
+//CPU L1 caches tend to be 64kb, but that's far from guaranteed
 #ifndef TOY_BUCKET_IDEAL
-#define TOY_BUCKET_IDEAL (TOY_BUCKET_HUGE - sizeof(Toy_Bucket))
+#define TOY_BUCKET_IDEAL (TOY_BUCKET_64KB - sizeof(Toy_Bucket))
 #endif
+

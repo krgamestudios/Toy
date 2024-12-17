@@ -51,7 +51,7 @@ int test_value_creation(void) {
 	//test creating strings
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 		Toy_Value greeting = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world!"));
 
@@ -116,7 +116,7 @@ int test_value_copying(void) {
 	//test string copy
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 		Toy_Value original = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world!"));
 		Toy_Value result = Toy_copyValue(original);
@@ -240,7 +240,7 @@ int test_value_equality(void) {
 	//again with strings
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 		Toy_Value answer = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "poe wrote on both"));
 		Toy_Value question = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "why is a raven like a writing desk?"));
@@ -332,7 +332,7 @@ int test_value_comparison(void) {
 	//again with strings
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 		Toy_Value answer = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "poe wrote on both"));
 		Toy_Value question = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "why is a raven like a writing desk?"));
@@ -361,7 +361,7 @@ int test_value_stringify(void) {
 	//stringify null
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Value value = TOY_VALUE_FROM_NULL();
 
 		//run
@@ -387,7 +387,7 @@ int test_value_stringify(void) {
 	//stringify boolean (true)
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Value value = TOY_VALUE_FROM_BOOLEAN(true);
 
 		//run
@@ -413,7 +413,7 @@ int test_value_stringify(void) {
 	//stringify boolean (false)
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Value value = TOY_VALUE_FROM_BOOLEAN(false);
 
 		//run
@@ -439,7 +439,7 @@ int test_value_stringify(void) {
 	//stringify integer
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Value value = TOY_VALUE_FROM_INTEGER(42);
 
 		//run
@@ -465,7 +465,7 @@ int test_value_stringify(void) {
 	//stringify float
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Value value = TOY_VALUE_FROM_FLOAT(3.1415f);
 
 		//run
@@ -491,7 +491,7 @@ int test_value_stringify(void) {
 	//stringify strings
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 		Toy_Value value = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world!"));
 		Toy_String* string = Toy_stringifyValue(&bucket, value);
@@ -513,7 +513,7 @@ int test_value_stringify(void) {
 	//stringify array
 	{
 		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 		//setup
 		Toy_Array* array = Toy_resizeArray(NULL, TOY_ARRAY_INITIAL_CAPACITY);
