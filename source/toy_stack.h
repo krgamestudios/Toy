@@ -26,10 +26,10 @@ TOY_API Toy_Value Toy_popStack(Toy_Stack** stackHandle);
 #endif
 
 #ifndef TOY_STACK_CONTRACTION_THRESHOLD
-#define TOY_STACK_CONTRACTION_THRESHOLD (1 / 4)
+#define TOY_STACK_CONTRACTION_THRESHOLD 4 // this integer means 'shrink when count drops below one-forth of capacity'
 #endif
 
 //prevent an infinite expansion, limited to 1MB
-#ifndef TOY_STACK_OVERFLOW
-#define TOY_STACK_OVERFLOW (1024 * 1024 / sizeof(Toy_Value))
+#ifndef TOY_STACK_OVERFLOW_THRESHOLD
+#define TOY_STACK_OVERFLOW_THRESHOLD (1024 * 1024 / sizeof(Toy_Value) - sizeof(Toy_Stack))
 #endif

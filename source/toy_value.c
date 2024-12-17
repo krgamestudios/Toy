@@ -139,7 +139,7 @@ void Toy_freeValue(Toy_Value value) {
 				Toy_freeValue(ptr->data[i]);
 			}
 
-			TOY_ARRAY_FREE(ptr);
+			Toy_resizeArray(ptr, 0);
 			break;
 		}
 

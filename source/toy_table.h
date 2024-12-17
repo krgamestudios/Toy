@@ -38,7 +38,7 @@ TOY_API Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned
 #define TOY_TABLE_EXPANSION_RATE 2
 #endif
 
-//expand when the contents passes a certain percentage of the capacity
+//expand when the contents passes a certain percentage (80%) of the capacity
 #ifndef TOY_TABLE_EXPANSION_THRESHOLD
-#define TOY_TABLE_EXPANSION_THRESHOLD 0.8
+#define TOY_TABLE_EXPANSION_THRESHOLD 0.8f
 #endif

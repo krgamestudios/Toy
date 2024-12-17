@@ -107,7 +107,7 @@ void Toy_insertTable(Toy_Table** tableHandle, Toy_Value key, Toy_Value value) {
 	}
 
 	//expand the capacity
-	if ((*tableHandle)->count > (*tableHandle)->capacity * TOY_TABLE_EXPANSION_THRESHOLD) {
+	if ((*tableHandle)->count >= (*tableHandle)->capacity * TOY_TABLE_EXPANSION_THRESHOLD) {
 		(*tableHandle) = Toy_private_adjustTableCapacity((*tableHandle), (*tableHandle)->capacity * TOY_TABLE_EXPANSION_RATE);
 	}
 

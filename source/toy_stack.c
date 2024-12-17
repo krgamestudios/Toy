@@ -31,7 +31,7 @@ void Toy_freeStack(Toy_Stack* stack) {
 
 void Toy_pushStack(Toy_Stack** stackHandle, Toy_Value value) {
 	//don't go overboard
-	if ((*stackHandle)->count >= TOY_STACK_OVERFLOW) {
+	if ((*stackHandle)->count >= TOY_STACK_OVERFLOW_THRESHOLD) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Stack overflow\n" TOY_CC_RESET);
 		exit(-1);
 	}
@@ -72,9 +72,9 @@ Toy_Value Toy_popStack(Toy_Stack** stackHandle) {
 	}
 
 	//shrink if possible
-	if ((*stackHandle)->count > TOY_STACK_INITIAL_CAPACITY && (*stackHandle)->count < (*stackHandle)->capacity * TOY_STACK_CONTRACTION_THRESHOLD) {
-		(*stackHandle)->capacity /= 2;
-		unsigned int newCapacity = (*stackHandle)->capacity;
+	if ((*stackHandle)->capacity > TOY_STACK_INITIAL_CAPACITY && (*stackHandle)->count <= (*stackHandle)->capacity / TOY_STACK_CONTRACTION_THRESHOLD) {
+		(*stackHandle)->capacity /= TOY_STACK_CONTRACTION_THRESHOLD;
+		unsigned int newCapacity = (*stackHandle)->capacity; //cache for the msg
 
 		(*stackHandle) = realloc((*stackHandle), (*stackHandle)->capacity * sizeof(Toy_Value) + sizeof(Toy_Stack));
 

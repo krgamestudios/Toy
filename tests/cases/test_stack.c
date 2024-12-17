@@ -83,11 +83,11 @@ int test_stack_basics(void) {
 }
 
 int test_stack_stress(void) {
-	//stress the stack's contents
+	//stress the stack
 	{
 		Toy_Stack* stack = Toy_allocateStack();
 
-		//allocate 500 values
+		//push 500 values
 		for (int i = 0; i < 500; i++) {
 			Toy_pushStack(&stack, TOY_VALUE_FROM_INTEGER(i));
 		}
@@ -98,11 +98,28 @@ int test_stack_stress(void) {
 			stack->capacity != 512 ||
 			stack->count != 500)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to stress the Toy_Stack\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to stress push the Toy_Stack\n" TOY_CC_RESET);
 			Toy_freeStack(stack);
 			return -1;
 		}
 
+		//pop each value
+		while(stack->count > 0) {
+			Toy_popStack(&stack); //ignore the results
+		}
+
+		//check if it worked
+		if (
+			stack == NULL ||
+			stack->capacity != TOY_STACK_INITIAL_CAPACITY || //reset to initial capacity
+			stack->count != 0)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to stress pop the Toy_Stack\n" TOY_CC_RESET);
+			Toy_freeStack(stack);
+			return -1;
+		}
+
+		//cleanup
 		Toy_freeStack(stack);
 	}
 

@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+//util macros
+#define TOY_ARRAY_EXPAND(array) (array = (array != NULL && (array)->count + 1 > (array)->capacity ? Toy_resizeArray(array, (array)->capacity * TOY_ARRAY_EXPANSION_RATE) : array))
+#define TOY_ARRAY_PUSHBACK(array, value) (TOY_ARRAY_EXPAND(array), (array)->data[(array)->count++] = (value))
+
 int test_value_creation(void) {
 	//test for the correct size
 	{
@@ -68,7 +72,7 @@ int test_value_creation(void) {
 	//test creating arrays
 	{
 		//setup
-		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		Toy_Array* array = Toy_resizeArray(NULL, TOY_ARRAY_INITIAL_CAPACITY);
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(8891));
@@ -84,12 +88,12 @@ int test_value_creation(void) {
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: 'array' value failed\n" TOY_CC_RESET);
-			TOY_ARRAY_FREE(array);
+			Toy_resizeArray(array, 0);
 			return -1;
 		}
 
 		//cleanup
-		TOY_ARRAY_FREE(array);
+		Toy_resizeArray(array, 0);
 	}
 
 	return 0;
@@ -139,7 +143,7 @@ int test_value_copying(void) {
 	//test copy arrays
 	{
 		//setup
-		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		Toy_Array* array = Toy_resizeArray(NULL, TOY_ARRAY_INITIAL_CAPACITY);
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(8891));
@@ -186,7 +190,7 @@ int test_value_hashing(void) {
 		//skip float
 		Toy_Value s = TOY_VALUE_FROM_STRING(Toy_createString(&bucket, "Hello world"));
 
-		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		Toy_Array* array = Toy_resizeArray(NULL, TOY_ARRAY_INITIAL_CAPACITY);
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(8891));
@@ -202,13 +206,13 @@ int test_value_hashing(void) {
 			)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected hash of a value\n" TOY_CC_RESET);
-			TOY_ARRAY_FREE(array);
+			Toy_resizeArray(array, 0);
 			Toy_freeBucket(&bucket);
 			return -1;
 		}
 
 		//cleanup
-		TOY_ARRAY_FREE(array);
+		Toy_resizeArray(array, 0);
 		Toy_freeBucket(&bucket);
 	}
 
@@ -259,14 +263,14 @@ int test_value_equality(void) {
 	//again with arrays
 	{
 		//setup
-		Toy_Array* array1 = TOY_ARRAY_ALLOCATE();
+		Toy_Array* array1 = Toy_resizeArray(NULL, TOY_ARRAY_INITIAL_CAPACITY);
 		TOY_ARRAY_PUSHBACK(array1, TOY_VALUE_FROM_INTEGER(42));
 		TOY_ARRAY_PUSHBACK(array1, TOY_VALUE_FROM_INTEGER(69));
 		TOY_ARRAY_PUSHBACK(array1, TOY_VALUE_FROM_INTEGER(8891));
 
 		Toy_Value value1 = TOY_VALUE_FROM_ARRAY(array1);
 
-		Toy_Array* array2 = TOY_ARRAY_ALLOCATE();
+		Toy_Array* array2 = Toy_resizeArray(NULL, TOY_ARRAY_INITIAL_CAPACITY);
 		TOY_ARRAY_PUSHBACK(array2, TOY_VALUE_FROM_INTEGER(42));
 		TOY_ARRAY_PUSHBACK(array2, TOY_VALUE_FROM_INTEGER(69));
 		TOY_ARRAY_PUSHBACK(array2, TOY_VALUE_FROM_INTEGER(8891));
@@ -512,7 +516,7 @@ int test_value_stringify(void) {
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_SMALL);
 
 		//setup
-		Toy_Array* array = TOY_ARRAY_ALLOCATE();
+		Toy_Array* array = Toy_resizeArray(NULL, TOY_ARRAY_INITIAL_CAPACITY);
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(8891));
@@ -525,14 +529,14 @@ int test_value_stringify(void) {
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify array '[42,69,8891]' failed\n" TOY_CC_RESET);
 			free(buffer);
-			TOY_ARRAY_FREE(array);
+			array = Toy_resizeArray(array, 0);
 			Toy_freeBucket(&bucket);
 			return -1;
 		}
 
 		//cleanup
 		free(buffer);
-		TOY_ARRAY_FREE(array);
+		Toy_resizeArray(array, 0);
 		Toy_freeBucket(&bucket);
 	}
 
