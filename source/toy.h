@@ -6,11 +6,11 @@
 #include "toy_print.h"
 
 //basic structures
+#include "toy_bucket.h"
+#include "toy_string.h"
 #include "toy_value.h"
 #include "toy_array.h"
 #include "toy_stack.h"
-#include "toy_bucket.h"
-#include "toy_string.h"
 #include "toy_table.h"
 
 //IR structures and other components

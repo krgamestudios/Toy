@@ -31,20 +31,17 @@ TEST_CASESFILES=$(wildcard $(TEST_CASESDIR)/bench_*.c)
 
 #build the object files, compile the test cases, and run
 all: clean
+	$(MAKE) TOY_BUCKET_IDEAL=16372 all-override
+	$(MAKE) TOY_BUCKET_IDEAL=32756 all-override
+	$(MAKE) TOY_BUCKET_IDEAL=65524 all-override
+	$(MAKE) TOY_BUCKET_IDEAL=131060 all-override
+	$(MAKE) TOY_BUCKET_IDEAL=262132 all-override
+
+all-override: clean
 	$(MAKE) build-source
 	$(MAKE) build-cases
 	$(MAKE) build-link
 	$(MAKE) build-run
-
-all-override: clean
-	$(MAKE) TEST_SOURCEFILES='$(subst $(TEST_SOURCEDIR)/$(OVERRIDE),$(OVERRIDE),$(TEST_SOURCEFILES))' build-source-override
-	$(MAKE) build-cases
-	$(MAKE) build-link
-	$(MAKE) build-run
-
-.PHONY: build-source-override
-build-source-override: $(TEST_OUTDIR) $(TEST_OBJDIR) $(addprefix $(TEST_OBJDIR)/,$(notdir $(TEST_SOURCEFILES:.c=.o)))
-	$(CC) -c -o $(TEST_OBJDIR)/$(OVERRIDE:.c=.o) $(OVERRIDE) $(addprefix -I,$(TEST_SOURCEDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
 
 #targets for each step
 .PHONY: build-source
@@ -61,19 +58,18 @@ build-run: $(addprefix $(TEST_OUTDIR)/,$(notdir $(TEST_CASESFILES:%.c=%.exe))) $
 
 #compilation steps
 $(TEST_OBJDIR)/%.o: $(TEST_SOURCEDIR)/%.c
-	$(CC) -c -o $@ $< $(addprefix -I,$(TEST_SOURCEDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
+	$(CC) -DTOY_BUCKET_IDEAL=$(TOY_BUCKET_IDEAL) -c -o $@ $< $(addprefix -I,$(TEST_SOURCEDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
 
 $(TEST_OBJDIR)/%.o: $(TEST_CASESDIR)/%.c
-	$(CC) -c -o $@ $< $(addprefix -I,$(TEST_SOURCEDIR) $(TEST_CASESDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
+	$(CC) -DTOY_BUCKET_IDEAL=$(TOY_BUCKET_IDEAL) -c -o $@ $< $(addprefix -I,$(TEST_SOURCEDIR) $(TEST_CASESDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
 
 $(TEST_OUTDIR)/%.exe: $(TEST_OBJDIR)/%.o
-	@$(CC) -o $@ $< $(addprefix $(TEST_OBJDIR)/,$(notdir $(TEST_SOURCEFILES:.c=.o))) $(CFLAGS) $(LIBS) $(LDFLAGS)
+	@$(CC) -DTOY_BUCKET_IDEAL=$(TOY_BUCKET_IDEAL) -o $@ $< $(addprefix $(TEST_OBJDIR)/,$(notdir $(TEST_SOURCEFILES:.c=.o))) $(CFLAGS) $(LIBS) $(LDFLAGS)
+	strip $@
 
 .PRECIOUS: $(TEST_OUTDIR)/%.run
 $(TEST_OUTDIR)/%.run: $(TEST_OUTDIR)/%.exe
-	@/usr/bin/time --format "%C; $(OVERRIDE)\nUser System\n%U %E" $< 100000000 512
-	@/usr/bin/time --format "%C; $(OVERRIDE)\nUser System\n%U %E" $< 100000000 1024
-	@/usr/bin/time --format "%C; $(OVERRIDE)\nUser System\n%U %E" $< 100000000 4096
+	@/usr/bin/time --format "User System\n%U %E" $<
 
 #util targets
 $(TEST_OUTDIR):
