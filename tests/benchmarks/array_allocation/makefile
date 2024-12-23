@@ -14,11 +14,11 @@ else
 	@echo "LDFLAGS set failed - what platform is this?"
 endif
 
-#patched in
+#patched incl
 TOY_SOURCEDIR=source
 
 #directories
-TEST_ROOTDIR=../..
+TEST_ROOTDIR=../../..
 TEST_SOURCEDIR=$(TEST_ROOTDIR)/$(TOY_SOURCEDIR)
 TEST_CASESDIR=.
 
@@ -31,13 +31,6 @@ TEST_CASESFILES=$(wildcard $(TEST_CASESDIR)/bench_*.c)
 
 #build the object files, compile the test cases, and run
 all: clean
-	$(MAKE) TOY_BUCKET_IDEAL=16372 all-override
-	$(MAKE) TOY_BUCKET_IDEAL=32756 all-override
-	$(MAKE) TOY_BUCKET_IDEAL=65524 all-override
-	$(MAKE) TOY_BUCKET_IDEAL=131060 all-override
-	$(MAKE) TOY_BUCKET_IDEAL=262132 all-override
-
-all-override: clean
 	$(MAKE) build-source
 	$(MAKE) build-cases
 	$(MAKE) build-link
@@ -58,13 +51,13 @@ build-run: $(addprefix $(TEST_OUTDIR)/,$(notdir $(TEST_CASESFILES:%.c=%.exe))) $
 
 #compilation steps
 $(TEST_OBJDIR)/%.o: $(TEST_SOURCEDIR)/%.c
-	$(CC) -DTOY_BUCKET_IDEAL=$(TOY_BUCKET_IDEAL) -c -o $@ $< $(addprefix -I,$(TEST_SOURCEDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
+	$(CC) -c -o $@ $< $(addprefix -I,$(TEST_SOURCEDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
 
 $(TEST_OBJDIR)/%.o: $(TEST_CASESDIR)/%.c
-	$(CC) -DTOY_BUCKET_IDEAL=$(TOY_BUCKET_IDEAL) -c -o $@ $< $(addprefix -I,$(TEST_SOURCEDIR) $(TEST_CASESDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
+	$(CC) -c -o $@ $< $(addprefix -I,$(TEST_SOURCEDIR) $(TEST_CASESDIR)) $(CFLAGS) -fdata-sections -ffunction-sections
 
 $(TEST_OUTDIR)/%.exe: $(TEST_OBJDIR)/%.o
-	@$(CC) -DTOY_BUCKET_IDEAL=$(TOY_BUCKET_IDEAL) -o $@ $< $(addprefix $(TEST_OBJDIR)/,$(notdir $(TEST_SOURCEFILES:.c=.o))) $(CFLAGS) $(LIBS) $(LDFLAGS)
+	@$(CC) -o $@ $< $(addprefix $(TEST_OBJDIR)/,$(notdir $(TEST_SOURCEFILES:.c=.o))) $(CFLAGS) $(LIBS) $(LDFLAGS)
 	strip $@
 
 .PRECIOUS: $(TEST_OUTDIR)/%.run

@@ -2,10 +2,10 @@
 
 #include "toy_common.h"
 
-//NOTE: this structure has restrictions on it's usage:
+//NOTE: this is an 'arena allocator', and has restrictions on it's usage:
 // - It can only expand until it is freed
-// - It cannot be copied around within RAM
-// - It cannot allocate more memory than it has capacity
+// - It cannot be copied or moved around in memory
+// - It cannot allocate more memory than it has 'capacity'
 // If each of these rules are followed, this is actually more efficient than other options
 
 //a custom allocator
