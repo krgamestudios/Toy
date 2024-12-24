@@ -283,7 +283,7 @@ static void processAssignCompound(Toy_VM* vm) {
 		Toy_Table* table = TOY_VALUE_AS_TABLE(target);
 
 		//set the value
-		Toy_insertTable(&table, key, Toy_copyValue(Toy_unwrapValue(value)));
+		Toy_insertTable(&table, Toy_copyValue(Toy_unwrapValue(key)), Toy_copyValue(Toy_unwrapValue(value)));
 
 		//cleanup
 		Toy_freeValue(value);
@@ -750,6 +750,14 @@ static void processIndex(Toy_VM* vm) {
 		//get the table & element value
 		Toy_Table* table = TOY_VALUE_AS_TABLE(value);
 		Toy_TableEntry* entry = Toy_private_lookupTableEntryPtr(&table, index);
+
+		if (entry == NULL) {
+			Toy_error("Table key not found");
+			Toy_freeValue(value);
+			Toy_freeValue(index);
+			Toy_freeValue(length);
+			return;
+		}
 
 		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
 		if (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value)) {
