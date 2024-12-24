@@ -4,6 +4,7 @@
 #include "toy_bucket.h"
 #include "toy_string.h"
 #include "toy_array.h"
+#include "toy_table.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +60,21 @@ unsigned int Toy_hashValue(Toy_Value value) {
 			return hash;
 		}
 
-		case TOY_VALUE_TABLE:
+		case TOY_VALUE_TABLE: {
+			//since table internals can change, recalc the hash each time it's needed
+			Toy_Table* ptr = value.as.table;
+			unsigned int hash = 0;
+
+			for (unsigned int i = 0; i < ptr->capacity; i++) {
+				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {
+					hash ^= Toy_hashValue(ptr->data[i].key);
+					hash ^= Toy_hashValue(ptr->data[i].value);
+				}
+			}
+
+			return hash;
+		}
+
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_TYPE:
@@ -102,7 +117,23 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_ARRAY(result);
 		}
 
-		case TOY_VALUE_TABLE:
+		case TOY_VALUE_TABLE: {
+			//tables probably won't get copied much
+			Toy_Table* ptr = value.as.table;
+			Toy_Table* result = Toy_private_adjustTableCapacity(NULL, ptr->capacity);
+
+			for (unsigned int i = 0; i < ptr->capacity; i++) {
+				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {
+					result->data[i].key = Toy_copyValue(ptr->data[i].key);
+					result->data[i].value = Toy_copyValue(ptr->data[i].value);
+				}
+			}
+
+			result->capacity = ptr->capacity;
+			result->count = ptr->count;
+
+			return TOY_VALUE_FROM_TABLE(result);
+		}
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_TYPE:
@@ -130,22 +161,18 @@ void Toy_freeValue(Toy_Value value) {
 			break;
 		}
 
-		case TOY_VALUE_ARRAY: {
-			Toy_Array* ptr = value.as.array;
-
-			for (unsigned int i = 0; i < ptr->count; i++) {
-				Toy_freeValue(ptr->data[i]);
-			}
-
-			Toy_resizeArray(ptr, 0);
+		case TOY_VALUE_ARRAY:
+			Toy_resizeArray(value.as.array, 0);
 			break;
-		}
+
+		case TOY_VALUE_TABLE:
+			Toy_freeTable(value.as.table);
+			break;
 
 		case TOY_VALUE_REFERENCE:
 			//don't free references
 			return;
 
-		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_TYPE:
@@ -183,7 +210,7 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 			return right.type == TOY_VALUE_NULL;
 
 		case TOY_VALUE_BOOLEAN:
-			return right.type == TOY_VALUE_NULL && left.as.boolean == right.as.boolean;
+			return right.type == TOY_VALUE_BOOLEAN && left.as.boolean == right.as.boolean;
 
 		case TOY_VALUE_INTEGER:
 			if (right.type == TOY_VALUE_INTEGER) {
@@ -240,7 +267,37 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 			return true;
 		}
 
-		case TOY_VALUE_TABLE:
+		case TOY_VALUE_TABLE: {
+			if (right.type == TOY_VALUE_TABLE) {
+				Toy_Table* leftTable = left.as.table;
+				Toy_Table* rightTable = right.as.table;
+
+				//different counts
+				if (leftTable->count != rightTable->count) {
+					return false;
+				}
+
+				for (unsigned int i = 0; i < leftTable->capacity; i++) {
+					Toy_TableEntry* entry = leftTable->data + i;
+
+					if (TOY_VALUE_IS_NULL(entry->key) != true) {
+						//any mismatch is an easy difference
+						Toy_Value rightValue = Toy_lookupTable(&rightTable, entry->key);
+
+						if (TOY_VALUE_IS_NULL(rightValue) || Toy_checkValuesAreEqual(entry->value, rightValue) != true) {
+							return false;
+						}
+					}
+				}
+			}
+			else {
+				break;
+			}
+
+			//finally
+			return true;
+		}
+
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_TYPE:
@@ -278,6 +335,9 @@ bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
 			return false;
 
 		case TOY_VALUE_TABLE:
+			//nothing is comparable with a table
+			return false;
+
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_TYPE:
@@ -332,6 +392,8 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 			break;
 
 		case TOY_VALUE_TABLE:
+			break;
+
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_TYPE:
@@ -392,35 +454,120 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 		case TOY_VALUE_ARRAY: {
 			//TODO: concat + free is definitely a performance nightmare, could make an append function?
 			Toy_Array* ptr = value.as.array;
-			Toy_String* string = Toy_createStringLength(bucketHandle, "[", 1);
+
+			//if array is empty, skip below
+			if (ptr->count == 0) {
+				Toy_String* empty = Toy_createString(bucketHandle, "[]");
+				return empty;
+			}
+
+			Toy_String* open = Toy_createStringLength(bucketHandle, "[", 1);
+			Toy_String* close = Toy_createStringLength(bucketHandle, "]", 1);
 			Toy_String* comma = Toy_createStringLength(bucketHandle, ",", 1); //reusable
+			bool needsComma = false;
+
+			Toy_String* string = open;
 
 			for (unsigned int i = 0; i < ptr->count; i++) {
-				//append each element
-				Toy_String* tmp = Toy_concatStrings(bucketHandle, string, Toy_stringifyValue(bucketHandle, ptr->data[i])); //increment ref
-				Toy_freeString(string); //decrement ref
-				string = tmp;
-
-				//if we need a comma
-				if (i + 1 < ptr->count) {
+				if (needsComma) {
 					Toy_String* tmp = Toy_concatStrings(bucketHandle, string, comma); //increment ref
 					Toy_freeString(string); //decrement ref
 					string = tmp;
 				}
+
+				//append each element
+				Toy_String* element = Toy_stringifyValue(bucketHandle, ptr->data[i]);
+				Toy_String* final = Toy_concatStrings(bucketHandle, string, element);
+
+				Toy_freeString(element);
+				Toy_freeString(string);
+
+				string = final;
+
+				needsComma = true;
 			}
 
 			//closing bracket
-			Toy_String* tmp = Toy_concatStrings(bucketHandle, string, Toy_createStringLength(bucketHandle, "]", 1));
+			Toy_String* tmp = Toy_concatStrings(bucketHandle, string, close);
 			Toy_freeString(string);
 			string = tmp;
 
 			//clean up
+			Toy_freeString(open);
+			Toy_freeString(close);
 			Toy_freeString(comma); //TODO: reusable global, or string type "permanent"
 
 			return string;
 		}
 
-		case TOY_VALUE_TABLE:
+		case TOY_VALUE_TABLE: {
+			//TODO: concat + free is definitely a performance nightmare, could make an append function?
+			Toy_Table* ptr = value.as.table;
+
+			//if table is empty, skip below
+			if (ptr->count == 0) {
+				Toy_String* empty = Toy_createString(bucketHandle, "[:]");
+				return empty;
+			}
+
+			Toy_String* open = Toy_createStringLength(bucketHandle, "[", 1);
+			Toy_String* close = Toy_createStringLength(bucketHandle, "]", 1);
+			Toy_String* colon = Toy_createStringLength(bucketHandle, ":", 1); //reusable
+			Toy_String* comma = Toy_createStringLength(bucketHandle, ",", 1); //reusable
+			bool needsComma = false;
+
+			Toy_String* string = open;
+
+			for (unsigned int i = 0; i < ptr->capacity; i++) {
+				if (TOY_VALUE_IS_NULL(ptr->data[i].key)) {
+					continue;
+				}
+
+				if (needsComma) {
+					Toy_String* tmp = Toy_concatStrings(bucketHandle, string, comma); //increment ref
+					Toy_freeString(string); //decrement ref
+					string = tmp;
+				}
+
+				//make the element pair
+				Toy_String* k = Toy_stringifyValue(bucketHandle, ptr->data[i].key);
+				Toy_String* v = Toy_stringifyValue(bucketHandle, ptr->data[i].value);
+				Toy_String* c = Toy_concatStrings(bucketHandle, k, colon); //stick the colon between
+				Toy_String* pair = Toy_concatStrings(bucketHandle, c, v);
+
+				//append the element pair
+				Toy_String* final = Toy_concatStrings(bucketHandle, string, pair);
+
+				//do a bunch of freeing so the internal refCounts stay balanced
+				Toy_freeString(k);
+				Toy_freeString(v);
+				Toy_freeString(c);
+				Toy_freeString(pair);
+				Toy_freeString(string);
+
+				//finally
+				string = final;
+
+				//TODO: would a simple buffer be faster here?
+
+				//if there's more elements
+				needsComma = true;
+			}
+
+			//closing bracket
+			Toy_String* tmp = Toy_concatStrings(bucketHandle, string, close);
+			Toy_freeString(string);
+			string = tmp;
+
+			//clean up
+			Toy_freeString(open);
+			Toy_freeString(close);
+			Toy_freeString(colon); //TODO: reusable global, or string type "permanent"
+			Toy_freeString(comma); //TODO: reusable global, or string type "permanent"
+
+			return string;
+		}
+
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_TYPE:

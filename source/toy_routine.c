@@ -266,9 +266,23 @@ static unsigned int writeInstructionCompound(Toy_Routine** rt, Toy_AstCompound a
 	unsigned int result = writeRoutineCode(rt, ast.child);
 
 	if (ast.flag == TOY_AST_FLAG_COMPOUND_ARRAY) {
-		//signal how many values to read in as an array value
+		//signal how many values to read in as array elements
 		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
 		EMIT_BYTE(rt, code, TOY_VALUE_ARRAY);
+
+		//4-byte alignment
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
+
+		//how many elements
+		EMIT_INT(rt, code, result);
+
+		return 1; //leaves only 1 value on the stack
+	}
+	if (ast.flag == TOY_AST_FLAG_COMPOUND_TABLE) {
+		//signal how many values to read in as table elements
+		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
+		EMIT_BYTE(rt, code, TOY_VALUE_TABLE);
 
 		//4-byte alignment
 		EMIT_BYTE(rt, code,0);
@@ -295,6 +309,10 @@ static unsigned int writeInstructionAggregate(Toy_Routine** rt, Toy_AstAggregate
 
 	if (ast.flag == TOY_AST_FLAG_COLLECTION) {
 		//collections are handled above
+		return result;
+	}
+	else if (ast.flag == TOY_AST_FLAG_PAIR) {
+		//pairs are handled above
 		return result;
 	}
 	else if (ast.flag == TOY_AST_FLAG_INDEX) {

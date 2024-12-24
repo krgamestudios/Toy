@@ -7,6 +7,7 @@
 struct Toy_Bucket;
 union Toy_String_t;
 struct Toy_Array;
+struct Toy_Table;
 
 typedef enum Toy_ValueType {
 	TOY_VALUE_NULL,
@@ -34,6 +35,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 		float number;                  //4  | 4
 		union Toy_String_t* string;     //4  | 8
 		struct Toy_Array* array;       //4  | 8
+		struct Toy_Table* table;       //4  | 8
 		//TODO: more types go here
 		//TODO: consider 'stack' as a possible addition
 
@@ -59,6 +61,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_AS_FLOAT(value)				(Toy_unwrapValue(value).as.number)
 #define TOY_VALUE_AS_STRING(value)				(Toy_unwrapValue(value).as.string)
 #define TOY_VALUE_AS_ARRAY(value)				(Toy_unwrapValue(value).as.array)
+#define TOY_VALUE_AS_TABLE(value)				(Toy_unwrapValue(value).as.table)
 //TODO: more
 
 #define TOY_VALUE_FROM_NULL()					((Toy_Value){{ .integer = 0 }, TOY_VALUE_NULL})
@@ -67,6 +70,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_FROM_FLOAT(value)				((Toy_Value){{ .number = value }, TOY_VALUE_FLOAT})
 #define TOY_VALUE_FROM_STRING(value)			((Toy_Value){{ .string = value }, TOY_VALUE_STRING})
 #define TOY_VALUE_FROM_ARRAY(value)				((Toy_Value){{ .array = value }, TOY_VALUE_ARRAY})
+#define TOY_VALUE_FROM_TABLE(value)				((Toy_Value){{ .table = value }, TOY_VALUE_TABLE})
 //TODO: more
 
 #define TOY_REFERENCE_FROM_POINTER(ptr)			((Toy_Value){{ .reference = ptr }, TOY_VALUE_REFERENCE})

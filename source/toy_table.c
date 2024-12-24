@@ -114,7 +114,7 @@ void Toy_insertTable(Toy_Table** tableHandle, Toy_Value key, Toy_Value value) {
 	probeAndInsert(tableHandle, key, value);
 }
 
-Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key) {
+Toy_TableEntry* Toy_private_lookupTableEntryPtr(Toy_Table** tableHandle, Toy_Value key) {
 	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key)) { //TODO: disallow functions and opaques
 		Toy_error(TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
 	}
@@ -125,17 +125,29 @@ Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key) {
 	while (true) {
 		//found the entry
 		if (Toy_checkValuesAreEqual((*tableHandle)->data[probe].key, key)) {
-			return (*tableHandle)->data[probe].value;
+			return (*tableHandle)->data + probe;
 		}
 
 		//if its an empty slot
 		if (TOY_VALUE_IS_NULL((*tableHandle)->data[probe].key)) {
-			return TOY_VALUE_FROM_NULL();
+			return NULL;
 		}
 
 		//adjust and continue
 		probe++;
 		probe &= (*tableHandle)->capacity - 1; //DOOM hack
+	}
+}
+
+Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key) {
+	//TODO: I hacked this in at a moment's notice, clean it up
+	Toy_TableEntry* entry = Toy_private_lookupTableEntryPtr(tableHandle, key);
+
+	if (entry == NULL) {
+		return TOY_VALUE_FROM_NULL();
+	}
+	else {
+		return entry->value;
 	}
 }
 

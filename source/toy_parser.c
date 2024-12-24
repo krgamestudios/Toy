@@ -206,7 +206,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_OR,NULL,binary},// TOY_TOKEN_OPERATOR_OR,
 	{PREC_NONE,unary,NULL},// TOY_TOKEN_OPERATOR_NEGATE,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_QUESTION,
-	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_COLON,
+	{PREC_GROUP,compound,aggregate},// TOY_TOKEN_OPERATOR_COLON,
 
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_SEMICOLON, // ;
 	{PREC_GROUP,NULL,aggregate},// TOY_TOKEN_OPERATOR_COMMA, // ,
@@ -576,21 +576,39 @@ static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 			return TOY_AST_FLAG_NONE;
 		}
 
+		//BUGFIX: special case for empty tables
+		if (match(parser, TOY_TOKEN_OPERATOR_COLON)) {
+			consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of empty table");
+			Toy_private_emitAstPass(bucketHandle, rootHandle);
+			Toy_private_emitAstAggregate(bucketHandle, rootHandle, TOY_AST_FLAG_PAIR, *rootHandle);
+			Toy_private_emitAstCompound(bucketHandle, rootHandle, TOY_AST_FLAG_COMPOUND_TABLE);
+			return TOY_AST_FLAG_NONE;
+		}
+
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP);
+
+		//peek inside to see what you have
+		Toy_AstFlag flag = TOY_AST_FLAG_NONE;
+		if ((*rootHandle)->type == TOY_AST_AGGREGATE) {
+			//1 element in a table will mean the top-level node is a collection
+			flag = (*rootHandle)->aggregate.flag;
+
+			//more than 1 element in a table will mean you need to check the last element in the collection to find a pair
+			if (flag == TOY_AST_FLAG_COLLECTION && (*rootHandle)->aggregate.right->type == TOY_AST_AGGREGATE) {
+				flag = (*rootHandle)->aggregate.right->aggregate.flag; //yes, this is hacky
+			}
+		}
 
 		//BUGFIX: special case for trailing commas
 		if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_RIGHT && parser->current.type != TOY_TOKEN_OPERATOR_BRACKET_RIGHT) {
-			Toy_private_emitAstCompound(bucketHandle, rootHandle, TOY_AST_FLAG_COMPOUND_ARRAY);
-			//NOTE: will probably need tweaking for tables
+			Toy_private_emitAstCompound(bucketHandle, rootHandle, flag == TOY_AST_FLAG_PAIR ? TOY_AST_FLAG_COMPOUND_TABLE : TOY_AST_FLAG_COMPOUND_ARRAY);
 			return TOY_AST_FLAG_NONE;
 		}
 
 		consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of compound expression");
-		Toy_private_emitAstCompound(bucketHandle, rootHandle, TOY_AST_FLAG_COMPOUND_ARRAY);
+		Toy_private_emitAstCompound(bucketHandle, rootHandle, flag == TOY_AST_FLAG_PAIR ? TOY_AST_FLAG_COMPOUND_TABLE : TOY_AST_FLAG_COMPOUND_ARRAY);
 
 		return TOY_AST_FLAG_NONE;
-
-		//TODO: read in a table
 	}
 	else if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_RIGHT) {
 		//allows for trailing commas
@@ -612,6 +630,10 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 	if (parser->previous.type == TOY_TOKEN_OPERATOR_COMMA) {
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //NOT +1, as compounds are right-recursive
 		return TOY_AST_FLAG_COLLECTION;
+	}
+	if (parser->previous.type == TOY_TOKEN_OPERATOR_COLON) {
+		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //NOT +1, as compounds are right-recursive
+		return TOY_AST_FLAG_PAIR;
 	}
 	else if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_LEFT) {
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP);

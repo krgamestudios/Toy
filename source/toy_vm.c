@@ -119,8 +119,39 @@ static void processRead(Toy_VM* vm) {
 		}
 
 		case TOY_VALUE_TABLE: {
-			//
-			// break;
+			fixAlignment(vm);
+
+			//the number of values to read from the stack
+			unsigned int count = (unsigned int)READ_INT(vm);
+
+			//capacity covers keys AND values
+			unsigned int capacity = count / 2;
+			capacity = capacity > TOY_TABLE_INITIAL_CAPACITY ? capacity : TOY_TABLE_INITIAL_CAPACITY;
+
+			//neat trick to find the next power of two, inclusive (restriction of the table system) TODO: move this into a function
+			capacity--;
+			capacity |= capacity >> 1;
+			capacity |= capacity >> 2;
+			capacity |= capacity >> 4;
+			capacity |= capacity >> 8;
+			capacity |= capacity >> 16;
+			capacity++;
+
+			//create the table and read in the key-values
+			Toy_Table* table = Toy_private_adjustTableCapacity(NULL, capacity);
+
+			//read in backwards from the stack
+			for (unsigned int i = 0; i < count / 2; i++) {
+				Toy_Value v = Toy_popStack(&vm->stack);
+				Toy_Value k = Toy_popStack(&vm->stack);
+
+				Toy_insertTable(&table, k, v);
+			}
+
+			//finished
+			value = TOY_VALUE_FROM_TABLE(table);
+
+			break;
 		}
 
 		case TOY_VALUE_FUNCTION: {
@@ -214,6 +245,9 @@ static void processAssignCompound(Toy_VM* vm) {
 	if (TOY_VALUE_IS_STRING(target) && TOY_VALUE_AS_STRING(target)->info.type == TOY_STRING_NAME) {
 		Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(target));
 		Toy_freeValue(target);
+		if (valuePtr == NULL) {
+			return;
+		}
 		target = TOY_REFERENCE_FROM_POINTER(valuePtr);
 	}
 
@@ -245,6 +279,16 @@ static void processAssignCompound(Toy_VM* vm) {
 		Toy_freeValue(value);
 	}
 
+	else if (TOY_VALUE_IS_TABLE(target)) {
+		Toy_Table* table = TOY_VALUE_AS_TABLE(target);
+
+		//set the value
+		Toy_insertTable(&table, key, Toy_copyValue(Toy_unwrapValue(value)));
+
+		//cleanup
+		Toy_freeValue(value);
+	}
+
 	else {
 		Toy_error("Invalid assignment target");
 		Toy_freeValue(target);
@@ -266,11 +310,15 @@ static void processAccess(Toy_VM* vm) {
 	//find the value
 	Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(name));
 
-	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr)) {
-		//TODO: more types to be implemented
-		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
+	if (valuePtr == NULL) {
+		Toy_freeValue(name);
+		return;
+	}
 
+	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
+	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr)) {
+		//TODO: more types to be implemented as stack-only references
+		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
 		Toy_pushStack(&vm->stack, ref);
 	}
 
@@ -649,7 +697,7 @@ static void processIndex(Toy_VM* vm) {
 	else if (TOY_VALUE_IS_ARRAY(value)) {
 		//type checks
 		if (!TOY_VALUE_IS_INTEGER(index)) {
-			Toy_error("Failed to index a string");
+			Toy_error("Failed to index an array");
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
@@ -657,7 +705,7 @@ static void processIndex(Toy_VM* vm) {
 		}
 
 		if (!(TOY_VALUE_IS_NULL(length) || TOY_VALUE_IS_INTEGER(length))) {
-			Toy_error("Failed to index-length a string");
+			Toy_error("Failed to index-length an array");
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
@@ -679,15 +727,39 @@ static void processIndex(Toy_VM* vm) {
 		}
 
 		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-		if (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i])) {
-			//TODO: more types to be implemented
+		if (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i])) {
+			//TODO: more types to be implemented as stack-only references
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(array->data[i]));
-
 			Toy_pushStack(&vm->stack, ref);
 		}
 
 		else {
 			Toy_pushStack(&vm->stack, Toy_copyValue(array->data[i]));
+		}
+	}
+
+	else if (TOY_VALUE_IS_TABLE(value)) {
+		if (TOY_VALUE_IS_NULL(length) != true) {
+			Toy_error("Can't index-length a table");
+			Toy_freeValue(value);
+			Toy_freeValue(index);
+			Toy_freeValue(length);
+			return;
+		}
+
+		//get the table & element value
+		Toy_Table* table = TOY_VALUE_AS_TABLE(value);
+		Toy_TableEntry* entry = Toy_private_lookupTableEntryPtr(&table, index);
+
+		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
+		if (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value)) {
+			//TODO: more types to be implemented as stack-only references
+			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(entry->value));
+			Toy_pushStack(&vm->stack, ref);
+		}
+
+		else {
+			Toy_pushStack(&vm->stack, Toy_copyValue(entry->value));
 		}
 	}
 

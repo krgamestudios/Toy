@@ -5,16 +5,17 @@
 #include <stdlib.h>
 
 Toy_Array* Toy_resizeArray(Toy_Array* paramArray, unsigned int capacity) {
-	if (capacity == 0) {
-		free(paramArray);
-		return NULL;
-	}
-
 	//if some values will be removed, free them first
 	if (paramArray != NULL && paramArray->count > capacity) {
 		for (unsigned int i = capacity; i < paramArray->count; i++) {
 			Toy_freeValue(paramArray->data[i]);
 		}
+	}
+
+	//if you're freeing everything, just return
+	if (capacity == 0) {
+		free(paramArray);
+		return NULL;
 	}
 
 	unsigned int originalCapacity = paramArray == NULL ? 0 : paramArray->capacity;

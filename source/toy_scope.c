@@ -175,7 +175,7 @@ Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key) {
 		char buffer[key->info.length + 256];
 		sprintf(buffer, "Undefined variable: %s\n", key->name.data);
 		Toy_error(buffer);
-		NULL;
+		return NULL;
 	}
 
 	return &(entryPtr->value);
