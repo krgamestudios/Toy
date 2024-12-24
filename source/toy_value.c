@@ -118,8 +118,6 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 }
 
 void Toy_freeValue(Toy_Value value) {
-	//NOTE: do not unwrap this value, as references shouldn't be freed
-
 	switch(value.type) {
 		case TOY_VALUE_NULL:
 		case TOY_VALUE_BOOLEAN:
@@ -143,12 +141,15 @@ void Toy_freeValue(Toy_Value value) {
 			break;
 		}
 
+		case TOY_VALUE_REFERENCE:
+			//don't free references
+			return;
+
 		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_TYPE:
 		case TOY_VALUE_ANY:
-		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't free an unknown value type, exiting\n" TOY_CC_RESET);
 			exit(-1);
