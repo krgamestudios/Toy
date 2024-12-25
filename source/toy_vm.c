@@ -94,7 +94,7 @@ static void processRead(Toy_VM* vm) {
 			unsigned int count = (unsigned int)READ_INT(vm);
 			unsigned int capacity = count > TOY_ARRAY_INITIAL_CAPACITY ? count : TOY_ARRAY_INITIAL_CAPACITY;
 
-			//neat trick to find the next power of two, inclusive (restriction of the array system) TODO: move this into a function
+			//neat trick to find the next power of two, inclusive (restriction of the array system)
 			capacity--;
 			capacity |= capacity >> 1;
 			capacity |= capacity >> 2;
@@ -128,7 +128,7 @@ static void processRead(Toy_VM* vm) {
 			unsigned int capacity = count / 2;
 			capacity = capacity > TOY_TABLE_INITIAL_CAPACITY ? capacity : TOY_TABLE_INITIAL_CAPACITY;
 
-			//neat trick to find the next power of two, inclusive (restriction of the table system) TODO: move this into a function
+			//neat trick to find the next power of two, inclusive (restriction of the table system)
 			capacity--;
 			capacity |= capacity >> 1;
 			capacity |= capacity >> 2;
@@ -317,7 +317,6 @@ static void processAccess(Toy_VM* vm) {
 
 	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
 	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr)) {
-		//TODO: more types to be implemented as stack-only references
 		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
 		Toy_pushStack(&vm->stack, ref);
 	}
@@ -635,7 +634,7 @@ static void processIndex(Toy_VM* vm) {
 	}
 	else {
 		Toy_error("Incorrect number of elements found in index");
-		//TODO: clear stack, then leave null?
+		//TODO: clear stack, then leave null
 		return;
 	}
 
@@ -728,7 +727,6 @@ static void processIndex(Toy_VM* vm) {
 
 		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
 		if (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i])) {
-			//TODO: more types to be implemented as stack-only references
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(array->data[i]));
 			Toy_pushStack(&vm->stack, ref);
 		}
@@ -761,7 +759,6 @@ static void processIndex(Toy_VM* vm) {
 
 		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
 		if (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value)) {
-			//TODO: more types to be implemented as stack-only references
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(entry->value));
 			Toy_pushStack(&vm->stack, ref);
 		}

@@ -26,7 +26,7 @@ TOY_API Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key);
 TOY_API void Toy_removeTable(Toy_Table** tableHandle, Toy_Value key);
 
 //NOTE: exposed to skip unnecessary allocations within Toy_Scope
-TOY_API Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int newCapacity); //TODO: make it public
+TOY_API Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int newCapacity); //TODO: make it public?
 TOY_API Toy_TableEntry* Toy_private_lookupTableEntryPtr(Toy_Table** tableHandle, Toy_Value key); //TODO: make it public?
 
 //some useful sizes, could be swapped out as needed

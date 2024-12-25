@@ -189,7 +189,7 @@ Toy_String* Toy_concatStrings(Toy_Bucket** bucketHandle, Toy_String* left, Toy_S
 }
 
 void Toy_freeString(Toy_String* str) {
-	decrementRefCount(str); //TODO: tool for checking the bucket is empty, and freeing it
+	decrementRefCount(str); //TODO: tool for checking the bucket is empty, and freeing it?
 }
 
 unsigned int Toy_getStringLength(Toy_String* str) {

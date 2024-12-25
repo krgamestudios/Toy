@@ -126,8 +126,6 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	Toy_insertTable(&scope->table, TOY_VALUE_FROM_STRING(Toy_copyString(key)), value);
 }
 
-
-//TODO: check for clearign old values
 void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	if (key->info.type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);

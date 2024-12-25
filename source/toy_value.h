@@ -37,7 +37,6 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 		struct Toy_Array* array;       //4  | 8
 		struct Toy_Table* table;       //4  | 8
 		//TODO: more types go here
-		//TODO: consider 'stack' as a possible addition
 
 	} as;                              //4  | 8
 

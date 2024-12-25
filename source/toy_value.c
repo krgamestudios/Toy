@@ -412,7 +412,7 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 	value = Toy_unwrapValue(value);
 
-	//TODO: could have "constant" strings that can be referenced, instead of null, true, false, etc.
+	//TODO: could have "constant" strings that can be referenced, instead of null, true, false, etc. - new string type of 'permanent'
 
 	switch(value.type) {
 		case TOY_VALUE_NULL:

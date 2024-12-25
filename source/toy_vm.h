@@ -40,7 +40,7 @@ typedef struct Toy_VM {
 	Toy_Bucket* stringBucket; //stores the string literals
 	Toy_Bucket* scopeBucket; //stores the scopes
 
-	//TODO: panic flag
+	//URGENT: panic/failed state flag
 } Toy_VM;
 
 TOY_API void Toy_initVM(Toy_VM* vm);

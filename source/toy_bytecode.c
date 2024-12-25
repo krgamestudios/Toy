@@ -85,7 +85,7 @@ Toy_Bytecode Toy_compileBytecode(Toy_Ast* ast) {
 
 	//build
 	writeBytecodeHeader(&bc);
-	writeBytecodeBody(&bc, ast); //TODO: implement module packing
+	writeBytecodeBody(&bc, ast); //TODO: implement module packing (multiple modules in one package)
 
 	return bc;
 }

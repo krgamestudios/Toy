@@ -50,7 +50,7 @@ print !true; //false
 print !false; //true
 
 //precedence
-print true && false || true; //TODO: a grouping warning is needed for this
+print true && false || true; //URGENT: a grouping warning is needed for this, see issue #154
 
 //types
 var a: int;

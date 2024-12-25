@@ -1,4 +1,5 @@
-//standard example
+//standard example, using 'while' instead of 'for', because it's not ready yet
+
 var counter: int = 1;
 
 while (counter <= 100) {

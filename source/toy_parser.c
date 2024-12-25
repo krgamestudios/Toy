@@ -651,11 +651,6 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 	}
 }
 
-//TODO: allow trailing commas
-// static Toy_AstFlag noop(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
-// 	return return TOY_AST_FLAG_NONE;
-// }
-
 static ParsingTuple* getParsingRule(Toy_TokenType type) {
 	return &parsingRulesetTable[type];
 }

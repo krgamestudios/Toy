@@ -392,7 +392,7 @@ static unsigned int writeInstructionIfThenElse(Toy_Routine** rt, Toy_AstIfThenEl
 }
 
 static unsigned int writeInstructionWhileThen(Toy_Routine** rt, Toy_AstWhileThen ast) {
-	//TODO: begin
+	//begin
 	unsigned int beginAddr = CURRENT_ADDRESS(rt, code);
 
 	//cond-branch
@@ -830,7 +830,7 @@ static void* writeRoutine(Toy_Routine* rt, Toy_Ast* ast) {
 		count += rt->dataCount;
 	}
 
-	//TODO: subs region
+	//TODO: subroutine region
 
 	//finally, record the total size within the header, and return the result
 	*((int*)buffer) = count;
