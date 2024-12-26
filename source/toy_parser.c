@@ -91,6 +91,7 @@ typedef enum ParsingPrecedence {
 	PREC_ASSIGNMENT,
 	PREC_GROUP,
 	PREC_TERNARY,
+	PREC_NEGATE,
 	PREC_OR,
 	PREC_AND,
 	PREC_COMPARISON,
@@ -124,7 +125,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_PRIMARY,literal,NULL},// TOY_TOKEN_NULL,
 
 	//variable names (initially handled as a string)
-	{PREC_NONE,nameString,NULL},// TOY_TOKEN_NAME,
+	{PREC_PRIMARY,nameString,NULL},// TOY_TOKEN_NAME,
 
 	//types
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_TYPE_BOOLEAN,
@@ -194,7 +195,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_COMPARISON,NULL,binary},// TOY_TOKEN_OPERATOR_COMPARE_GREATER_EQUAL,
 
 	//structural operators
-	{PREC_NONE,group,NULL},// TOY_TOKEN_OPERATOR_PAREN_LEFT,
+	{PREC_GROUP,group,NULL},// TOY_TOKEN_OPERATOR_PAREN_LEFT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_PAREN_RIGHT,
 	{PREC_GROUP,compound,aggregate},// TOY_TOKEN_OPERATOR_BRACKET_LEFT,
 	{PREC_NONE,compound,aggregate},// TOY_TOKEN_OPERATOR_BRACKET_RIGHT,
@@ -204,7 +205,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	//other operators
 	{PREC_AND,NULL,binary},// TOY_TOKEN_OPERATOR_AND,
 	{PREC_OR,NULL,binary},// TOY_TOKEN_OPERATOR_OR,
-	{PREC_NONE,unary,NULL},// TOY_TOKEN_OPERATOR_NEGATE,
+	{PREC_NEGATE,unary,NULL},// TOY_TOKEN_OPERATOR_NEGATE,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_QUESTION,
 	{PREC_GROUP,compound,aggregate},// TOY_TOKEN_OPERATOR_COLON,
 
