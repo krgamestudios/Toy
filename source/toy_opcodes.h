@@ -45,7 +45,6 @@ typedef enum Toy_OpcodeType {
 	TOY_OPCODE_PRINT,
 	TOY_OPCODE_CONCAT,
 	TOY_OPCODE_INDEX,
-	//URGENT: clear the program stack - much needed
 
 	//meta instructions
 	TOY_OPCODE_PASS,

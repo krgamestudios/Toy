@@ -39,8 +39,6 @@ typedef struct Toy_VM {
 	//easy access to memory
 	Toy_Bucket* stringBucket; //stores the string literals
 	Toy_Bucket* scopeBucket; //stores the scopes
-
-	//URGENT: panic/failed state flag
 } Toy_VM;
 
 TOY_API void Toy_initVM(Toy_VM* vm);

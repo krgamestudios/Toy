@@ -81,7 +81,7 @@ static void processRead(Toy_VM* vm) {
 				value = TOY_VALUE_FROM_STRING(Toy_createNameStringLength(&vm->stringBucket, cstring, len, valueType, false));
 			}
 			else {
-				Toy_error("Invalid string type found");
+				Toy_error("Invalid string type found in opcode read");
 			}
 
 			break;
@@ -270,6 +270,7 @@ static void processAssignCompound(Toy_VM* vm) {
 			Toy_freeValue(target);
 			Toy_freeValue(key);
 			Toy_freeValue(value);
+			return;
 		}
 
 		//set the value
@@ -303,6 +304,7 @@ static void processAccess(Toy_VM* vm) {
 
 	//check name string type
 	if (!TOY_VALUE_IS_STRING(name) && TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		Toy_error("Invalid access target");
 		return;
 	}
@@ -312,6 +314,7 @@ static void processAccess(Toy_VM* vm) {
 
 	if (valuePtr == NULL) {
 		Toy_freeValue(name);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
 	}
 
@@ -352,6 +355,7 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 
 		Toy_freeValue(left);
 		Toy_freeValue(right);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
 	}
 
@@ -361,6 +365,7 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 			Toy_error("Can't divide or modulo by zero");
 			Toy_freeValue(left);
 			Toy_freeValue(right);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 	}
@@ -370,6 +375,7 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 		Toy_error("Can't modulo by a float");
 		Toy_freeValue(left);
 		Toy_freeValue(right);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
 	}
 
@@ -443,6 +449,7 @@ static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
 
 		Toy_freeValue(left);
 		Toy_freeValue(right);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
 	}
 
@@ -608,6 +615,7 @@ static void processConcat(Toy_VM* vm) {
 		Toy_error("Failed to concatenate a value that is not a string");
 		Toy_freeValue(left);
 		Toy_freeValue(right);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
 	}
 
@@ -634,7 +642,7 @@ static void processIndex(Toy_VM* vm) {
 	}
 	else {
 		Toy_error("Incorrect number of elements found in index");
-		//TODO: clear stack, then leave null
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
 	}
 
@@ -646,6 +654,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 
@@ -654,6 +663,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 
@@ -668,6 +678,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 
@@ -700,6 +711,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 
@@ -708,6 +720,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 
@@ -722,6 +735,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 
@@ -742,6 +756,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 
@@ -754,6 +769,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
 

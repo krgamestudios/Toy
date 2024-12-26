@@ -58,7 +58,8 @@ Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int new
 	Toy_Table* newTable = malloc(newCapacity * sizeof(Toy_TableEntry) + sizeof(Toy_Table));
 
 	if (newTable == NULL) {
-		Toy_error(TOY_CC_ERROR "ERROR: Failed to allocate a 'Toy_Table'\n" TOY_CC_RESET);
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate a 'Toy_Table'\n" TOY_CC_RESET);
+		exit(1);
 	}
 
 	newTable->capacity = newCapacity;
@@ -103,7 +104,8 @@ void Toy_freeTable(Toy_Table* table) {
 
 void Toy_insertTable(Toy_Table** tableHandle, Toy_Value key, Toy_Value value) {
 	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key)) { //TODO: disallow functions and opaques
-		Toy_error(TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
+		exit(1);
 	}
 
 	//expand the capacity
@@ -116,7 +118,8 @@ void Toy_insertTable(Toy_Table** tableHandle, Toy_Value key, Toy_Value value) {
 
 Toy_TableEntry* Toy_private_lookupTableEntryPtr(Toy_Table** tableHandle, Toy_Value key) {
 	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key)) { //TODO: disallow functions and opaques
-		Toy_error(TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
+		exit(1);
 	}
 
 	//lookup
@@ -153,7 +156,8 @@ Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key) {
 
 void Toy_removeTable(Toy_Table** tableHandle, Toy_Value key) {
 	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key)) { //TODO: disallow functions and opaques
-		Toy_error(TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
+		exit(1);
 	}
 
 	//lookup
