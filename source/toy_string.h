@@ -63,7 +63,7 @@ TOY_API void Toy_freeString(Toy_String* str);
 TOY_API unsigned int Toy_getStringLength(Toy_String* str);
 TOY_API unsigned int Toy_getStringRefCount(Toy_String* str);
 TOY_API Toy_ValueType Toy_getNameStringVarType(Toy_String* str);
-TOY_API Toy_ValueType Toy_getNameStringVarConstant(Toy_String* str);
+TOY_API bool Toy_getNameStringVarConstant(Toy_String* str);
 
 TOY_API char* Toy_getStringRawBuffer(Toy_String* str); //allocates the buffer on the heap, needs to be freed
 

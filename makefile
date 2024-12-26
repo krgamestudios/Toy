@@ -4,6 +4,8 @@
 #LIBS+=-lm
 #LDFLAGS+=
 
+#TODO: release builds should define the NDEBUG flag; double check it works
+
 #directories
 export TOY_SOURCEDIR=source
 export TOY_REPLDIR=repl

@@ -1,6 +1,7 @@
 #include "toy_string.h"
 #include "toy_console_colors.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,11 +49,6 @@ static unsigned int hashCString(const char* string) {
 }
 
 static Toy_String* partitionStringLength(Toy_Bucket** bucketHandle, const char* cstring, unsigned int length) {
-	if (sizeof(Toy_String) + length + 1 > (*bucketHandle)->capacity) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't partition enough space for a string, requested %d length (%d total) but buckets have a capacity of %d\n" TOY_CC_RESET, (int)length, (int)(sizeof(Toy_String) + length + 1), (int)((*bucketHandle)->capacity));
-		exit(-1);
-	}
-
 	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String) + length + 1);
 
 	ret->info.type = TOY_STRING_LEAF;
@@ -92,16 +88,7 @@ Toy_String* Toy_createStringLength(Toy_Bucket** bucketHandle, const char* cstrin
 }
 
 Toy_String* Toy_createNameStringLength(Toy_Bucket** bucketHandle, const char* cname, unsigned int length, Toy_ValueType varType, bool constant) {
-	//name strings can't be broken up
-	if (sizeof(Toy_String) + length + 1 > (*bucketHandle)->capacity) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't partition enough space for a name string, requested %d length (%d total) but buckets have a capacity of %d\n" TOY_CC_RESET, (int)length, (int)(sizeof(Toy_String) + length + 1), (int)((*bucketHandle)->capacity));
-		exit(-1);
-	}
-
-	if (varType == TOY_VALUE_NULL) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't declare a name string with type 'null'\n" TOY_CC_RESET);
-		exit(-1);
-	}
+	assert(varType != TOY_VALUE_NULL && "Can't declare a name string with variable type 'null'");
 
 	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String) + length + 1);
 
@@ -118,21 +105,15 @@ Toy_String* Toy_createNameStringLength(Toy_Bucket** bucketHandle, const char* cn
 }
 
 Toy_String* Toy_copyString(Toy_String* str) {
-	if (str->info.refCount == 0) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy a string with refcount of zero\n" TOY_CC_RESET);
-		exit(-1);
-	}
+	assert(str->info.refCount != 0 && "Can't copy a string with refcount of zero");
 	incrementRefCount(str);
 	return str;
 }
 
 Toy_String* Toy_deepCopyString(Toy_Bucket** bucketHandle, Toy_String* str) {
-	if (str->info.refCount == 0) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't deep copy a string with refcount of zero\n" TOY_CC_RESET);
-		exit(-1);
-	}
+	assert(str->info.refCount != 0 && "Can't deep copy a string with refcount of zero");
 
-	//handle deep copies of strings that are too long for the bucket capacity NOTE: slow, could replace this at some point
+	//handle deep copies of strings that are too long for the bucket capacity
 	if (sizeof(Toy_String) + str->info.length + 1 > (*bucketHandle)->capacity) {
 		char* buffer = Toy_getStringRawBuffer(str);
 		Toy_String* result = Toy_createStringLength(bucketHandle, buffer, str->info.length); //handles the fragmenting
@@ -163,15 +144,8 @@ Toy_String* Toy_deepCopyString(Toy_Bucket** bucketHandle, Toy_String* str) {
 }
 
 Toy_String* Toy_concatStrings(Toy_Bucket** bucketHandle, Toy_String* left, Toy_String* right) {
-	if (left->info.type == TOY_STRING_NAME || right->info.type == TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't concatenate a name string\n" TOY_CC_RESET);
-		exit(-1);
-	}
-
-	if (left->info.refCount == 0 || right->info.refCount == 0) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't concatenate a string with refcount of zero\n" TOY_CC_RESET);
-		exit(-1);
-	}
+	assert(left->info.refCount != 0 && right->info.refCount != 0 && "Can't concatenate a string with a refcount of zero");
+	assert(left->info.type != TOY_STRING_NAME && right->info.type != TOY_STRING_NAME && "Can't concatenate a name string");
 
 	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String));
 
@@ -189,7 +163,8 @@ Toy_String* Toy_concatStrings(Toy_Bucket** bucketHandle, Toy_String* left, Toy_S
 }
 
 void Toy_freeString(Toy_String* str) {
-	decrementRefCount(str); //TODO: tool for checking the bucket is empty, and freeing it?
+	//memory is freed when the bucket is
+	decrementRefCount(str);
 }
 
 unsigned int Toy_getStringLength(Toy_String* str) {
@@ -201,37 +176,24 @@ unsigned int Toy_getStringRefCount(Toy_String* str) {
 }
 
 Toy_ValueType Toy_getNameStringVarType(Toy_String* str) {
-	if (str->info.type != TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't get the variable type of a non-name string\n" TOY_CC_RESET);
-		exit(-1);
-	}
+	assert(str->info.type == TOY_STRING_NAME && "Can't get the variable type of a non-name string");
 
 	return str->name.varType;
 }
 
-Toy_ValueType Toy_getNameStringVarConstant(Toy_String* str) {
-	if (str->info.type != TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't get the variable constness of a non-name string\n" TOY_CC_RESET);
-		exit(-1);
-	}
+bool Toy_getNameStringVarConstant(Toy_String* str) {
+	assert(str->info.type == TOY_STRING_NAME && "Can't get the variable constness of a non-name string");
 
 	return str->name.varConstant;
 }
 
 char* Toy_getStringRawBuffer(Toy_String* str) {
-	if (str->info.type == TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't get raw string buffer of a name string\n" TOY_CC_RESET);
-		exit(-1);
-	}
-
-	if (str->info.refCount == 0) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't get raw string buffer of a string with refcount of zero\n" TOY_CC_RESET);
-		exit(-1);
-	}
+	assert(str->info.type != TOY_STRING_NAME && "Can't get raw string buffer of a name string");
+	assert(str->info.refCount != 0 && "Can't get raw string buffer of a string with refcount of zero");
 
 	//BUGFIX: Make sure it's aligned, and there's space for the null
 	unsigned int len = (str->info.length + 3) & ~3;
-	if (len == str->info.length) { //nulls aren't counted
+	if (len == str->info.length) { //nulls aren't counted in a string's length
 		len += 4;
 	}
 
@@ -323,11 +285,7 @@ int Toy_compareStrings(Toy_String* left, Toy_String* right) {
 	}
 
 	if (left->info.type == TOY_STRING_NAME || right->info.type == TOY_STRING_NAME) {
-		if (left->info.type != right->info.type) {
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't compare a name string to a non-name string\n" TOY_CC_RESET);
-			exit(-1);
-		}
-
+		assert (left->info.type == right->info.type && "Can't compare a name string to a non-name string");
 		return strncmp(left->name.data, right->name.data, left->info.length);
 	}
 

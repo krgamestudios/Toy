@@ -1,15 +1,13 @@
 #include "toy_bucket.h"
 #include "toy_console_colors.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 //buckets of fun
 Toy_Bucket* Toy_allocateBucket(unsigned int capacity) {
-	if (capacity == 0) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Cannot allocate a 'Toy_Bucket' with zero capacity\n" TOY_CC_RESET);
-		exit(1);
-	}
+	assert(capacity != 0 && "Cannot allocate a 'Toy_Bucket' with zero capacity");
 
 	Toy_Bucket* bucket = malloc(sizeof(Toy_Bucket) + capacity);
 
@@ -27,23 +25,15 @@ Toy_Bucket* Toy_allocateBucket(unsigned int capacity) {
 }
 
 void* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount) {
-	if ((*bucketHandle) == NULL) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Expected a 'Toy_Bucket', received NULL\n" TOY_CC_RESET);
-		exit(1);
-	}
 
 	//BUGFIX: the endpoint must be aligned to the word size, otherwise you'll get a bus error from moving pointers
 	amount = (amount + 3) & ~3;
 
-	//if you try to allocate too much space
-	if ((*bucketHandle)->capacity < amount) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to partition a 'Toy_Bucket': requested %d from a bucket of %d capacity\n" TOY_CC_RESET, (int)amount, (int)((*bucketHandle)->capacity));
-		exit(1);
-	}
+	assert((*bucketHandle) != NULL && "Expected a 'Toy_Bucket', received NULL");
+	assert((*bucketHandle)->capacity >= amount && "ERROR: Failed to partition a 'Toy_Bucket', requested amount is too high");
 
-	//if you're out of space in this bucket
+	//if you're out of space in this bucket, allocate another one
 	if ((*bucketHandle)->capacity < (*bucketHandle)->count + amount) {
-		//move to the next bucket
 		Toy_Bucket* tmp = Toy_allocateBucket((*bucketHandle)->capacity);
 		tmp->next = (*bucketHandle); //it's buckets all the way down
 		(*bucketHandle) = tmp;
