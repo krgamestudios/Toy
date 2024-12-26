@@ -192,13 +192,6 @@ static unsigned int writeInstructionBinary(Toy_Routine** rt, Toy_AstBinary ast) 
 		EMIT_BYTE(rt, code,TOY_OPCODE_MODULO);
 	}
 
-	//nowhere to really put these for now
-	else if (ast.flag == TOY_AST_FLAG_AND) {
-		EMIT_BYTE(rt, code,TOY_OPCODE_AND);
-	}
-	else if (ast.flag == TOY_AST_FLAG_OR) {
-		EMIT_BYTE(rt, code,TOY_OPCODE_OR);
-	}
 	else if (ast.flag == TOY_AST_FLAG_CONCAT) {
 		EMIT_BYTE(rt, code, TOY_OPCODE_CONCAT);
 	}
@@ -211,6 +204,55 @@ static unsigned int writeInstructionBinary(Toy_Routine** rt, Toy_AstBinary ast) 
 	EMIT_BYTE(rt, code,TOY_OPCODE_PASS); //checked in combined assignments
 	EMIT_BYTE(rt, code,0);
 	EMIT_BYTE(rt, code,0);
+
+	return 1; //leaves only 1 value on the stack
+}
+
+static unsigned int writeInstructionBinaryShortCircuit(Toy_Routine** rt, Toy_AstBinaryShortCircuit ast) {
+	//lhs
+	writeRoutineCode(rt, ast.left);
+
+	//duplicate the top (so the lhs can be 'returned' by this expression, if needed)
+	EMIT_BYTE(rt, code,TOY_OPCODE_DUPLICATE);
+	EMIT_BYTE(rt, code, 0);
+	EMIT_BYTE(rt, code, 0);
+	EMIT_BYTE(rt, code, 0);
+
+	// && return the first falsy operand, or the last operand
+	if (ast.flag == TOY_AST_FLAG_AND) {
+		EMIT_BYTE(rt, code, TOY_OPCODE_JUMP);
+		EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_RELATIVE);
+		EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_IF_FALSE);
+		EMIT_BYTE(rt, code, 0);
+	}
+
+	// || return the first truthy operand, or the last operand
+	else if (ast.flag == TOY_AST_FLAG_OR) {
+		EMIT_BYTE(rt, code, TOY_OPCODE_JUMP);
+		EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_RELATIVE);
+		EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_IF_TRUE);
+		EMIT_BYTE(rt, code, 0);
+	}
+
+	else {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST binary short circuit flag found\n" TOY_CC_RESET);
+		exit(-1);
+	}
+
+	//parameter address
+	unsigned int endAddr = SKIP_INT(rt, code); //parameter to be written later
+
+	//if the lhs value isn't needed, pop it
+	EMIT_BYTE(rt, code,TOY_OPCODE_ELIMINATE);
+	EMIT_BYTE(rt, code, 0);
+	EMIT_BYTE(rt, code, 0);
+	EMIT_BYTE(rt, code, 0);
+
+	//rhs
+	writeRoutineCode(rt, ast.right);
+
+	//set the parameter
+	OVERWRITE_INT(rt, code, endAddr, CURRENT_ADDRESS(rt, code) - (endAddr + 4));
 
 	return 1; //leaves only 1 value on the stack
 }
@@ -681,6 +723,10 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 
 		case TOY_AST_BINARY:
 			result += writeInstructionBinary(rt, ast->binary);
+			break;
+
+		case TOY_AST_BINARY_SHORT_CIRCUIT:
+			result += writeInstructionBinaryShortCircuit(rt, ast->binaryShortCircuit);
 			break;
 
 		case TOY_AST_COMPARE:

@@ -64,6 +64,17 @@ void Toy_private_emitAstBinary(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, T
 	(*astHandle) = tmp;
 }
 
+void Toy_private_emitAstBinaryShortCircuit(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_AstFlag flag, Toy_Ast* right) {
+	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
+
+	tmp->type = TOY_AST_BINARY_SHORT_CIRCUIT;
+	tmp->binary.flag = flag;
+	tmp->binary.left = *astHandle; //left-recursive
+	tmp->binary.right = right;
+
+	(*astHandle) = tmp;
+}
+
 void Toy_private_emitAstCompare(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_AstFlag flag, Toy_Ast* right) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 

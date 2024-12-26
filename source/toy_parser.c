@@ -708,7 +708,13 @@ static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 			Toy_private_emitAstAggregate(bucketHandle, rootHandle, flag, ptr);
 		}
 		else {
-			Toy_private_emitAstBinary(bucketHandle, rootHandle, flag, ptr);
+			//BUGFIX: '&&' and '||' are special cases, with short-circuit logic
+			if (flag == TOY_AST_FLAG_AND || flag == TOY_AST_FLAG_OR) {
+				Toy_private_emitAstBinaryShortCircuit(bucketHandle, rootHandle, flag, ptr);
+			}
+			else {
+				Toy_private_emitAstBinary(bucketHandle, rootHandle, flag, ptr);
+			}
 		}
 	}
 

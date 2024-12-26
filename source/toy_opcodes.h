@@ -11,6 +11,7 @@ typedef enum Toy_OpcodeType {
 	TOY_OPCODE_ASSIGN_COMPOUND, //assign to a compound's internals
 	TOY_OPCODE_ACCESS,
 	TOY_OPCODE_DUPLICATE, //duplicate the top of the stack
+	TOY_OPCODE_ELIMINATE, //remove the top of the stack
 
 	//arithmetic instructions
 	TOY_OPCODE_ADD,

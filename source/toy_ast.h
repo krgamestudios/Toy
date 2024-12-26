@@ -13,6 +13,7 @@ typedef enum Toy_AstType {
 	TOY_AST_VALUE,
 	TOY_AST_UNARY,
 	TOY_AST_BINARY,
+	TOY_AST_BINARY_SHORT_CIRCUIT,
 	TOY_AST_COMPARE,
 	TOY_AST_GROUP,
 	TOY_AST_COMPOUND,
@@ -106,6 +107,13 @@ typedef struct Toy_AstBinary {
 	Toy_Ast* right;
 } Toy_AstBinary;
 
+typedef struct Toy_AstBinaryShortCircuit {
+	Toy_AstType type;
+	Toy_AstFlag flag;
+	Toy_Ast* left;
+	Toy_Ast* right;
+} Toy_AstBinaryShortCircuit;
+
 typedef struct Toy_AstCompare {
 	Toy_AstType type;
 	Toy_AstFlag flag;
@@ -193,29 +201,30 @@ typedef struct Toy_AstEnd {
 	Toy_AstType type;
 } Toy_AstEnd;
 
-union Toy_Ast {                     //32 | 64 BITNESS
-	Toy_AstType type;               //4  | 4
-	Toy_AstBlock block;             //16 | 32
-	Toy_AstValue value;             //12 | 24
-	Toy_AstUnary unary;             //12 | 16
-	Toy_AstBinary binary;           //16 | 24
-	Toy_AstCompare compare;         //16 | 24
-	Toy_AstGroup group;             //8  | 16
-	Toy_AstCompound compound;       //12 | 16
-	Toy_AstAggregate aggregate;     //16 | 24
-	Toy_AstAssert assert;           //16 | 24
-	Toy_AstIfThenElse ifThenElse;   //16 | 32
-	Toy_AstWhileThen whileThen;     //16 | 24
-	Toy_AstBreak breakPoint;        //4  | 4
-	Toy_AstContinue continuePoint;  //4  | 4
-	Toy_AstPrint print;             //8  | 16
-	Toy_AstVarDeclare varDeclare;   //16 | 24
-	Toy_AstVarAssign varAssign;     //16 | 24
-	Toy_AstVarAccess varAccess;     //8  | 16
-	Toy_AstPass pass;               //4  | 4
-	Toy_AstError error;             //4  | 4
-	Toy_AstEnd end;                 //4  | 4
-};                                  //16 | 32
+union Toy_Ast {                                             //32 | 64 BITNESS
+	Toy_AstType type;                                       //4  | 4
+	Toy_AstBlock block;                                     //16 | 32
+	Toy_AstValue value;                                     //12 | 24
+	Toy_AstUnary unary;                                     //12 | 16
+	Toy_AstBinary binary;                                   //16 | 24
+	Toy_AstBinaryShortCircuit binaryShortCircuit;           //16 | 24
+	Toy_AstCompare compare;                                 //16 | 24
+	Toy_AstGroup group;                                     //8  | 16
+	Toy_AstCompound compound;                               //12 | 16
+	Toy_AstAggregate aggregate;                             //16 | 24
+	Toy_AstAssert assert;                                   //16 | 24
+	Toy_AstIfThenElse ifThenElse;                           //16 | 32
+	Toy_AstWhileThen whileThen;                             //16 | 24
+	Toy_AstBreak breakPoint;                                //4  | 4
+	Toy_AstContinue continuePoint;                          //4  | 4
+	Toy_AstPrint print;                                     //8  | 16
+	Toy_AstVarDeclare varDeclare;                           //16 | 24
+	Toy_AstVarAssign varAssign;                             //16 | 24
+	Toy_AstVarAccess varAccess;                             //8  | 16
+	Toy_AstPass pass;                                       //4  | 4
+	Toy_AstError error;                                     //4  | 4
+	Toy_AstEnd end;                                         //4  | 4
+};                                                          //16 | 32
 
 void Toy_private_initAstBlock(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 void Toy_private_appendAstBlock(Toy_Bucket** bucketHandle, Toy_Ast* block, Toy_Ast* child);
@@ -223,6 +232,7 @@ void Toy_private_appendAstBlock(Toy_Bucket** bucketHandle, Toy_Ast* block, Toy_A
 void Toy_private_emitAstValue(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Value value);
 void Toy_private_emitAstUnary(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_AstFlag flag);
 void Toy_private_emitAstBinary(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag, Toy_Ast* right);
+void Toy_private_emitAstBinaryShortCircuit(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag, Toy_Ast* right);
 void Toy_private_emitAstCompare(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag, Toy_Ast* right);
 void Toy_private_emitAstGroup(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 void Toy_private_emitAstCompound(Toy_Bucket** bucketHandle, Toy_Ast** astHandle,Toy_AstFlag flag);

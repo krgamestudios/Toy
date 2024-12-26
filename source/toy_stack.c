@@ -29,6 +29,26 @@ void Toy_freeStack(Toy_Stack* stack) {
 	}
 }
 
+void Toy_resetStack(Toy_Stack** stackHandle) {
+	if ((*stackHandle) == NULL) {
+		return;
+	}
+
+	//if some values will be removed, free them first
+	for (unsigned int i = 0; i < (*stackHandle)->count; i++) {
+		Toy_freeValue((*stackHandle)->data[i]);
+	}
+
+	//reset to the stack's default state
+	if ((*stackHandle)->capacity > TOY_STACK_INITIAL_CAPACITY) {
+		(*stackHandle) = realloc((*stackHandle), TOY_STACK_INITIAL_CAPACITY * sizeof(Toy_Value) + sizeof(Toy_Stack));
+
+		(*stackHandle)->capacity = TOY_STACK_INITIAL_CAPACITY;
+	}
+
+	(*stackHandle)->count = 0;
+}
+
 void Toy_pushStack(Toy_Stack** stackHandle, Toy_Value value) {
 	//don't go overboard
 	if ((*stackHandle)->count >= TOY_STACK_OVERFLOW_THRESHOLD) {
@@ -58,7 +78,7 @@ void Toy_pushStack(Toy_Stack** stackHandle, Toy_Value value) {
 
 Toy_Value Toy_peekStack(Toy_Stack** stackHandle) {
 	if ((*stackHandle)->count == 0) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Stack underflow\n" TOY_CC_RESET);
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Stack underflow when peeking\n" TOY_CC_RESET);
 		exit(-1);
 	}
 
@@ -67,7 +87,7 @@ Toy_Value Toy_peekStack(Toy_Stack** stackHandle) {
 
 Toy_Value Toy_popStack(Toy_Stack** stackHandle) {
 	if ((*stackHandle)->count == 0) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Stack underflow\n" TOY_CC_RESET);
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Stack underflow when popping\n" TOY_CC_RESET);
 		exit(-1);
 	}
 

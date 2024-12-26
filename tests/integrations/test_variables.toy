@@ -49,8 +49,67 @@ print false || false; //false
 print !true; //false
 print !false; //true
 
-//precedence
-print true && false || true; //URGENT: a grouping warning is needed for this, see issue #154
+//logical AND short-circuits and chained assignments
+{
+	var a = 1;
+	var b = 2;
+	var c = a + 1 && b + 2;
+
+	assert a == 1, "short circuit 1.1";
+	assert b == 2, "short circuit 1.2";
+	assert c == 4, "short circuit 1.3";
+}
+
+{
+	var a = 1;
+	var b = 2;
+	var c = a = (a + 1) && b + 2;
+
+	assert a == 4, "short circuit 2.1";
+	assert b == 2, "short circuit 2.2";
+	assert c == 4, "short circuit 2.3";
+}
+
+{
+	var a = 1;
+	var b = 2;
+	var c = a = a + 1 && b + 2;
+
+	assert a == 4, "short circuit 3.1";
+	assert b == 2, "short circuit 3.2";
+	assert c == 4, "short circuit 3.3";
+}
+
+//logical OR short-circuits and chained assignments
+{
+	var a = 1;
+	var b = 2;
+	var c = a + 1 || b + 2;
+
+	assert a == 1, "short circuit 4.1";
+	assert b == 2, "short circuit 4.2";
+	assert c == 2, "short circuit 4.3";
+}
+
+{
+	var a = 1;
+	var b = 2;
+	var c = a = (a + 1) || b + 2;
+
+	assert a == 2, "short circuit 5.1";
+	assert b == 2, "short circuit 5.2";
+	assert c == 2, "short circuit 5.3";
+}
+
+{
+	var a = 1;
+	var b = 2;
+	var c = a = a + 1 || b + 2;
+
+	assert a == 2, "short circuit 6.1";
+	assert b == 2, "short circuit 6.2";
+	assert c == 2, "short circuit 6.3";
+}
 
 //types
 var a: int;

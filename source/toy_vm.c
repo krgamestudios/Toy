@@ -229,7 +229,10 @@ static void processAssign(Toy_VM* vm) {
 	}
 
 	//assign it
-	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value); //scope now owns value, doesn't need to be freed
+	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value); //scope now owns the value, doesn't need to be freed
+
+	//in case of chaining, leave a copy on the stack
+	Toy_pushStack(&vm->stack, Toy_copyValue(value));
 
 	//cleanup
 	Toy_freeValue(name);
@@ -276,6 +279,9 @@ static void processAssignCompound(Toy_VM* vm) {
 		//set the value
 		array->data[index] = Toy_copyValue(Toy_unwrapValue(value));
 
+		//in case of chaining, leave a copy on the stack
+		Toy_pushStack(&vm->stack, Toy_copyValue(value));
+
 		//cleanup
 		Toy_freeValue(value);
 	}
@@ -285,6 +291,9 @@ static void processAssignCompound(Toy_VM* vm) {
 
 		//set the value
 		Toy_insertTable(&table, Toy_copyValue(Toy_unwrapValue(key)), Toy_copyValue(Toy_unwrapValue(value)));
+
+		//in case of chaining, leave a copy on the stack
+		Toy_pushStack(&vm->stack, Toy_copyValue(value));
 
 		//cleanup
 		Toy_freeValue(value);
@@ -341,6 +350,12 @@ static void processDuplicate(Toy_VM* vm) {
 	if (squeezed == TOY_OPCODE_ACCESS) {
 		processAccess(vm);
 	}
+}
+
+static void processEliminate(Toy_VM* vm) {
+	//discard the stack top
+	Toy_Value value = Toy_popStack(&vm->stack);
+	Toy_freeValue(value);
 }
 
 static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
@@ -564,7 +579,7 @@ static void processAssert(Toy_VM* vm) {
 
 	//determine the args
 	if (count == 1) {
-		message = TOY_VALUE_FROM_STRING(Toy_createString(&vm->stringBucket, "assertion failed"));
+		message = TOY_VALUE_FROM_STRING(Toy_createString(&vm->stringBucket, "assertion failed")); //TODO: needs a better default message
 		value = Toy_popStack(&vm->stack);
 	}
 	else if (count == 2) {
@@ -827,6 +842,10 @@ static void process(Toy_VM* vm) {
 				processDuplicate(vm);
 				break;
 
+			case TOY_OPCODE_ELIMINATE:
+				processEliminate(vm);
+				break;
+
 			//arithmetic instructions
 			case TOY_OPCODE_ADD:
 			case TOY_OPCODE_SUBTRACT:
@@ -999,8 +1018,6 @@ void Toy_freeVM(Toy_VM* vm) {
 	Toy_popScope(vm->scope);
 	Toy_freeBucket(&vm->stringBucket);
 	Toy_freeBucket(&vm->scopeBucket);
-
-	Toy_resetVM(vm);
 }
 
 void Toy_resetVM(Toy_VM* vm) {
@@ -1020,5 +1037,7 @@ void Toy_resetVM(Toy_VM* vm) {
 
 	vm->programCounter = 0;
 
-	//NOTE: stack, scope and memory are not altered during resets
+	Toy_resetStack(&vm->stack);
+
+	//NOTE: scope and memory are not altered during resets
 }

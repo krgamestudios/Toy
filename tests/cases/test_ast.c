@@ -21,6 +21,7 @@ int test_sizeof_ast_64bit(void) {
 	TEST_SIZEOF(Toy_AstValue, 24);
 	TEST_SIZEOF(Toy_AstUnary, 16);
 	TEST_SIZEOF(Toy_AstBinary, 24);
+	TEST_SIZEOF(Toy_AstBinaryShortCircuit, 24);
 	TEST_SIZEOF(Toy_AstCompare, 24);
 	TEST_SIZEOF(Toy_AstGroup, 16);
 	TEST_SIZEOF(Toy_AstCompound, 16);
@@ -60,6 +61,7 @@ int test_sizeof_ast_32bit(void) {
 	TEST_SIZEOF(Toy_AstValue, 12);
 	TEST_SIZEOF(Toy_AstUnary, 12);
 	TEST_SIZEOF(Toy_AstBinary, 16);
+	TEST_SIZEOF(Toy_AstBinaryShortCircuit, 16);
 	TEST_SIZEOF(Toy_AstCompare, 16);
 	TEST_SIZEOF(Toy_AstGroup, 8);
 	TEST_SIZEOF(Toy_AstCompound, 12);
