@@ -1,5 +1,3 @@
-*For the feature complete version 1, [click here](https://github.com/Ratstail91/Toy/tree/v1).*
-
 <p align="center">
 	<image src="toylogo.png" />
 </p>
@@ -15,14 +13,14 @@ This repository holds the reference implementation for Toy version 2.x, written 
 * Simple C-like/JS-like syntax
 * Intermediate AST representation
 * Strong, but optional type system
-* First-class functions
+* First-class functions and closures
 * Extensible with importable native code
 * Can re-direct output, error and assert failure messages
 * Open-Source under the Zlib license
 
 # Syntax
 
-The following examples aren't fully functional yet, see [timetable](#timetable).
+The following examples aren't fully functional yet, see [Timetable](#timetable).
 
 ```toy
 //fizzbuzz example
@@ -79,17 +77,17 @@ print tally(); //3
 
 # Timetable
 
-Here's a rough goal for the upcoming milestones, at which time I'll review and revise my projections. In terms of alpha/beta, the libraries mark the beginning of the beta stage.
+Here's a rough goal for the upcoming milestones, at which time I'll review and revise my projections.
 
-Feature | Time Span | Review Date |
---- | --- | --- |
-[Arrays & Tables](https://github.com/Ratstail91/Toy/issues/155) | 3 weeks | 3rd Jan |
-Types | 2 weeks | 17th Jan |
-Slice Notation | 2 weeks | 31st Jan |
-[Control Flow](https://github.com/Ratstail91/Toy/issues/152) | 1 month | 28th Feb |
-Functions | 1 month | 28th March |
-External Libraries | - | - |
-Native Libraries | - | - |
+| Feature | Time Span | Review Date |
+| --- | :---: | :---: |
+| [Arrays & Tables](https://github.com/Ratstail91/Toy/issues/155) | -  | 1st Jan |
+| [Control Flow](https://github.com/Ratstail91/Toy/issues/152) | 2 weeks | 15th Jan |
+| [Functions](https://github.com/Ratstail91/Toy/issues/163) | 2 weeks | 29th Jan |
+| [Dot Operator & Slices](https://github.com/Ratstail91/Toy/issues/156) | 2 weeks | 12th Feb |
+| [Standard Libraries](https://github.com/Ratstail91/Toy/issues/164) | 2 weeks | 26th Feb |
+| [Native Libraries](https://github.com/Ratstail91/Toy/issues/165) | 2 weeks | 12th Mar |
+| [Documentation](https://github.com/Ratstail91/Toy/issues/169) | - | - |
 
 # Building
 
@@ -101,11 +99,11 @@ To build and run the test suites, run `make tests` (`make tests-gdb` and `make t
 
 # Tools
 
-*Coming Soon - see [#126](https://github.com/Ratstail91/Toy/discussions/126) for details.*
+*Coming Soon - I want the features mostly working first.*
 
 # Documentation
 
-*Coming Soon - I want the features mostly set in stone first.*
+*Coming Soon - I want the features mostly working first.*
 
 # License
 
