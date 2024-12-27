@@ -14,10 +14,9 @@ typedef struct Toy_TableEntry { //32 | 64 BITNESS
 typedef struct Toy_Table { //32 | 64 BITNESS
 	unsigned int capacity; //4  | 4
 	unsigned int count;    //4  | 4
-	unsigned int minPsl;   //4  | 4
 	unsigned int maxPsl;   //4  | 4
 	Toy_TableEntry data[]; //-  | -
-} Toy_Table;               //16 | 16
+} Toy_Table;               //12 | 12
 
 TOY_API Toy_Table* Toy_allocateTable(void);
 TOY_API void Toy_freeTable(Toy_Table* table);
@@ -26,8 +25,8 @@ TOY_API Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key);
 TOY_API void Toy_removeTable(Toy_Table** tableHandle, Toy_Value key);
 
 //NOTE: exposed to skip unnecessary allocations within Toy_Scope
-TOY_API Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int newCapacity); //TODO: make it public?
-TOY_API Toy_TableEntry* Toy_private_lookupTableEntryPtr(Toy_Table** tableHandle, Toy_Value key); //TODO: make it public?
+TOY_API Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int newCapacity);
+TOY_API Toy_TableEntry* Toy_private_lookupTableEntryPtr(Toy_Table** tableHandle, Toy_Value key);
 
 //some useful sizes, could be swapped out as needed
 #ifndef TOY_TABLE_INITIAL_CAPACITY

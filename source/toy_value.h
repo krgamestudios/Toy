@@ -33,7 +33,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 		bool boolean;                  //1  | 1
 		int integer;                   //4  | 4
 		float number;                  //4  | 4
-		union Toy_String_t* string;     //4  | 8
+		union Toy_String_t* string;    //4  | 8
 		struct Toy_Array* array;       //4  | 8
 		struct Toy_Table* table;       //4  | 8
 		//TODO: more types go here

@@ -17,24 +17,15 @@ static void probeAndInsert(Toy_Table** tableHandle, Toy_Value key, Toy_Value val
 		//if we're overriding an existing value
 		if (Toy_checkValuesAreEqual((*tableHandle)->data[probe].key, key)) {
 			(*tableHandle)->data[probe] = entry;
-
-			//TODO: benchmark the psl optimisation
-			(*tableHandle)->minPsl = entry.psl < (*tableHandle)->minPsl ? entry.psl : (*tableHandle)->minPsl;
 			(*tableHandle)->maxPsl = entry.psl > (*tableHandle)->maxPsl ? entry.psl : (*tableHandle)->maxPsl;
-
 			return;
 		}
 
 		//if this spot is free, insert and return
 		if (TOY_VALUE_IS_NULL((*tableHandle)->data[probe].key)) {
 			(*tableHandle)->data[probe] = entry;
-
 			(*tableHandle)->count++;
-
-			//TODO: benchmark the psl optimisation
-			(*tableHandle)->minPsl = entry.psl < (*tableHandle)->minPsl ? entry.psl : (*tableHandle)->minPsl;
 			(*tableHandle)->maxPsl = entry.psl > (*tableHandle)->maxPsl ? entry.psl : (*tableHandle)->maxPsl;
-
 			return;
 		}
 
@@ -64,7 +55,6 @@ Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int new
 
 	newTable->capacity = newCapacity;
 	newTable->count = 0;
-	newTable->minPsl = 0;
 	newTable->maxPsl = 0;
 
 	//unlike other structures, the empty space in a table needs to be null
@@ -181,7 +171,7 @@ void Toy_removeTable(Toy_Table** tableHandle, Toy_Value key) {
 	}
 
 	//shift along the later entries
-	for (unsigned int i = (*tableHandle)->minPsl; i < (*tableHandle)->maxPsl; i++) {
+	for (unsigned int i = 0; i < (*tableHandle)->maxPsl; i++) {
 		//DOOM hack used twice
 		unsigned int p = (probe + i + 0) & ((*tableHandle)->capacity-1); //prev
 		unsigned int u = (probe + i + 1) & ((*tableHandle)->capacity-1); //current
