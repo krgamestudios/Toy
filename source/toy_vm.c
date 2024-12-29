@@ -63,7 +63,7 @@ static void processRead(Toy_VM* vm) {
 
 		case TOY_VALUE_STRING: {
 			enum Toy_StringType stringType = READ_BYTE(vm);
-			int len = (int)READ_BYTE(vm);
+			int len = (int)READ_BYTE(vm); //only needed for name strings
 
 			//grab the jump as an integer
 			unsigned int jump = *((int*)(vm->module + vm->jumpsAddr + READ_INT(vm)));
@@ -524,7 +524,7 @@ static void processLogical(Toy_VM* vm, Toy_OpcodeType opcode) {
 }
 
 static void processJump(Toy_VM* vm) {
-	Toy_OpJumpType type = READ_BYTE(vm);
+	Toy_OpParamJumpType type = READ_BYTE(vm);
 	Toy_OpParamJumpConditional cond = READ_BYTE(vm);
 	fixAlignment(vm);
 
@@ -568,6 +568,19 @@ static void processJump(Toy_VM* vm) {
 		case TOY_OP_PARAM_JUMP_RELATIVE:
 			vm->programCounter += param;
 			return;
+	}
+}
+
+static void processEscape(Toy_VM* vm) {
+	fixAlignment(vm);
+
+	int addr = READ_INT(vm); //where to go
+	int diff = READ_INT(vm); //what to do
+
+	vm->programCounter += addr;
+
+	while (diff > 0 && vm->scope != NULL) {
+		vm->scope = Toy_popScope(vm->scope);
 	}
 }
 
@@ -879,6 +892,10 @@ static void process(Toy_VM* vm) {
 
 			case TOY_OPCODE_JUMP:
 				processJump(vm);
+				break;
+
+			case TOY_OPCODE_ESCAPE:
+				processEscape(vm);
 				break;
 
 			case TOY_OPCODE_SCOPE_PUSH:

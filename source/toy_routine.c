@@ -9,6 +9,30 @@
 #include <stdlib.h>
 #include <string.h>
 
+//escapes
+void* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int capacity) {
+	//if you're freeing everything, just return
+	if (capacity == 0) {
+		free(ptr);
+		return NULL;
+	}
+
+	unsigned int originalCapacity = ptr == NULL ? 0 : ptr->capacity;
+	unsigned int orignalCount = ptr == NULL ? 0 : ptr->count;
+
+	ptr = (Toy_private_EscapeArray*)realloc(ptr, capacity * sizeof(Toy_private_EscapeEntry_t) + sizeof(Toy_private_EscapeArray));
+
+	if (ptr == NULL) {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to resize an escape array within 'Toy_Routine' from %d to %d capacity\n" TOY_CC_RESET, (int)originalCapacity, (int)capacity);
+		exit(-1);
+	}
+
+	ptr->capacity = capacity;
+	ptr->count = orignalCount;
+
+	return ptr;
+}
+
 //utils
 static void expand(unsigned char** handle, unsigned int* capacity, unsigned int* count, unsigned int amount) {
 	if ((*count) + amount > (*capacity)) {
@@ -240,7 +264,7 @@ static unsigned int writeInstructionBinaryShortCircuit(Toy_Routine** rt, Toy_Ast
 	}
 
 	//parameter address
-	unsigned int endAddr = SKIP_INT(rt, code); //parameter to be written later
+	unsigned int paramAddr = SKIP_INT(rt, code); //parameter to be written later
 
 	//if the lhs value isn't needed, pop it
 	EMIT_BYTE(rt, code,TOY_OPCODE_ELIMINATE);
@@ -252,7 +276,7 @@ static unsigned int writeInstructionBinaryShortCircuit(Toy_Routine** rt, Toy_Ast
 	writeRoutineCode(rt, ast.right);
 
 	//set the parameter
-	OVERWRITE_INT(rt, code, endAddr, CURRENT_ADDRESS(rt, code) - (endAddr + 4));
+	OVERWRITE_INT(rt, code, paramAddr, CURRENT_ADDRESS(rt, code) - (paramAddr + 4));
 
 	return 1; //leaves only 1 value on the stack
 }
@@ -401,7 +425,7 @@ static unsigned int writeInstructionIfThenElse(Toy_Routine** rt, Toy_AstIfThenEl
 	EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_IF_FALSE);
 	EMIT_BYTE(rt, code, 0);
 
-	unsigned int thenEndAddr = SKIP_INT(rt, code); //parameter to be written later
+	unsigned int thenParamAddr = SKIP_INT(rt, code); //parameter to be written later
 
 	//emit then-branch
 	writeRoutineCode(rt, ast.thenBranch);
@@ -413,21 +437,21 @@ static unsigned int writeInstructionIfThenElse(Toy_Routine** rt, Toy_AstIfThenEl
 		EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_ALWAYS);
 		EMIT_BYTE(rt, code, 0);
 
-		unsigned int elseEndAddr = SKIP_INT(rt, code); //parameter to be written later
+		unsigned int elseParamAddr = SKIP_INT(rt, code); //parameter to be written later
 
 		//specify the starting position for the else branch
-		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - (thenEndAddr + 4));
+		OVERWRITE_INT(rt, code, thenParamAddr, CURRENT_ADDRESS(rt, code) - (thenParamAddr + 4));
 
 		//emit the else branch
 		writeRoutineCode(rt, ast.elseBranch);
 
 		//specify the ending position for the else branch
-		OVERWRITE_INT(rt, code, elseEndAddr, CURRENT_ADDRESS(rt, code) - (elseEndAddr + 4));
+		OVERWRITE_INT(rt, code, elseParamAddr, CURRENT_ADDRESS(rt, code) - (elseParamAddr + 4));
 	}
 
 	else {
 		//without an else branch, set the jump destination and move on
-		OVERWRITE_INT(rt, code, thenEndAddr, CURRENT_ADDRESS(rt, code) - (thenEndAddr + 4));
+		OVERWRITE_INT(rt, code, thenParamAddr, CURRENT_ADDRESS(rt, code) - (thenParamAddr + 4));
 	}
 
 	return 0;
@@ -446,7 +470,7 @@ static unsigned int writeInstructionWhileThen(Toy_Routine** rt, Toy_AstWhileThen
 	EMIT_BYTE(rt, code, TOY_OP_PARAM_JUMP_IF_FALSE);
 	EMIT_BYTE(rt, code, 0);
 
-	unsigned int endAddr = SKIP_INT(rt, code); //parameter to be written later
+	unsigned int paramAddr = SKIP_INT(rt, code); //parameter to be written later
 
 	//emit then-branch
 	writeRoutineCode(rt, ast.thenBranch);
@@ -459,25 +483,85 @@ static unsigned int writeInstructionWhileThen(Toy_Routine** rt, Toy_AstWhileThen
 
 	EMIT_INT(rt, code, beginAddr - (CURRENT_ADDRESS(rt, code) + 4)); //this sets a negative value
 
-	OVERWRITE_INT(rt, code, endAddr, CURRENT_ADDRESS(rt, code) - (endAddr + 4));
+	//set the exit parameter for the cond
+	OVERWRITE_INT(rt, code, paramAddr, CURRENT_ADDRESS(rt, code) - (paramAddr + 4));
+
+	//set the break & continue data
+	while ((*rt)->breakEscapes->count > 0) {
+		//extract
+		unsigned int addr = (*rt)->breakEscapes->data[(*rt)->breakEscapes->count - 1].addr;
+		unsigned int depth = (*rt)->breakEscapes->data[(*rt)->breakEscapes->count - 1].depth;
+
+		unsigned int diff = depth - (*rt)->currentScopeDepth;
+
+		OVERWRITE_INT(rt, code, addr, CURRENT_ADDRESS(rt, code) - (addr + 8)); //tell break to come here AFTER reading the instruction
+		OVERWRITE_INT(rt, code, addr, diff);
+
+		//tick down
+		(*rt)->breakEscapes->count--;
+	}
+
+	while ((*rt)->continueEscapes->count > 0) {
+		//extract
+		unsigned int addr = (*rt)->continueEscapes->data[(*rt)->continueEscapes->count - 1].addr;
+		unsigned int depth = (*rt)->continueEscapes->data[(*rt)->continueEscapes->count - 1].depth;
+
+		unsigned int diff = depth - (*rt)->currentScopeDepth;
+
+		OVERWRITE_INT(rt, code, addr, addr - (CURRENT_ADDRESS(rt, code) + 8)); //tell continue to return to the start AFTER reading the instruction
+		OVERWRITE_INT(rt, code, addr, diff);
+
+		//tick down
+		(*rt)->continueEscapes->count--;
+	}
 
 	return 0;
 }
 
 static unsigned int writeInstructionBreak(Toy_Routine** rt, Toy_AstBreak ast) {
-	//TODO: implement break
+	//unused
 	(void)ast;
-	fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Keyword 'break' not yet implemented\n" TOY_CC_RESET);
-	(*rt)->panic = true;
+
+	//escapes are always relative
+	EMIT_BYTE(rt, code, TOY_OPCODE_ESCAPE);
+	EMIT_BYTE(rt, code, 0);
+	EMIT_BYTE(rt, code, 0);
+	EMIT_BYTE(rt, code, 0);
+
+	unsigned int addr = SKIP_INT(rt, code);
+	(void)SKIP_INT(rt, code); //empty space for depth
+
+	//expand the escape array if needed
+	if ((*rt)->breakEscapes->capacity <= (*rt)->breakEscapes->count) {
+		(*rt)->breakEscapes = Toy_private_resizeEscapeArray((*rt)->breakEscapes, (*rt)->breakEscapes->capacity * TOY_ESCAPE_EXPANSION_RATE);
+	}
+
+	//store for later
+	(*rt)->breakEscapes->data[(*rt)->breakEscapes->count++] = (Toy_private_EscapeEntry_t){ .addr = addr, .depth = (*rt)->currentScopeDepth };
 
 	return 0;
 }
 
 static unsigned int writeInstructionContinue(Toy_Routine** rt, Toy_AstContinue ast) {
-	//TODO: implement continue
+	//unused
 	(void)ast;
-	fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Keyword 'continue' not yet implemented\n" TOY_CC_RESET);
-	(*rt)->panic = true;
+
+	//escapes are always relative
+	EMIT_BYTE(rt, code, TOY_OPCODE_ESCAPE);
+	EMIT_BYTE(rt, code, 0);
+	EMIT_BYTE(rt, code, 0);
+	EMIT_BYTE(rt, code, 0);
+
+	unsigned int addr = SKIP_INT(rt, code);
+	(void)SKIP_INT(rt, code); //empty space for depth
+
+	//expand the escape array if needed
+	if ((*rt)->continueEscapes->capacity <= (*rt)->continueEscapes->count) {
+		(*rt)->continueEscapes = Toy_private_resizeEscapeArray((*rt)->continueEscapes, (*rt)->continueEscapes->capacity * TOY_ESCAPE_EXPANSION_RATE);
+	}
+
+	//store for later
+	(*rt)->continueEscapes->data[(*rt)->continueEscapes->count++] = (Toy_private_EscapeEntry_t){ .addr = addr, .depth = (*rt)->currentScopeDepth };
 
 	return 0;
 }
@@ -700,6 +784,8 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 				EMIT_BYTE(rt, code, 0);
 				EMIT_BYTE(rt, code, 0);
 				EMIT_BYTE(rt, code, 0);
+
+				(*rt)->currentScopeDepth++;
 			}
 
 			result += writeRoutineCode(rt, ast->block.child);
@@ -710,6 +796,8 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 				EMIT_BYTE(rt, code, 0);
 				EMIT_BYTE(rt, code, 0);
 				EMIT_BYTE(rt, code, 0);
+
+				(*rt)->currentScopeDepth--;
 			}
 			break;
 
@@ -909,12 +997,19 @@ void* Toy_compileRoutine(Toy_Ast* ast) {
 	rt.subsCapacity = 0;
 	rt.subsCount = 0;
 
+	rt.currentScopeDepth = 0;
+	rt.breakEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
+	rt.continueEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
+
 	rt.panic = false;
 
 	//build
 	void * buffer = writeRoutine(&rt, ast);
 
-	//cleanup the temp object
+	//cleanup
+	Toy_private_resizeEscapeArray(rt.breakEscapes, 0);
+	Toy_private_resizeEscapeArray(rt.continueEscapes, 0);
+
 	free(rt.param);
 	free(rt.code);
 	free(rt.jumps);

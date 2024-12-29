@@ -1,0 +1,48 @@
+
+while (true) {
+	print "1";
+	break;
+	print "2";
+}
+
+print "3";
+
+
+
+while (true) {
+	print 1;
+	while (true) {
+		print 2;
+		if (true) {
+			print 3;
+			while (true) {
+				print 4;
+				break;
+				print 5;
+			}
+			print 6;
+		}
+		print 7;
+	}
+	print 8;
+}
+
+print 9;
+
+
+
+while (true) {
+	print 1;
+	while (true) {
+		print 2;
+		if (true) {
+			print 3;
+			break;
+			print 6;
+		}
+		print 7;
+	}
+	print 8;
+}
+
+print 9;
