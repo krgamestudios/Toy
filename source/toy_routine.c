@@ -508,7 +508,7 @@ static unsigned int writeInstructionWhileThen(Toy_Routine** rt, Toy_AstWhileThen
 
 		unsigned int diff = depth - (*rt)->currentScopeDepth;
 
-		OVERWRITE_INT(rt, code, addr, addr - (CURRENT_ADDRESS(rt, code) + 8)); //tell continue to return to the start AFTER reading the instruction
+		OVERWRITE_INT(rt, code, addr, CURRENT_ADDRESS(rt, code) - (addr + 8)); //tell continue to return to the start AFTER reading the instruction
 		OVERWRITE_INT(rt, code, addr, diff);
 
 		//tick down

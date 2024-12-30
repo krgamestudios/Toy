@@ -581,6 +581,7 @@ static void processEscape(Toy_VM* vm) {
 
 	while (diff > 0 && vm->scope != NULL) {
 		vm->scope = Toy_popScope(vm->scope);
+		diff--;
 	}
 }
 
