@@ -458,6 +458,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			Toy_String* open = Toy_createStringLength(bucketHandle, "[", 1);
 			Toy_String* close = Toy_createStringLength(bucketHandle, "]", 1);
 			Toy_String* comma = Toy_createStringLength(bucketHandle, ",", 1); //reusable
+			Toy_String* quote = Toy_createStringLength(bucketHandle, "\"", 1); //reusable
 			bool needsComma = false;
 
 			Toy_String* string = open;
@@ -469,8 +470,20 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 					string = tmp;
 				}
 
-				//append each element
+				//get the element
 				Toy_String* element = Toy_stringifyValue(bucketHandle, ptr->data[i]);
+
+				//put quotemarks around internal string elements
+				if (TOY_VALUE_IS_STRING(ptr->data[i])) {
+					Toy_String* tmpA = Toy_concatStrings(bucketHandle, quote, element);
+					Toy_String* tmpB = Toy_concatStrings(bucketHandle, tmpA, quote);
+
+					Toy_freeString(element);
+					Toy_freeString(tmpA);
+					element = tmpB;
+				}
+
+				//append each element
 				Toy_String* final = Toy_concatStrings(bucketHandle, string, element);
 
 				Toy_freeString(element);
@@ -490,6 +503,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			Toy_freeString(open);
 			Toy_freeString(close);
 			Toy_freeString(comma); //TODO: reusable global, or string type "permanent"
+			Toy_freeString(quote); //TODO: reusable global, or string type "permanent"
 
 			return string;
 		}
@@ -508,6 +522,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			Toy_String* close = Toy_createStringLength(bucketHandle, "]", 1);
 			Toy_String* colon = Toy_createStringLength(bucketHandle, ":", 1); //reusable
 			Toy_String* comma = Toy_createStringLength(bucketHandle, ",", 1); //reusable
+			Toy_String* quote = Toy_createStringLength(bucketHandle, "\"", 1); //reusable
 			bool needsComma = false;
 
 			Toy_String* string = open;
@@ -526,7 +541,29 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 				//make the element pair
 				Toy_String* k = Toy_stringifyValue(bucketHandle, ptr->data[i].key);
 				Toy_String* v = Toy_stringifyValue(bucketHandle, ptr->data[i].value);
-				Toy_String* c = Toy_concatStrings(bucketHandle, k, colon); //stick the colon between
+
+				//put quotemarks around internal string elements (key)
+				if (TOY_VALUE_IS_STRING(ptr->data[i].key)) {
+					Toy_String* tmpA = Toy_concatStrings(bucketHandle, quote, k);
+					Toy_String* tmpB = Toy_concatStrings(bucketHandle, tmpA, quote);
+
+					Toy_freeString(k);
+					Toy_freeString(tmpA);
+					k = tmpB;
+				}
+
+				//put quotemarks around internal string elements (value)
+				if (TOY_VALUE_IS_STRING(ptr->data[i].value)) {
+					Toy_String* tmpA = Toy_concatStrings(bucketHandle, quote, v);
+					Toy_String* tmpB = Toy_concatStrings(bucketHandle, tmpA, quote);
+
+					Toy_freeString(v);
+					Toy_freeString(tmpA);
+					v = tmpB;
+				}
+
+				//stick the colon between, make the pair
+				Toy_String* c = Toy_concatStrings(bucketHandle, k, colon);
 				Toy_String* pair = Toy_concatStrings(bucketHandle, c, v);
 
 				//append the element pair
@@ -558,6 +595,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			Toy_freeString(close);
 			Toy_freeString(colon); //TODO: reusable global, or string type "permanent"
 			Toy_freeString(comma); //TODO: reusable global, or string type "permanent"
+			Toy_freeString(quote); //TODO: reusable global, or string type "permanent"
 
 			return string;
 		}
