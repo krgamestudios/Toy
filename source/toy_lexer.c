@@ -16,7 +16,6 @@ const Toy_KeywordTypeTuple keywordTuples[] = {
 	{TOY_TOKEN_NULL, "null"},
 
 	//types
-	{TOY_TOKEN_TYPE_TYPE, "type"},
 	{TOY_TOKEN_TYPE_BOOLEAN, "bool"},
 	{TOY_TOKEN_TYPE_INTEGER, "int"},
 	{TOY_TOKEN_TYPE_FLOAT, "float"},
@@ -47,8 +46,6 @@ const Toy_KeywordTypeTuple keywordTuples[] = {
 	{TOY_TOKEN_KEYWORD_PASS, "pass"},
 	{TOY_TOKEN_KEYWORD_PRINT, "print"},
 	{TOY_TOKEN_KEYWORD_RETURN, "return"},
-	{TOY_TOKEN_KEYWORD_TYPEAS, "typeas"},
-	{TOY_TOKEN_KEYWORD_TYPEOF, "typeof"},
 	{TOY_TOKEN_KEYWORD_VAR, "var"},
 	{TOY_TOKEN_KEYWORD_WHILE, "while"},
 	{TOY_TOKEN_KEYWORD_YIELD, "yield"},

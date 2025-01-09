@@ -164,11 +164,6 @@ static void processRead(Toy_VM* vm) {
 			// break;
 		}
 
-		case TOY_VALUE_TYPE: {
-			//
-			// break;
-		}
-
 		case TOY_VALUE_ANY: {
 			//
 			// break;

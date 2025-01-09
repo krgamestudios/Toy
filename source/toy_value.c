@@ -77,7 +77,6 @@ unsigned int Toy_hashValue(Toy_Value value) {
 
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
-		case TOY_VALUE_TYPE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
@@ -136,7 +135,6 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 		}
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
-		case TOY_VALUE_TYPE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
@@ -175,7 +173,6 @@ void Toy_freeValue(Toy_Value value) {
 
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
-		case TOY_VALUE_TYPE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_UNKNOWN:
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't free an unknown value type, exiting\n" TOY_CC_RESET);
@@ -300,7 +297,6 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
-		case TOY_VALUE_TYPE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
@@ -340,7 +336,6 @@ bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
 
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
-		case TOY_VALUE_TYPE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
@@ -396,7 +391,6 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
-		case TOY_VALUE_TYPE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
@@ -570,7 +564,6 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
-		case TOY_VALUE_TYPE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
@@ -592,7 +585,6 @@ const char* Toy_private_getValueTypeAsCString(Toy_ValueType type) {
 		case TOY_VALUE_TABLE: return "table";
 		case TOY_VALUE_FUNCTION: return "function";
 		case TOY_VALUE_OPAQUE: return "opaque";
-		case TOY_VALUE_TYPE: return "type";
 		case TOY_VALUE_ANY: return "any";
 		case TOY_VALUE_REFERENCE: return "reference";
 		case TOY_VALUE_UNKNOWN: return "unknown";

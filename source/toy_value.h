@@ -19,7 +19,6 @@ typedef enum Toy_ValueType {
 	TOY_VALUE_TABLE,
 	TOY_VALUE_FUNCTION,
 	TOY_VALUE_OPAQUE,
-	TOY_VALUE_TYPE,
 	TOY_VALUE_ANY,
 
 	TOY_VALUE_REFERENCE, //not a value itself, but pointing to one

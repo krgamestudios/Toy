@@ -98,3 +98,27 @@ print "done";
 	print "done";
 }
 
+//-------------------------
+
+{
+	//iteration
+	var iteration = 0;
+	while(iteration < 10) {
+		print iteration;
+		iteration += 1;
+	}
+}
+
+{
+	//if and while work together
+	var count = 1;
+	while (count <= 10) {
+		if (count % 2 == 0) {
+			print "even";
+		}
+		else {
+			print "odd";
+		}
+		count += 1;
+	}
+}
