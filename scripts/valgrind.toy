@@ -11,3 +11,16 @@
 
 	print a;
 }
+
+
+//increment & decrement (postfix)
+{
+	var a = 42;
+	assert a == 42;
+	assert a++ == 42;
+	assert a == 43;
+	assert a-- == 43;
+	assert a == 42;
+
+	print a;
+}

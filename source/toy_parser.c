@@ -119,6 +119,7 @@ static Toy_AstFlag binary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 static Toy_AstFlag group(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
+static Toy_AstFlag unaryPostfix(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 
 //precedence definitions
 static ParsingTuple parsingRulesetTable[] = {
@@ -180,8 +181,8 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_MULTIPLY_ASSIGN,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_DIVIDE_ASSIGN,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_MODULO_ASSIGN,
-	{PREC_CALL,unary,NULL},// TOY_TOKEN_OPERATOR_INCREMENT,
-	{PREC_CALL,unary,NULL},// TOY_TOKEN_OPERATOR_DECREMENT,
+	{PREC_CALL,unary,unaryPostfix},// TOY_TOKEN_OPERATOR_INCREMENT,
+	{PREC_CALL,unary,unaryPostfix},// TOY_TOKEN_OPERATOR_DECREMENT,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_ASSIGN,
 
 	//comparator operators
@@ -222,6 +223,10 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_ERROR,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_EOF,
 };
+
+static ParsingTuple* getParsingRule(Toy_TokenType type) {
+	return &parsingRulesetTable[type];
+}
 
 static Toy_ValueType readType(Toy_Parser* parser) {
 	advance(parser);
@@ -429,7 +434,7 @@ static Toy_AstFlag unary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 
 		//double check it's a name string within an access NOTE: doing some fiddling with the existing AST here
 		if (primary->type != TOY_AST_VAR_ACCESS || primary->varAccess.child->type != TOY_AST_VALUE || TOY_VALUE_IS_STRING(primary->varAccess.child->value.value) != true || TOY_VALUE_AS_STRING(primary->varAccess.child->value.value)->info.type != TOY_STRING_NAME) {
-			printError(parser, parser->previous, "Unexpected non-name-string token in unary operator increment precedence rule");
+			printError(parser, parser->previous, "Unexpected non-name-string token in unary-prefix operator precedence rule");
 			Toy_private_emitAstError(bucketHandle, rootHandle);
 		}
 		else {
@@ -666,8 +671,41 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 	}
 }
 
-static ParsingTuple* getParsingRule(Toy_TokenType type) {
-	return &parsingRulesetTable[type];
+static Toy_AstFlag unaryPostfix(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	//grab the var name, rejecting any other token types
+	if (parser->previous.type != TOY_TOKEN_NAME) {
+		printError(parser, parser->previous, "Unexpected parameter passed to unary-postfix precedence rule");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return TOY_AST_FLAG_NONE;
+	}
+
+	Toy_Ast* primary = NULL;
+	ParsingRule nameRule = getParsingRule(parser->previous.type)->prefix;
+	nameRule(bucketHandle, parser, &primary); //this is to skip the call to advance() at the beginning of parsePrecedence()
+
+	//double check it's a name string within an access NOTE: doing some fiddling with the existing AST here
+	if (primary->type != TOY_AST_VAR_ACCESS || primary->varAccess.child->type != TOY_AST_VALUE || TOY_VALUE_IS_STRING(primary->varAccess.child->value.value) != true || TOY_VALUE_AS_STRING(primary->varAccess.child->value.value)->info.type != TOY_STRING_NAME) {
+		printError(parser, parser->previous, "Unexpected non-name-string token in unary-postfix operator precedence rule");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return TOY_AST_FLAG_NONE;
+	}
+
+	(*rootHandle) = primary->varAccess.child;
+
+	//output the postfix AST
+	if (match(parser, TOY_TOKEN_OPERATOR_INCREMENT)) {
+		Toy_private_emitAstUnary(bucketHandle, rootHandle, TOY_AST_FLAG_POSTFIX_INCREMENT);
+		return TOY_AST_FLAG_POSTFIX_INCREMENT;
+	}
+	else if (match(parser, TOY_TOKEN_OPERATOR_DECREMENT)) {
+		Toy_private_emitAstUnary(bucketHandle, rootHandle, TOY_AST_FLAG_POSTFIX_DECREMENT);
+		return TOY_AST_FLAG_POSTFIX_DECREMENT;
+	}
+	else {
+		printError(parser, parser->previous, "Unexpected token passed to unary-postfix precedence rule");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return TOY_AST_FLAG_NONE;
+	}
 }
 
 //grammar rules
@@ -720,6 +758,10 @@ static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 		}
 		else if (flag >= 30 && flag <= 39) {
 			Toy_private_emitAstAggregate(bucketHandle, rootHandle, flag, ptr);
+		}
+		else if (flag >= 40 && flag <= 49) {
+			(*rootHandle) = ptr;
+			continue;
 		}
 		else {
 			//BUGFIX: '&&' and '||' are special cases, with short-circuit logic
