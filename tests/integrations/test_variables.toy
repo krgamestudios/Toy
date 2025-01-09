@@ -112,23 +112,37 @@ print !false; //true
 }
 
 //types
-var a: int;
-var b: int = 42;
+{
+	var a: int;
+	var b: int = 42;
 
-a = 69;
-b = 8891;
+	a = 69;
+	b = 8891;
 
-print a;
-print b;
+	print a;
+	print b;
+}
 
 //constants
-var c: int const = 42;
-
-print c;
+{
+	var c: int const = 42;
+	print c;
+}
 
 //indexing
-var s = "Hello" .. "world!";
+{
+	var s = "Hello" .. "world!";
+	print s[3, 3];
+}
 
-print s[3, 3];
+//increment & decrement (prefix)
+{
+	var a = 42;
+	assert a == 42, "prefix increment & decrement 1.1";
+	assert ++a == 43, "prefix increment & decrement 1.2";
+	assert a == 43, "prefix increment & decrement 1.3";
+	assert --a == 42, "prefix increment & decrement 1.4";
+	assert a == 42, "prefix increment & decrement 1.5";
+}
 
 //TODO: type casting

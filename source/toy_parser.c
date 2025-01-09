@@ -180,8 +180,8 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_MULTIPLY_ASSIGN,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_DIVIDE_ASSIGN,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_MODULO_ASSIGN,
-	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_INCREMENT,
-	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_DECREMENT,
+	{PREC_CALL,unary,NULL},// TOY_TOKEN_OPERATOR_INCREMENT,
+	{PREC_CALL,unary,NULL},// TOY_TOKEN_OPERATOR_DECREMENT,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_ASSIGN,
 
 	//comparator operators
@@ -417,6 +417,26 @@ static Toy_AstFlag unary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 	else if (parser->previous.type == TOY_TOKEN_OPERATOR_NEGATE) {
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_UNARY);
 		Toy_private_emitAstUnary(bucketHandle, rootHandle, TOY_AST_FLAG_NEGATE);
+	}
+
+	else if (parser->previous.type == TOY_TOKEN_OPERATOR_INCREMENT || parser->previous.type == TOY_TOKEN_OPERATOR_DECREMENT) {
+		Toy_AstFlag flag = parser->previous.type == TOY_TOKEN_OPERATOR_INCREMENT ? TOY_AST_FLAG_PREFIX_INCREMENT : TOY_AST_FLAG_PREFIX_DECREMENT;
+
+		//grab the info below
+		Toy_Ast* primary = NULL;
+
+		parsePrecedence(bucketHandle, parser, &primary, PREC_PRIMARY);
+
+		//double check it's a name string within an access NOTE: doing some fiddling with the existing AST here
+		if (primary->type != TOY_AST_VAR_ACCESS || primary->varAccess.child->type != TOY_AST_VALUE || TOY_VALUE_IS_STRING(primary->varAccess.child->value.value) != true || TOY_VALUE_AS_STRING(primary->varAccess.child->value.value)->info.type != TOY_STRING_NAME) {
+			printError(parser, parser->previous, "Unexpected non-name-string token in unary operator increment precedence rule");
+			Toy_private_emitAstError(bucketHandle, rootHandle);
+		}
+		else {
+			//swap the varAccess for a unary prefix, as the latter leaves the value on the stack
+			*rootHandle = primary->varAccess.child;
+			Toy_private_emitAstUnary(bucketHandle, rootHandle, flag);
+		}
 	}
 
 	else {

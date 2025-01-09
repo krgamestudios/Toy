@@ -176,10 +176,11 @@ static unsigned int writeInstructionValue(Toy_Routine** rt, Toy_AstValue ast) {
 }
 
 static unsigned int writeInstructionUnary(Toy_Routine** rt, Toy_AstUnary ast) {
-	//working with a stack means the child gets placed first
-	unsigned int result = writeRoutineCode(rt, ast.child);
+	unsigned int result = 0;
 
 	if (ast.flag == TOY_AST_FLAG_NEGATE) {
+		result = writeRoutineCode(rt, ast.child);
+
 		EMIT_BYTE(rt, code, TOY_OPCODE_NEGATE);
 
 		//4-byte alignment
@@ -187,6 +188,42 @@ static unsigned int writeInstructionUnary(Toy_Routine** rt, Toy_AstUnary ast) {
 		EMIT_BYTE(rt, code, 0);
 		EMIT_BYTE(rt, code, 0);
 	}
+
+	else if (ast.flag == TOY_AST_FLAG_PREFIX_INCREMENT || ast.flag == TOY_AST_FLAG_PREFIX_DECREMENT) { //NOTE: tightly coupled to the parser's logic, and somewhat duplicates ACCESS
+		//read the var name onto the stack
+		Toy_String* name = TOY_VALUE_AS_STRING(ast.child->value.value);
+
+		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
+		EMIT_BYTE(rt, code, TOY_VALUE_STRING);
+		EMIT_BYTE(rt, code, TOY_STRING_NAME);
+		EMIT_BYTE(rt, code, name->info.length); //store the length (max 255)
+
+		emitString(rt, name);
+
+		//duplicate the var name, then get the value
+		EMIT_BYTE(rt, code,TOY_OPCODE_DUPLICATE);
+		EMIT_BYTE(rt, code, TOY_OPCODE_ACCESS); //squeezed
+		EMIT_BYTE(rt, code, 0);
+		EMIT_BYTE(rt, code, 0);
+
+		//read the integer '1'
+		EMIT_BYTE(rt, code, TOY_OPCODE_READ);
+		EMIT_BYTE(rt, code, TOY_VALUE_INTEGER);
+		EMIT_BYTE(rt, code, 0);
+		EMIT_BYTE(rt, code, 0);
+
+		EMIT_INT(rt, code, 1);
+
+		//add (or subtract) the two values, then assign (pops the second duplicate, and leaves value on the stack)
+		EMIT_BYTE(rt, code, ast.flag == TOY_AST_FLAG_PREFIX_INCREMENT ? TOY_OPCODE_ADD : TOY_OPCODE_SUBTRACT);
+		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,0);
+
+		//leaves one value on the stack
+		result = 1;
+	}
+
 	else {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST unary flag found\n" TOY_CC_RESET);
 		exit(-1);

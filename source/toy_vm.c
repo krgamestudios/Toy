@@ -307,7 +307,7 @@ static void processAccess(Toy_VM* vm) {
 	Toy_Value name = Toy_popStack(&vm->stack);
 
 	//check name string type
-	if (!TOY_VALUE_IS_STRING(name) && TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
+	if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		Toy_error("Invalid access target");
 		return;
