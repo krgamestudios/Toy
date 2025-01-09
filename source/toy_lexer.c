@@ -44,6 +44,7 @@ const Toy_KeywordTypeTuple keywordTuples[] = {
 	{TOY_TOKEN_KEYWORD_IMPORT, "import"},
 	{TOY_TOKEN_KEYWORD_IN, "in"},
 	{TOY_TOKEN_KEYWORD_OF, "of"},
+	{TOY_TOKEN_KEYWORD_PASS, "pass"},
 	{TOY_TOKEN_KEYWORD_PRINT, "print"},
 	{TOY_TOKEN_KEYWORD_RETURN, "return"},
 	{TOY_TOKEN_KEYWORD_TYPEAS, "typeas"},
@@ -401,12 +402,6 @@ void Toy_private_printToken(Toy_Token* token) {
 	//print errors
 	if (token->type == TOY_TOKEN_ERROR) {
 		printf(TOY_CC_ERROR "ERROR: \t%d\t%.*s\n" TOY_CC_RESET, (int)token->line, (int)token->length, token->lexeme);
-		return;
-	}
-
-	//read pass token, even though it isn't generated
-	if (token->type == TOY_TOKEN_PASS) {
-		printf(TOY_CC_NOTICE "PASS: \t%d\t%.*s\n" TOY_CC_RESET, (int)token->line, (int)token->length, token->lexeme);
 		return;
 	}
 

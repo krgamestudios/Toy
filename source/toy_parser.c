@@ -156,6 +156,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_IMPORT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_IN,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_OF,
+	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_PASS,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_PRINT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_RETURN,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_TYPEAS,
@@ -221,7 +222,6 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_PIPE, // |
 
 	//meta tokens
-	{PREC_NONE,NULL,NULL},// TOY_TOKEN_PASS,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_ERROR,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_EOF,
 };
@@ -730,7 +730,7 @@ static void makeExpr(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 
 //forward declarations
 static void makeBlockStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
-static void makeDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
+static void makeDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle, bool errorOnEmpty);
 
 static void makeAssertStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	Toy_Ast* ast = NULL; //assert's emit function is a bit different
@@ -764,11 +764,11 @@ static void makeIfThenElseStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, To
 	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'if' condition");
 
 	// { thenBranch }
-	makeDeclarationStmt(bucketHandle, parser, &thenBranch);
+	makeDeclarationStmt(bucketHandle, parser, &thenBranch, true);
 
 	//else { elseBranch }
 	if (match(parser, TOY_TOKEN_KEYWORD_ELSE)) {
-		makeDeclarationStmt(bucketHandle, parser, &elseBranch);
+		makeDeclarationStmt(bucketHandle, parser, &elseBranch, true);
 	}
 
 	Toy_private_emitAstIfThenElse(bucketHandle, rootHandle, condBranch, thenBranch, elseBranch);
@@ -784,7 +784,7 @@ static void makeWhileStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'while' condition");
 
 	// { thenBranch }
-	makeDeclarationStmt(bucketHandle, parser, &thenBranch);
+	makeDeclarationStmt(bucketHandle, parser, &thenBranch, true);
 
 	Toy_private_emitAstWhileThen(bucketHandle, rootHandle, condBranch, thenBranch);
 }
@@ -899,8 +899,8 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//empty lines
-	else if (match(parser, TOY_TOKEN_OPERATOR_SEMICOLON)) {
+	//empty lines, or pass statements
+	else if (match(parser, TOY_TOKEN_OPERATOR_SEMICOLON) || match(parser, TOY_TOKEN_KEYWORD_PASS)) {
 		Toy_private_emitAstPass(bucketHandle, rootHandle);
 		return;
 	}
@@ -913,9 +913,16 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 	}
 }
 
-static void makeDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+static void makeDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle, bool errorOnEmpty) {
+	//disallow empty control flow bodies
+	if (errorOnEmpty && match(parser, TOY_TOKEN_OPERATOR_SEMICOLON)) {
+		printError(parser, parser->previous, "Empty control flow bodies are disallowed, use the 'pass' keyword");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return;
+	}
+
 	//variable declarations
-	if (match(parser, TOY_TOKEN_KEYWORD_VAR)) {
+	else if (match(parser, TOY_TOKEN_KEYWORD_VAR)) {
 		makeVariableDeclarationStmt(bucketHandle, parser, rootHandle);
 	}
 
@@ -938,7 +945,7 @@ static void makeBlockStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 	while (parser->current.type != TOY_TOKEN_OPERATOR_BRACE_RIGHT && !match(parser, TOY_TOKEN_EOF)) {
 		//process the grammar rules
 		Toy_Ast* stmt = NULL;
-		makeDeclarationStmt(bucketHandle, parser, &stmt);
+		makeDeclarationStmt(bucketHandle, parser, &stmt, false);
 
 		//if something went wrong
 		if (parser->panic) {
