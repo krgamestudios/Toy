@@ -1,3 +1,4 @@
+
 # Quick Start Guide
 
 This guide is intended to get you writing Toy code as fast as possible. As such, it's more of a reference for experienced coders to know what is available and what isn't.
@@ -23,7 +24,7 @@ var f = 3.14;
 var s = "Hello world";
 ```
 
-Numbers (both integers and floats) can be delimited with underscores (`_`), to break them up visually e.g. `100_000`.
+Numbers (both integers and floats) can be delimited with underscores (`_`), to break them up visually, e.g. `100_000`.
 
 Strings can be 4096 characters long, and the following characters can be escaped: `\n`, `\t`, `\\` and `\"`.
 
@@ -122,7 +123,7 @@ greeting[0:4] = "Goodnight"; //changes greeting to equal "Goodnight world"
 
 ## External Libraries
 
-The host may, at it's own discretion, make external libraries available to the scripts. To access these, you can use the `import` keyword:
+The host may, at its own discretion, make external libraries available to the scripts. To access these, you can use the `import` keyword:
 
 ```
 import standard;
@@ -199,4 +200,3 @@ Other operators used throughout the language are: the assignment, colon, semicol
 ```
 = : ; , . ...
 ```
-

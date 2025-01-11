@@ -1,3 +1,4 @@
+
 # Embedding Toy
 
 This tutorial assumes that you've managed to embed Toy into your program by following the tutorial [Building Toy](deep-dive/building-toy).
@@ -18,7 +19,7 @@ The functions intended for usage by the API are prepended with the C macro `TOY_
 
 ## Structures Used Throughout Toy
 
-The main unit of data within Toy's internals is `Toy_Literal`, which can contain any value that can exist within the Toy langauge - even identifiers. The exact implementation of `Toy_Literal` may change or evolve as time goes on, so it's recommended that you only interact with literals directly by using the macros and functions outlined [above](#embedded-api-macros). See the [types](getting-started/types) page for information on exactly what datatypes exist in Toy.
+The main unit of data within Toy's internals is `Toy_Literal`, which can contain any value that can exist within the Toy language - even identifiers. The exact implementation of `Toy_Literal` may change or evolve as time goes on, so it's recommended that you only interact with literals directly by using the macros and functions outlined [above](#embedded-api-macros). See the [types](getting-started/types) page for information on exactly what data types exist in Toy.
 
 There are two main "compound structures" used within Toy's internals - the `Toy_LiteralArray` and `Toy_LiteralDictionary`. The former is an array of `Toy_Literal` instances stored sequentially in memory for fast lookups, while the latter is a key-value hashmap designed for efficient lookups based on a `Toy_Literal` key. These are both accessible via the language as well.
 
@@ -61,23 +62,23 @@ Hooks can simply inject native functions into the current scope, or they can do 
 ```c
 //a utility structure for storing the native C functions
 typedef struct Natives {
-	char* name;
-	Toy_NativeFn fn;
+    char* name;
+    Toy_NativeFn fn;
 } Natives;
 
 int Toy_hookStandard(Toy_Interpreter* interpreter, Toy_Literal identifier, Toy_Literal alias) {
-	//the list of available native C functions that can be called from Toy
-	Natives natives[] = {
-		{"clock", nativeClock},
-		{NULL, NULL}
-	};
+    //the list of available native C functions that can be called from Toy
+    Natives natives[] = {
+        {"clock", nativeClock},
+        {NULL, NULL}
+    };
 
-	//inject each native C functions into the current scope
-	for (int i = 0; natives[i].name; i++) {
-		Toy_injectNativeFn(interpreter, natives[i].name, natives[i].fn);
-	}
+    //inject each native C functions into the current scope
+    for (int i = 0; natives[i].name; i++) {
+        Toy_injectNativeFn(interpreter, natives[i].name, natives[i].fn);
+    }
 
-	return 0;
+    return 0;
 }
 ```
 
@@ -90,7 +91,7 @@ TOY_API bool Toy_callLiteralFn(Toy_Interpreter* interpreter, Toy_Literal func, T
 TOY_API bool Toy_callFn       (Toy_Interpreter* interpreter, char* name,       Toy_LiteralArray* arguments, Toy_LiteralArray* returns);
 ```
 
-The first argument must be an interpreter. The third argument is a pointer to a `Toy_LiteralArray` containing a list of arguments to pass to the function, and the fourth is a pointer to a `Toy_LiteralArray` where the return values can be stored (an array is used here for a potential future feature). The contents of the argument array is consumed and left in an indeterminate state (but is safe to free), while the returns array always has one value - if the function did not return a value, then it contains a `null` literal.
+The first argument must be an interpreter. The third argument is a pointer to a `Toy_LiteralArray` containing a list of arguments to pass to the function, and the fourth is a pointer to a `Toy_LiteralArray` where the return values can be stored (an array is used here for a potential future feature). The contents of the argument array are consumed and left in an indeterminate state (but is safe to free), while the returns array always has one value - if the function did not return a value, then it contains a `null` literal.
 
 The second arguments to these functions are either the function to be called as a `Toy_Literal`, or the name of the function within the interpreter's scope. The latter API simply finds the specified `Toy_Literal` if it exists and calls the former. As with most APIs, these return `false` if something went wrong.
 

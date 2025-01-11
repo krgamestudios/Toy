@@ -67,6 +67,6 @@ This function should be called repeatedly until it returns `NULL`, indicating th
 
 ### void Toy_freeASTNode(Toy_ASTNode* node)
 
-This function cleans up any valid instance of `Toy_ASTNode` pointer passed to it. It is most commonly used to clean up the values returned by `Toy_scanParser`, after they have been passsed to `Toy_writeCompiler`, or when the node is an error node.
+This function cleans up any valid instance of `Toy_ASTNode` pointer passed to it. It is most commonly used to clean up the values returned by `Toy_scanParser`, after they have been passed to `Toy_writeCompiler`, or when the node is an error node.
 
 Note: this function is *actually* defined in toy_ast_node.h, but documented here, because this is where it matters most.

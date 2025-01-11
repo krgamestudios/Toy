@@ -5,7 +5,7 @@ This header defines the interpreter structure, which is the beating heart of Toy
 
 `Toy_Interpreter` is a stack-based, bytecode-driven interpreter with a number of customisation options, including "hooks"; native C functions wrapped in `Toy_Literal` instances, injected into the interpreter in order to give the Toy scripts access to libraries via the `import` keyword. The hooks, when invoked this way, can then inject further native functions into the interpreter's current scope. Exactly which hooks are made available varies by host program, but `standard` is the most commonly included one.
 
-Another useful customisation feature is the ability to redicrect output from the `print` and `assert` keywords, as well as any internal errors that occur. This can allow you to add in a logging system, or even hook the `print` statement up to some kind of HUD.
+Another useful customisation feature is the ability to redirect output from the `print` and `assert` keywords, as well as any internal errors that occur. This can allow you to add in a logging system, or even hook the `print` statement up to some kind of HUD.
 
 ## Defined Interfaces
 
@@ -31,7 +31,7 @@ The identifier of the library (its name) is passed in as a `Toy_Literal`, as is 
 import standard as std;
 ```
 
-Conventionally, when an alias is given, all of the functions should instead be inserted into a `Toy_LiteralDictionary` which is then inserted into the scope with the alias as its identifier.
+Conventionally, when an alias is given, all the functions should instead be inserted into a `Toy_LiteralDictionary` which is then inserted into the scope with the alias as its identifier.
 
 ## Defined Functions
 
@@ -45,7 +45,7 @@ This function takes a `Toy_Interpreter` and `bytecode` (as well as the `length` 
 
 If the given bytecode's embedded version is not compatible with the current interpreter, then this function will refuse to execute.
 
-Re-using a `Toy_Interpreter` instance without first resetting it is possible (that's how the repl works), however doing so may have unintended consequences if the scripts are not intended to be used in such a way. Any variables declared will persist.
+Re-using a `Toy_Interpreter` instance without first resetting it is possible (that's how the REPL works), however doing so may have unintended consequences if the scripts are not intended to be used in such a way. Any variables declared will persist.
 
 ### void Toy_resetInterpreter(Toy_Interpreter* interpreter)
 
@@ -60,11 +60,11 @@ This function frees any scopes that the scripts have built up, and generates a n
 
 ### void Toy_freeInterpreter(Toy_Interpreter* interpreter)
 
-This function frees a `Toy_Interpreter`, clearing all of the memory used within. That interpreter is no longer valid for use, and must be re-initialized.
+This function frees a `Toy_Interpreter`, clearing all the memory used within. That interpreter is no longer valid for use, and must be re-initialized.
 
 ### bool Toy_injectNativeFn(Toy_Interpreter* interpreter, const char* name, Toy_NativeFn func)
 
-This function will inject the given native function `func` into the `Toy_Interpreter`'s current scope, with the identifer as `name`. Both the name and function will be converted into literals internally before being stored. It will return true on success, otherwise it will return false.
+This function will inject the given native function `func` into the `Toy_Interpreter`'s current scope, with the identifier as `name`. Both the name and function will be converted into literals internally before being stored. It will return true on success, otherwise it will return false.
 
 The primary use of this function is within hooks.
 
@@ -86,12 +86,12 @@ This utility function will find a `Toy_literal` within the `Toy_Interpreter`'s s
 
 ### bool Toy_parseIdentifierToValue(Toy_Interpreter* interpreter, Toy_Literal* literalPtr)
 
-Sometimes, native functions will receive `Toy_Literal` identifiers instead of the values - the correct values can be retreived from the given interpreter's scope using the following pattern:
+Sometimes, native functions will receive `Toy_Literal` identifiers instead of the values - the correct values can be retrieved from the given interpreter's scope using the following pattern:
 
 ```c
 Toy_Literal foobarIdn = foobar;
 if (TOY_IS_IDENTIFIER(foobar) && Toy_parseIdentifierToValue(interpreter, &foobar)) {
-	freeLiteral(foobarIdn); //remember to free the identifier
+    freeLiteral(foobarIdn); //remember to free the identifier
 }
 ```
 
@@ -101,11 +101,11 @@ This function sets the function called by the `print` keyword. By default, the f
 
 ```c
 static void printWrapper(const char* output) {
-	printf("%s\n", output);
+    printf("%s\n", output);
 }
 ```
 
-Note: The above is a very minor lie - in reality there are some preprocessor directives to allow the repl's `-n` flag to work.
+Note: The above is a very minor lie - in reality, there are some preprocessor directives to allow the REPL's `-n` flag to work.
 
 ### void Toy_setInterpreterAssert(Toy_Interpreter* interpreter, Toy_PrintFn assertOutput)
 
@@ -113,7 +113,7 @@ This function sets the function called by the `assert` keyword on failure. By de
 
 ```c
 static void assertWrapper(const char* output) {
-	fprintf(stderr, "Assertion failure: %s\n", output);
+    fprintf(stderr, "Assertion failure: %s\n", output);
 }
 ```
 
@@ -123,6 +123,6 @@ This function sets the function called when an error occurs within the interpret
 
 ```c
 static void errorWrapper(const char* output) {
-	fprintf(stderr, "%s", output); //no newline
+    fprintf(stderr, "%s", output); //no newline
 }
 ```

@@ -1,7 +1,8 @@
 
+
 # toy_reffunction.h
 
-This header defines the Toy_RefFunction structure, as well as all of the related utilities.
+This header defines the Toy_RefFunction structure, as well as all the related utilities.
 
 See [Toy_RefString](toy_refstring_h.md) for more information about the reference pattern.
 

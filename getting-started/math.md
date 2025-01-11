@@ -12,19 +12,19 @@ import math;
 
 ### PI: float
 
-This constant represents the ratio of a circle's circumference to its diameter. It's value is approximately `3.14159265358979323846`.
+This constant represents the ratio of a circle's circumference to its diameter. Its value is approximately `3.14159265358979323846`.
 
 ### E: float
 
-This constant represents Euler's number, the base of natural logarithms. It's value is approximately `2.71828182845904523536`.
+This constant represents Euler's number, the base of natural logarithms. Its value is approximately `2.71828182845904523536`.
 
 ### EPSILON: float
 
-This constant represents the acceptable amount of error when comparing floats with the functions provided by this library (see [Defined Comparison Functions](#defined-comparison-functions)). It's default value is `0.000001`.
+This constant represents the acceptable amount of error when comparing floats with the functions provided by this library (see [Defined Comparison Functions](#defined-comparison-functions)). Its default value is `0.000001`.
 
 ### NAN: float
 
-This constant represents "Not-a-Number", often returned when a calculation is impossible e.g. `sqrt(-1)`.
+This constant represents "Not-a-Number", often returned when a calculation is impossible, e.g. `sqrt(-1)`.
 
 ### INFINITY: float
 
@@ -124,4 +124,4 @@ This function returns true if `x` is Infinite, otherwise it returns false.
 
 ### epsilionCompare(x, y): bool
 
-This function returns true if `x` and `y` are within `EPSILON` of each other, otherwise it returns false. This is very useful for compairing floating point values.
+This function returns true if `x` and `y` are within `EPSILON` of each other, otherwise it returns false. This is very useful for comparing floating point values.

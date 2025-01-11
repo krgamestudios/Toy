@@ -1,8 +1,9 @@
+
 # Roadmapping Toy
 
 ## Game And Game Engine
 
-The Toy programming langauge was designed from the beginning as though it was supposed to be embedded into an imaginary game engine. Development on said engine and an associated game have proceeded smoothly so far.
+The Toy programming language was designed from the beginning as though it was supposed to be embedded into an imaginary game engine. Development on said engine and an associated game have proceeded smoothly so far.
 
 ## Microprocessor Support
 
@@ -22,7 +23,7 @@ Some of these have always been planned, but were sidelined or are incomplete for
 
 ## Nope Features
 
-Some things which simply will not be added in the foreseeable future are:
+Some things that simply will not be added in the foreseeable future are:
 
 * Classes & Structures
 * Do-while loops

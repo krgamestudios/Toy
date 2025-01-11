@@ -1,9 +1,10 @@
 
+
 # toy_refstring.h
 
-This header defines the structure `Toy_RefString`, as well as all of the related utilities.
+This header defines the structure `Toy_RefString`, as well as all the related utilities.
 
-[refstring](https://github.com/Ratstail91/refstring) is a stand-alone utility written to reduce the amount of memory manipulation used within Toy. It was independantly written and tested, before being incorporated into Toy proper. As such it has it's own memory management API, which by default is tied into Toy's [core memory API](toy_memory_h.md).
+[refstring](https://github.com/Ratstail91/refstring) is a stand-alone utility written to reduce the amount of memory manipulation used within Toy. It was independently written and tested, before being incorporated into Toy proper. As such, it has its own memory management API, which by default is tied into Toy's [core memory API](toy_memory_h.md).
 
 Instances of `Toy_RefString` are reference counted - that is, rather than copying an existing string in memory, a pointer to the refstring is returned, and the internal reference counter is increased by 1. When the pointer is no longer needed, `Toy_DeleteRefString` can be called; this will decrement the internal reference counter by 1, and only free it when it reaches 0. This has multiple benefits, when used correctly:
 
@@ -62,8 +63,8 @@ This function exposes the interal cstring of `refString`. Only use this function
 
 ### bool Toy_equalsRefString(Toy_RefString* lhs, Toy_RefString* rhs)
 
-This function returns true when the two refstrings are either the same refstring, or contain the same value. Otherwise it returns false.
+This function returns true when the two refstrings are either the same refstring, or contain the same value. Otherwise, it returns false.
 
 ### bool Toy_equalsRefStringCString(Toy_RefString* lhs, char* cstring)
 
-This function returns true when the `refString` contains the same value as the `cstring`. Otherwise it returns false.
+This function returns true when the `refString` contains the same value as the `cstring`. Otherwise, it returns false.

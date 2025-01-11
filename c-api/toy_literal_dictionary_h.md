@@ -1,17 +1,18 @@
 
+
 # toy_literal_dictionary.h
 
 This header defines the dictionary structure (as well as the private entry structure), which manages a series of `Toy_Literal` instances stored in a key-value hash map. The dictionary does not take ownership of given literals, instead it makes an internal copy.
 
-The dictionary type is one of two fundemental data structures used throughout Toy - the other is the array.
+The dictionary type is one of two fundamental data structures used throughout Toy - the other is the array.
 
 ## Defined Macros
 
 ### TOY_DICTIONARY_MAX_LOAD
 
-If the contents of a dictionary exceeds this percentage of it's capacity, then a new buffer is created, the old contents are copied over one-by-one, and the original buffer is freed.
+If the contents of a dictionary exceeds this percentage of its capacity, then a new buffer is created, the old contents are copied over one-by-one, and the original buffer is freed.
 
-Since this process can be memory and time intensive, a configurable macro is used to allow for fine-grained control across the lang.
+Since this process can be memory and time intensive, a configurable macro is used to allow for fine-grained control across the language.
 
 The current default value is `0.75`, representing 75% capacity.
 
