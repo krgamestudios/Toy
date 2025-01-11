@@ -69,6 +69,25 @@ static void emitFloat(unsigned char** handle, unsigned int* capacity, unsigned i
 	emitByte(handle, capacity, count, *(ptr++));
 }
 
+static bool checkForChaining(Toy_Ast* ptr) {
+	//BUGFIX
+	if (ptr == NULL) {
+		return false;
+	}
+
+	if (ptr->type == TOY_AST_VAR_ASSIGN) {
+		return true;
+	}
+
+	if (ptr->type == TOY_AST_UNARY) {
+		if (ptr->unary.flag >= TOY_AST_FLAG_PREFIX_INCREMENT && ptr->unary.flag <= TOY_AST_FLAG_POSTFIX_DECREMENT) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 //write instructions based on the AST types
 #define EMIT_BYTE(rt, part, byte) \
 	emitByte((&((*rt)->part)), &((*rt)->part##Capacity), &((*rt)->part##Count), byte)
@@ -127,6 +146,7 @@ static unsigned int emitString(Toy_Routine** rt, Toy_String* str) {
 }
 
 static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast); //forward declare for recursion
+static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign ast, bool chainedAssignment); //forward declare for chaining of var declarations
 
 static unsigned int writeInstructionValue(Toy_Routine** rt, Toy_AstValue ast) {
 	EMIT_BYTE(rt, code, TOY_OPCODE_READ);
@@ -217,7 +237,7 @@ static unsigned int writeInstructionUnary(Toy_Routine** rt, Toy_AstUnary ast) {
 		//add (or subtract) the two values, then assign (pops the second duplicate, and leaves value on the stack)
 		EMIT_BYTE(rt, code, ast.flag == TOY_AST_FLAG_PREFIX_INCREMENT ? TOY_OPCODE_ADD : TOY_OPCODE_SUBTRACT);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
-		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code,1);
 		EMIT_BYTE(rt, code,0);
 
 		//leaves one value on the stack
@@ -265,15 +285,9 @@ static unsigned int writeInstructionUnary(Toy_Routine** rt, Toy_AstUnary ast) {
 
 		EMIT_INT(rt, code, 1);
 
-		//add (or subtract) the two values, then assign (pops the second duplicate, and leaves value on the stack)
+		//add (or subtract) the two values, then assign (pops the second duplicate)
 		EMIT_BYTE(rt, code, ast.flag == TOY_AST_FLAG_POSTFIX_INCREMENT ? TOY_OPCODE_ADD : TOY_OPCODE_SUBTRACT);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
-		EMIT_BYTE(rt, code,0);
-		EMIT_BYTE(rt, code,0);
-
-		//remove the lingering value (yep, this is UGLY)
-		EMIT_BYTE(rt, code, TOY_OPCODE_ELIMINATE);
-		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 
@@ -676,8 +690,13 @@ static unsigned int writeInstructionPrint(Toy_Routine** rt, Toy_AstPrint ast) {
 }
 
 static unsigned int writeInstructionVarDeclare(Toy_Routine** rt, Toy_AstVarDeclare ast) {
-	//initial value
-	writeRoutineCode(rt, ast.expr);
+	//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
+	if (checkForChaining(ast.expr)) {
+		writeInstructionAssign(rt, ast.expr->varAssign, true);
+	}
+	else {
+		writeRoutineCode(rt, ast.expr); //default value
+	}
 
 	//delcare with the given name string
 	EMIT_BYTE(rt, code, TOY_OPCODE_DECLARE);
@@ -690,24 +709,8 @@ static unsigned int writeInstructionVarDeclare(Toy_Routine** rt, Toy_AstVarDecla
 	return 0;
 }
 
-static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign ast) {
+static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign ast, bool chainedAssignment) {
 	unsigned int result = 0;
-
-	//don't treat these as valid values
-	switch (ast.expr->type) {
-		case TOY_AST_BLOCK:
-		case TOY_AST_AGGREGATE:
-		case TOY_AST_ASSERT:
-		case TOY_AST_PRINT:
-		case TOY_AST_VAR_DECLARE:
-			//emit a compiler error, set the panic flag and skip out
-			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Malformed assignment value\n" TOY_CC_RESET);
-			(*rt)->panic = true;
-			return 0;
-
-		default:
-			break;
-	}
 
 	//target is a name string
 	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value) && TOY_VALUE_AS_STRING(ast.target->value.value)->info.type == TOY_STRING_NAME) {
@@ -727,14 +730,21 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 	else if (ast.target->type == TOY_AST_AGGREGATE && ast.target->aggregate.flag == TOY_AST_FLAG_INDEX) {
 		writeRoutineCode(rt, ast.target->aggregate.left); //any deeper indexing will just work, using reference values
 		writeRoutineCode(rt, ast.target->aggregate.right); //key
-		writeRoutineCode(rt, ast.expr); //value
+
+		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
+		if (checkForChaining(ast.expr)) {
+			result += writeInstructionAssign(rt, ast.expr->varAssign, true);
+		}
+		else {
+			result += writeRoutineCode(rt, ast.expr); //default value
+		}
 
 		EMIT_BYTE(rt, code, TOY_OPCODE_ASSIGN_COMPOUND); //uses the top three values on the stack
-		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code, chainedAssignment);
 		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 
-		return 0;
+		return result + (chainedAssignment ? 1 : 0);
 	}
 
 	else {
@@ -746,10 +756,16 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 
 	//determine RHS, include duplication if needed
 	if (ast.flag == TOY_AST_FLAG_ASSIGN) {
-		result += writeRoutineCode(rt, ast.expr);
+		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
+		if (checkForChaining(ast.expr)) {
+			result += writeInstructionAssign(rt, ast.expr->varAssign, true);
+		}
+		else {
+			result += writeRoutineCode(rt, ast.expr); //default value
+		}
 
 		EMIT_BYTE(rt, code, TOY_OPCODE_ASSIGN);
-		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code, chainedAssignment);
 		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 	}
@@ -759,11 +775,17 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 
-		result += writeRoutineCode(rt, ast.expr);
+		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
+		if (checkForChaining(ast.expr)) {
+			result += writeInstructionAssign(rt, ast.expr->varAssign, true);
+		}
+		else {
+			result += writeRoutineCode(rt, ast.expr); //default value
+		}
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_ADD);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
-		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code, chainedAssignment);
 		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_SUBTRACT_ASSIGN) {
@@ -772,11 +794,17 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 
-		result += writeRoutineCode(rt, ast.expr);
+		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
+		if (checkForChaining(ast.expr)) {
+			result += writeInstructionAssign(rt, ast.expr->varAssign, true);
+		}
+		else {
+			result += writeRoutineCode(rt, ast.expr); //default value
+		}
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_SUBTRACT);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
-		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code, chainedAssignment);
 		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_MULTIPLY_ASSIGN) {
@@ -785,11 +813,17 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 
-		result += writeRoutineCode(rt, ast.expr);
+		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
+		if (checkForChaining(ast.expr)) {
+			result += writeInstructionAssign(rt, ast.expr->varAssign, true);
+		}
+		else {
+			result += writeRoutineCode(rt, ast.expr); //default value
+		}
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_MULTIPLY);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
-		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code, chainedAssignment);
 		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_DIVIDE_ASSIGN) {
@@ -798,11 +832,17 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 
-		result += writeRoutineCode(rt, ast.expr);
+		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
+		if (checkForChaining(ast.expr)) {
+			result += writeInstructionAssign(rt, ast.expr->varAssign, true);
+		}
+		else {
+			result += writeRoutineCode(rt, ast.expr); //default value
+		}
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_DIVIDE);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
-		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code, chainedAssignment);
 		EMIT_BYTE(rt, code,0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_MODULO_ASSIGN) {
@@ -811,11 +851,17 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		EMIT_BYTE(rt, code,0);
 		EMIT_BYTE(rt, code,0);
 
-		result += writeRoutineCode(rt, ast.expr);
+		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
+		if (checkForChaining(ast.expr)) {
+			result += writeInstructionAssign(rt, ast.expr->varAssign, true);
+		}
+		else {
+			result += writeRoutineCode(rt, ast.expr); //default value
+		}
 
 		EMIT_BYTE(rt, code,TOY_OPCODE_MODULO);
 		EMIT_BYTE(rt, code,TOY_OPCODE_ASSIGN); //squeezed
-		EMIT_BYTE(rt, code,0);
+		EMIT_BYTE(rt, code, chainedAssignment);
 		EMIT_BYTE(rt, code,0);
 	}
 
@@ -824,7 +870,7 @@ static unsigned int writeInstructionAssign(Toy_Routine** rt, Toy_AstVarAssign as
 		exit(-1);
 	}
 
-	return result;
+	return result + (chainedAssignment ? 1 : 0);
 }
 
 static unsigned int writeInstructionAccess(Toy_Routine** rt, Toy_AstVarAccess ast) {
@@ -956,7 +1002,7 @@ static unsigned int writeRoutineCode(Toy_Routine** rt, Toy_Ast* ast) {
 			break;
 
 		case TOY_AST_VAR_ASSIGN:
-			result += writeInstructionAssign(rt, ast->varAssign);
+			result += writeInstructionAssign(rt, ast->varAssign, false);
 			break;
 
 		case TOY_AST_VAR_ACCESS:

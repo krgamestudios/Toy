@@ -227,7 +227,10 @@ static void processAssign(Toy_VM* vm) {
 	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value); //scope now owns the value, doesn't need to be freed
 
 	//in case of chaining, leave a copy on the stack
-	Toy_pushStack(&vm->stack, Toy_copyValue(value));
+	bool chainedAssignment = READ_BYTE(vm);
+	if (chainedAssignment) {
+		Toy_pushStack(&vm->stack, Toy_copyValue(value));
+	}
 
 	//cleanup
 	Toy_freeValue(name);
@@ -275,7 +278,10 @@ static void processAssignCompound(Toy_VM* vm) {
 		array->data[index] = Toy_copyValue(Toy_unwrapValue(value));
 
 		//in case of chaining, leave a copy on the stack
-		Toy_pushStack(&vm->stack, Toy_copyValue(value));
+		bool chainedAssignment = READ_BYTE(vm);
+		if (chainedAssignment) {
+			Toy_pushStack(&vm->stack, Toy_copyValue(value));
+		}
 
 		//cleanup
 		Toy_freeValue(value);
@@ -288,7 +294,10 @@ static void processAssignCompound(Toy_VM* vm) {
 		Toy_insertTable(&table, Toy_copyValue(Toy_unwrapValue(key)), Toy_copyValue(Toy_unwrapValue(value)));
 
 		//in case of chaining, leave a copy on the stack
-		Toy_pushStack(&vm->stack, Toy_copyValue(value));
+		bool chainedAssignment = READ_BYTE(vm);
+		if (chainedAssignment) {
+			Toy_pushStack(&vm->stack, Toy_copyValue(value));
+		}
 
 		//cleanup
 		Toy_freeValue(value);
