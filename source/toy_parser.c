@@ -904,6 +904,8 @@ static void makeVariableDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 
 	//finally, emit the declaration as an Ast
 	Toy_private_emitAstVariableDeclaration(bucketHandle, rootHandle, nameStr, expr);
+
+	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of var statement");
 }
 
 static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
