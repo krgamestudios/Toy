@@ -4,8 +4,6 @@ To help you start using Toy as fast as possible, here are the core elements of t
 
 ## Keyword 'print'
 
-Firstly, the `print` keyword is used to output data to 
-
 ## Keyword 'assert'
 
 ## Variables and Types
