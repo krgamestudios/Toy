@@ -103,7 +103,7 @@ To build and run the test suites, run `make tests` (`make tests-gdb` and `make t
 
 # Documentation
 
-*Coming Soon - I want the features mostly working first.*
+The WIP documentation can be found here: https://v2.toylang.com/
 
 # License
 
@@ -113,6 +113,7 @@ This source code is covered by the Zlib license (see [LICENSE.md](LICENSE.md)).
 
 For a guide on how you can contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+@Gipson62 - v1 docs spell checking
 @8051Enthusiast - `fixAlignment()` trick  
 @hiperiondev - v1 Disassembler, v1 porting support and feedback  
 @add00 - v1 Library support  
