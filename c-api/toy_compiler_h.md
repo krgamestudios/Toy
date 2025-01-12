@@ -9,7 +9,7 @@ During the collation step, everything from the core program’s execution instru
 
 ## Define Functions
 
-Executing the following functions out-of-order causes undefiend behaviour.
+Executing the following functions out-of-order causes undefined behaviour.
 
 ### void Toy_initCompiler(Toy_Compiler* compiler)
 

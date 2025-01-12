@@ -1,6 +1,6 @@
 # Types
 
-The type system in toy is opt-in, but allows a lot of robust checks at runtime when needed. Types themselves are first-class citizens. To retreive the type of an existing variable, use the `typeof` keyword.
+The type system in Toy is opt-in, but allows a lot of robust checks at runtime when needed. Types themselves are first-class citizens. To retrieve the type of an existing variable, use the `typeof` keyword.
 
 ```
 print typeof value;
@@ -59,7 +59,7 @@ Const-ness, or the ability to fix the value of a variable, is part of the type s
 var ANSWER: int const = 42; //answer will never change
 ```
 
-You can also set the members of an array or dicitonary as const, or the entire compound:
+You can also set the members of an array or dictionary as const, or the entire compound:
 
 ```
 var members: [int const] = [1, 2, 3]; //1, 2 and 3 cannot be changed, but "members" can be modified or re-assigned
@@ -69,7 +69,7 @@ var everything: [int] const = [4, 5, 6]; //everything is now const
 
 ## Astype
 
-Due to the syntax of Toy, when storing a complex type into a varable, you may need to use the `astype` keyword to differentiate the value from an array or dictionary.
+Due to the syntax of Toy, when storing a complex type into a variable, you may need to use the `astype` keyword to differentiate the value from an array or dictionary.
 
 ```
 var t: type = astype [int]; //t is a type, representing an array of integers
@@ -78,7 +78,7 @@ var u: type = [int]; //Error! it tried to assign an array with the sole entry "i
 
 ## First-Class Citizens
 
-Types are first-class citizens. What this means is that they can be used just like any other value, as well as being stored in variables, and even returned from functions.
+Types are first-class citizens. What this means is that they can be used just like any other value, as well as being stored in variables and even returning from functions.
 
 ```
 fn decide(question) {
@@ -97,7 +97,7 @@ var number: t = 0; //what if it had been false?
 
 ## Opaque Data
 
-Sometimes, you may need to pass data through Toy that Toy can't normally handle. This data is called "opaque" data, and is passed around by reference rather than value. Anything can be passed in as opaque data, as long as it's represented as a void pointer in C.
+Sometimes, you may need to pass data through Toy that Toy can't normally handle. This data is called "opaque" data and is passed around by reference rather than value. Anything can be passed in as opaque data as long as it's represented as a void pointer in C.
 
 ```c
 Toy_Literal opaque = TOY_TO_OPAQUE_LITERAL(&data, 0);

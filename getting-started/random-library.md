@@ -1,3 +1,4 @@
+
 # Random Library
 
 The random library offers a number of functions geared towards producing pseudorandom values. This library has a concept called "generators", which are opaque objects used to generate a sequence of numbers from an initial integer seed. A seed can be generated from most values using the standard library `hash` function.

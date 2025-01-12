@@ -1,7 +1,8 @@
 
+
 # drive_system.h
 
-When accessing the file system through Toy (such as with the runner library), it's best practice to utilize the drive system - this system (tries to) prevent malicious accessing of files outside of the designated folders. It does this by causing an error when a script tries to access a parent directory.
+When accessing the file system through Toy (such as with the runner library), it's best practice to utilize the drive system - this system (tries to) prevent malicious accessing of files outside the designated folders. It does this by causing an error when a script tries to access a parent directory.
 
 To use the drive system, first you must designate specific folders which can be accessed, like so:
 
@@ -9,19 +10,19 @@ To use the drive system, first you must designate specific folders which can be 
 #include "drive_system.h"
 
 int main(int argc, char* argv[]) {
-	//the drive system uses a LiteralDictionary, which must be initialized with this
-	Toy_initDriveSystem();
+    //the drive system uses a LiteralDictionary, which must be initialized with this
+    Toy_initDriveSystem();
 
-	Toy_setDrivePath("scripts", "assets/scripts");
-	Toy_setDrivePath("sprites", "assets/sprites");
-	Toy_setDrivePath("fonts", "assets/fonts");
+    Toy_setDrivePath("scripts", "assets/scripts");
+    Toy_setDrivePath("sprites", "assets/sprites");
+    Toy_setDrivePath("fonts", "assets/fonts");
 
-	//TODO: do you stuff here
+    //TODO: do you stuff here
 
-	//clean up the drive dictionary when you're done
-	Toy_freeDriveSystem();
+    //clean up the drive dictionary when you're done
+    Toy_freeDriveSystem();
 
-	return 0;
+    return 0;
 }
 ```
 
@@ -43,7 +44,7 @@ This function cleans up after the drive system is no longer needed.
 
 ### void Toy_setDrivePath(char* drive, char* path)
 
-This function sets a key-value pair in the drive system. It uses C strings, since its intended to be called directly from `main()`.
+This function sets a key-value pair in the drive system. It uses C strings, since it is intended to be called directly from `main()`.
 
 ### Toy_Literal Toy_getDrivePathLiteral(Toy_Interpreter* interpreter, Toy_Literal* drivePathLiteral)
 

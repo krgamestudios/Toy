@@ -1,7 +1,8 @@
 
+
 # toy_memory.h
 
-This header defines all of the memory management utilities. Any and all heap-based memory management goes through these utilities.
+This header defines all the memory management utilities. Any and all heap-based memory management goes through these utilities.
 
 A default memory allocator function is used internally, but it can be overwritten for diagnostic and platform related purposes.
 
@@ -45,7 +46,7 @@ Any and all memory allocator functions should:
 
 * Take a `pointer` to a previously allocated block of memory, or `NULL`
 * Take the `oldSize`, which is the previous size of the `pointer` allocated, in bytes (`oldSize` can be 0)
-* Take the `newSize`, which is the new size of the buffer to be allocaated, in bytes (`newSize` can be 0)
+* Take the `newSize`, which is the new size of the buffer to be allocated, in bytes (`newSize` can be 0)
 * Return the newly allocated buffer, or `NULL` if `newSize` is zero
 * Return `NULL` on error
 

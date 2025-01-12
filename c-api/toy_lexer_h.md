@@ -23,6 +23,6 @@ Private functions are not intended for general use.
 
 ### void Toy_private_setComments(Toy_Lexer* lexer, bool enabled)
 
-This function sets whether comments are allowed within source code. By default, comments are allowed, and are only disabled in the repl.
+This function sets whether comments are allowed within source code. By default, comments are allowed, and are only disabled in the REPL.
 
 Private functions are not intended for general use.

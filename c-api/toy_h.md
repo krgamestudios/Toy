@@ -1,4 +1,5 @@
 
+
 # toy.h - A Toy Programming Language
 
 If you're looking how to use Toy directly, try https://toylang.com/
@@ -50,7 +51,7 @@ You probably won't use these directly, but they're a good learning opportunity.
 
 `Toy_Scope` holds the variables of a specific scope within Toy - be it a script, a function, a block, etc. Scopes are also where the type system lives at runtime. They use identifier literals as keys, exclusively.
 
-`Toy_RefString` is a utility class that wraps traditional C strings, making them less memory intensive and faster to copy and move. In reality, since strings are considered immutable, multiple variables can point to the same string to save memory, and you can just create a new one of these vars pointing to the original rather than copying entirely for a speed boost. This module has it's own memory allocator system that is plugged into the main memory allocator.
+`Toy_RefString` is a utility class that wraps traditional C strings, making them less memory intensive and faster to copy and move. In reality, since strings are considered immutable, multiple variables can point to the same string to save memory, and you can just create a new one of these vars pointing to the original rather than copying entirely for a speed boost. This module has its own memory allocator system that is plugged into the main memory allocator.
 
 `Toy_RefFunction` acts similarly to `Toy_RefString`, but instead operates on function bytecode.
 

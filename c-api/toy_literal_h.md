@@ -1,4 +1,5 @@
 
+
 # toy_literal.h
 
 This header defines the literal structure, which is used extensively throughout Toy to represent values of some kind.
@@ -65,7 +66,7 @@ The following macros are used to cast a literal to a specific C type to be used.
 
 The following macros are used to create a new literal, with the given `value` as it's internal value.
 
-* `TOY_TO_NULL_LITERAL` - does not need parantheses
+* `TOY_TO_NULL_LITERAL` - does not need parentheses
 * `TOY_TO_BOOLEAN_LITERAL(value)`
 * `TOY_TO_INTEGER_LITERAL(value)`
 * `TOY_TO_FLOAT_LITERAL(value)`
@@ -85,9 +86,9 @@ The following macros are utilities used throughout Toy's internals, and are avai
 
 ### TOY_IS_TRUTHY(x)
 
-Returns true of the literal `x` is truthy, otherwise it returns false.
+Returns true if the literal `x` is truthy, otherwise it returns false.
 
-Currently, every value is considered truthy except `false`, which is falsy and `null`, which is neither true or false.
+Currently, every value is considered truthy except `false`, which is falsy and `null`, which is neither true nor false.
 
 ### TOY_AS_FUNCTION_BYTECODE_LENGTH(lit)
 
@@ -107,9 +108,9 @@ This macro is only valid on `TOY_LITERAL_IDENTIFIER`.
 
 ### TOY_TYPE_PUSH_SUBTYPE(lit, subtype)
 
-When building a complex type, such as the type of an array or dictionary, you may need to specify inner types. Use this to push a `subtype`. calling `Toy_freeLiteral()` on the outermost type should clean up all inner types, as expected.
+When building a complex type, such as the type of an array or dictionary, you may need to specify inner types. Use this to push a `subtype`. Calling `Toy_freeLiteral()` on the outermost type should clean up all inner types, as expected.
 
-This macro returns the index of the newly pushed value within it's parent.
+This macro returns the index of the newly pushed value within its parent.
 
 This macro is only valid on `TOY_LITERAL_TYPE`, for both `type` and `subtype`.
 
@@ -135,7 +136,7 @@ This function returns a copy of the given literal. Literals should never be copi
 
 This checks to see if two given literals are equal.
 
-When an integer and a float are compared, the integer is cooerced into a float for the duration of the call.
+When an integer and a float are compared, the integer is coerced into a float for the duration of the call.
 
 Arrays or dictionaries are equal only if their keys and values all equal. Likewise, types only equal if all subtypes are equal, in order.
 
@@ -145,7 +146,7 @@ Functions and opaques are never equal to anything, while values with the type `T
 
 This finds the hash of a literal, for various purposes. Different hashing algorithms are used for different types, and some types can't be hashed at all.
 
-types that can't be hashed are
+Types that can't be hashed are
 
 * all kinds of functions
 * type

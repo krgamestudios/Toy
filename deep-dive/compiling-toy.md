@@ -1,6 +1,7 @@
+
 # Compiling Toy
 
-This tutorial is a sub-section of [Embedding Toy](deep-dive/embedding-toy) that has been spun off into it's own page for the sake of brevity/sanity. It's recommended that you read the main article first.
+This tutorial is a subsection of [Embedding Toy](deep-dive/embedding-toy) that has been spun off into its own page for the sake of brevity/sanity. It's recommended that you read the main article first.
 
 The exact phases outlined here are entirely implementation-dependent - that is, they aren't required, and are simply how the canonical implementation of Toy works.
 
@@ -69,7 +70,7 @@ Toy_freeCompiler(&compiler);
 
 The writing step is the process in which AST nodes are compressed into bytecode instructions, while literal values are extracted and placed aside in a cache (usually in a compressed, intermediate state).
 
-The collation phase, however is when the bytecode instructions, along with the now flattened intermediate literals and function bodies are combined. The bytecode header specified in [Developing Toy](deep-dive/developing-toy) is placed at the beginning of this blob of bytes during this step.
+The collation phase, however, is when the bytecode instructions, along with the now flattened intermediate literals and function bodies are combined. The bytecode header specified in [Developing Toy](deep-dive/developing-toy) is placed at the beginning of this blob of bytes during this step.
 
 The Toy bytecode (abbreviated to `tb`), along with the `size` variable indicating the size of the bytecode, are the result of the compilation. This bytecode can be saved into a file for later consumption by the host at runtime - you must ensure that any bytecode files have the `.tb` extension.
 

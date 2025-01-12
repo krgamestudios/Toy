@@ -1,9 +1,10 @@
 
+
 # literal_array.h
 
 This header defines the array structure, which manages a series of `Toy_Literal` instances in sequential memory. The array does not take ownership of given literals, instead it makes an internal copy.
 
-The array type is one of two fundemental data structures used throughout Toy - the other is the dictionary.
+The array type is one of two fundamental data structures used throughout Toy - the other is the dictionary.
 
 ## Defined Functions
 

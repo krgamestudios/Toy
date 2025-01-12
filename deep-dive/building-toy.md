@@ -1,3 +1,4 @@
+
 # Building Toy
 
 This tutorial assumes you're using git, GCC, and make.
@@ -10,22 +11,22 @@ Toy's makefile uses the exported variable `TOY_OUTDIR` to define where the outpu
 export TOY_OUTDIR = out
 ```
 
-Next, you'll want to run make the from within Toy's `source`, assuming the output directory has been created. There are two options for building Toy - `library` (default) or `static`; the former will create a shared library (and a .dll file on windows), while the latter will create a static library.
+Next, you'll want to run make the from within Toy's `source`, assuming the output directory has been created. There are two options for building Toy - `library` (default) or `static`; the former will create a shared library (and a .dll file on Windows), while the latter will create a static library.
 
 ```make
 toy: $(OUTDIR)
-	$(MAKE) -C Toy/source
+    $(MAKE) -C Toy/source
 
 $(OUTDIR):
-	mkdir $(OUTDIR)
+    mkdir $(OUTDIR)
 ```
 
 Finally, link against the outputted library, with the source directory as the location of the header files.
 
 ```make
 all: $(OBJ) toy
-	$(CC) $(CFLAGS) -o $(OUT) $(OBJ) -L$(TOY_OUTDIR) -ltoy
+    $(CC) $(CFLAGS) -o $(OUT) $(OBJ) -L$(TOY_OUTDIR) -ltoy
 ```
 
-These snippets of makefile are only an example - the repository has a more fully featured set of makefiles which can also produce a usable repl program.
+These snippets of makefile are only an example - the repository has a more fully featured set of makefiles which can also produce a usable REPL program.
 
