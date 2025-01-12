@@ -1,0 +1,51 @@
+---
+layout: compress
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- device settings -->
+<meta charset = "UTF-8" />
+<meta name="Content-Type" content="text/html" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- page title -->
+<title>{{ page.title }}</title>
+
+<!-- theme and styling -->
+<style>svg.icon{width:1em;height:1em}</style>
+<link rel="preload" as="style" href="{{ site.baseurl }}/assets/site.css" onload="this.onload=null;this.rel='stylesheet';">
+<noscript><link rel="stylesheet" href="{{ site.baseurl }}/assets/site.css"></noscript>
+<script>{% include scripts/loadcss/loadcss-2.0.1.min.js %}</script>
+
+<!-- site information -->
+<meta name="description" content="{{ site.description }}" />
+<meta name="author" content="{{ site.author }}" />
+<meta name="keywords" content="{{ site.keywords }}" />
+
+<!-- facebook -->
+<meta property="og:url" content="{{ site.url }}" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="assets/repo-preview.png" />
+<meta property="og:title" content="{{ page.title }}" />
+<meta property="og:description" content="{{ page.description }}" />
+
+<!-- twitter -->
+<meta name="twitter:card" content="{{ site.title }}" />
+<meta name="twitter:url" content="{{ site.url}}" />
+<meta name="twitter:type" content="website" />
+<meta name="twitter:image" content="assets/repo-preview.png" />
+<meta name="twitter:title" content="{{ page.title }}" />
+<meta name="twitter:description" content="{{ page.description }}" />
+
+<script src="{{ site.baseurl }}/assets/site.js"></script>
+<link rel="icon" href="{{ site.baseurl }}/favicon.png">
+</head>
+
+<body>
+{{ content }}
+</body>
+
+</html>
