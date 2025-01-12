@@ -1,0 +1,59 @@
+---
+layout: base
+theme_version: 0.5.22
+theme_url: https://github.com/pixeldroid/programming-pages
+---
+
+<!-- top menu -->
+<div id="site-title" class="ui top fixed menu">
+{% include elements/title.html %}
+</div>
+
+<!-- animated sidebar (can be revealed in mobile view) -->
+<div id="sidebar-retractable" class="ui vertical inverted sidebar menu">
+  <!-- #sidebar-collection-indices is re-parented here for mobile view -->
+</div>
+
+<!-- pushing container (will be pushed right when retractable sidebar opens) -->
+<div class="pusher">
+
+<div class="ui left attached internal rail">
+<!-- static sidebar (visible in non-mobile view) -->
+<div id="sidebar-fixed" class="ui vertical inverted menu">
+<div id="sidebar-collection-indices">
+{% include elements/indices.html %}
+</div>
+</div>
+</div>
+
+<!-- main contents -->
+<div id="page-container">
+<div class="ui left aligned fluid container">
+<div id="page-content" class="ui basic segment" style="margin-bottom: 6em;">
+{{ content }}
+</div>
+
+<!-- The style attribute here, and in the div above, ensure the footer works as expected -->
+<!-- footer -->
+<div id="site-attribution" class="ui basic segment" style="position: absolute; bottom: 0">
+{% include elements/attribution.html %}
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- help modal -->
+<div id="site-help" class="ui small modal">
+{% include elements/help.html %}
+</div>
+
+<script>
+{% include scripts/indices.js %}
+{% include scripts/search.js %}
+{% include scripts/page.js %}
+{% include scripts/help.js %}
+
+{% comment %} provide user extension / override point {% endcomment %}
+{% include scripts/custom.js %}
+</script>
