@@ -2,7 +2,25 @@ title: The Toy Programming Language
 description: Documentation For The Toy Programming Language
 keywords: programming,coding
 author: Kayne Ruse (Ratstail91)
+version: 2.x
 
+collections:
+  getting_started:
+    output: true
+    title: Getting Started
+    sort_by: guide_order
+    permalink: "/:collection/:path/"
+    tab-order: 1
+  toy_api:
+    output: true
+    title: Toy API
+    permalink: "/:collection/:path/"
+    tab-order: 2
+  c_api:
+    output: true
+    title: C API
+    permalink: "/:collection/:path/"
+    tab-order: 3
 
 plugins:
   - jekyll-remote-theme
