@@ -4,13 +4,9 @@ title: Toy v2 Quick-Start Guide
 guide_order: 1
 ---
 
-Watch this space.
-
-<!-- 
-
 # Toy v2 Quick-Start Guide
 
-To help you start using Toy as fast as possible, here are the core elements of the language. Not everything available is listed, but this should give you a good starting point.
+To help you start using Toy as fast as possible, here are the most useful elements of the language. Not everything available is listed, but this should let you start coding right away.
 
 ## Keyword 'print'
 
@@ -26,4 +22,3 @@ To help you start using Toy as fast as possible, here are the core elements of t
 
 ## Reserved Keywords & Operators
 
--->
