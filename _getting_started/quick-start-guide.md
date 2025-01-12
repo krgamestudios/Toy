@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Toy v2 Quick-Start Guide
-guide_order: 1
+order: 1
 ---
 
 # Toy v2 Quick-Start Guide

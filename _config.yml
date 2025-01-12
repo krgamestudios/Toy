@@ -7,7 +7,6 @@ collections:
   getting_started:
     output: true
     title: Getting Started
-    sort_by: guide_order
     permalink: "/:collection/:path/"
     tab-order: 1
   toy_api:
