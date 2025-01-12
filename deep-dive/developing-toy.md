@@ -237,34 +237,34 @@ Opcodes within the bytecode are 1 byte in length, and specify a single action to
 The interpreter is stack-based; most, if not all, the actions are preformed on literals within a specially designated array called `stack`. For example:
 
 ```c
-    case TOY_OP_PRINT:
-        if (!execPrint(interpreter)) {
-            return;
-        }
-    break;
+	case TOY_OP_PRINT:
+		if (!execPrint(interpreter)) {
+			return;
+		}
+	break;
 ```
 
 When the opcode `TOY_OP_PRINT` is encountered, the top literal within the stack is popped off, and printed (more info on literals below).
 
 ```c
 static bool execPrint(Toy_Interpreter* interpreter) {
-    //get the top literal
-    Toy_Literal lit = Toy_popLiteralArray(&interpreter->stack);
+	//get the top literal
+	Toy_Literal lit = Toy_popLiteralArray(&interpreter->stack);
 
-    //if the top literal is an identifier, get it's value
-    Toy_Literal idn = lit;
-    if (TOY_IS_IDENTIFIER(lit) && Toy_parseIdentifierToValue(interpreter, &lit)) {
-        Toy_freeLiteral(idn);
-    }
+	//if the top literal is an identifier, get it's value
+	Toy_Literal idn = lit;
+	if (TOY_IS_IDENTIFIER(lit) && Toy_parseIdentifierToValue(interpreter, &lit)) {
+		Toy_freeLiteral(idn);
+	}
 
-    //print as a string to the current print method
-    Toy_printLiteralCustom(lit, interpreter->printOutput);
+	//print as a string to the current print method
+	Toy_printLiteralCustom(lit, interpreter->printOutput);
 
-    //free the literal
-    Toy_freeLiteral(lit);
+	//free the literal
+	Toy_freeLiteral(lit);
 
-    //continue the loop
-    return true;
+	//continue the loop
+	return true;
 }
 ```
 
@@ -275,7 +275,7 @@ As in most programming languages, variables can be represented by names specifie
 ```c
 Toy_Literal idn = literal; //cache the literal, just in case it's an identifier
 if (TOY_IS_IDENTIFIER(literal) && Toy_parseIdentifierToValue(interpreter, &literal)) { //if it is an identifier, parse it...
-    Toy_freeLiteral(idn); //always remember to free the original identifier, otherwise you'll have a memory leak!
+	Toy_freeLiteral(idn); //always remember to free the original identifier, otherwise you'll have a memory leak!
 }
 ```
 

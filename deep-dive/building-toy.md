@@ -15,17 +15,17 @@ Next, you'll want to run make the from within Toy's `source`, assuming the outpu
 
 ```make
 toy: $(OUTDIR)
-    $(MAKE) -C Toy/source
+	$(MAKE) -C Toy/source
 
 $(OUTDIR):
-    mkdir $(OUTDIR)
+	mkdir $(OUTDIR)
 ```
 
 Finally, link against the outputted library, with the source directory as the location of the header files.
 
 ```make
 all: $(OBJ) toy
-    $(CC) $(CFLAGS) -o $(OUT) $(OBJ) -L$(TOY_OUTDIR) -ltoy
+	$(CC) $(CFLAGS) -o $(OUT) $(OBJ) -L$(TOY_OUTDIR) -ltoy
 ```
 
 These snippets of makefile are only an example - the repository has a more fully featured set of makefiles which can also produce a usable REPL program.

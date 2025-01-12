@@ -91,7 +91,7 @@ Sometimes, native functions will receive `Toy_Literal` identifiers instead of th
 ```c
 Toy_Literal foobarIdn = foobar;
 if (TOY_IS_IDENTIFIER(foobar) && Toy_parseIdentifierToValue(interpreter, &foobar)) {
-    freeLiteral(foobarIdn); //remember to free the identifier
+	freeLiteral(foobarIdn); //remember to free the identifier
 }
 ```
 
@@ -101,7 +101,7 @@ This function sets the function called by the `print` keyword. By default, the f
 
 ```c
 static void printWrapper(const char* output) {
-    printf("%s\n", output);
+	printf("%s\n", output);
 }
 ```
 
@@ -113,7 +113,7 @@ This function sets the function called by the `assert` keyword on failure. By de
 
 ```c
 static void assertWrapper(const char* output) {
-    fprintf(stderr, "Assertion failure: %s\n", output);
+	fprintf(stderr, "Assertion failure: %s\n", output);
 }
 ```
 
@@ -123,6 +123,6 @@ This function sets the function called when an error occurs within the interpret
 
 ```c
 static void errorWrapper(const char* output) {
-    fprintf(stderr, "%s", output); //no newline
+	fprintf(stderr, "%s", output); //no newline
 }
 ```

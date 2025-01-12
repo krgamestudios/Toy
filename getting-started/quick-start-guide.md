@@ -46,19 +46,19 @@ You can control the program flow with either `if`, `while` or `for`. The only fa
 
 ```
 if (check()) {
-    //do this
+	//do this
 }
 else {
-    //otherwise do this
+	//otherwise do this
 }
 
 var i = 0;
 while (i < 10) {
-    print i++;
+	print i++;
 }
 
 for (var i = 0; i < 10; i++) {
-    print i;
+	print i;
 }
 ```
 
@@ -70,7 +70,7 @@ Functions are defined with the `fn` keyword, and can take any number of argument
 
 ```
 fn combine(a, b, c) {
-    return [a, b, c];
+	return [a, b, c];
 }
 
 print combine(1, 2, 3);
@@ -80,7 +80,7 @@ Variable number of parameters, called rest parameters, can be passed in as an ar
 
 ```
 fn combine(...rest) {
-    return rest;
+	return rest;
 }
 
 print combine(1, 2, 3);
@@ -92,7 +92,7 @@ Functions can be called using the universal function call syntax, which is just 
 
 ```
 fn printMe(self) {
-    print self;
+	print self;
 }
 
 array.printMe();

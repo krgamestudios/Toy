@@ -21,19 +21,19 @@ The engine proper is invoked with just three lifecycle functions`:
 #include "box_engine.h"
 
 int main(int argc, char* argv[]) {
-    //initialize the drive system
-    Toy_initDriveSystem();
-    Toy_setDrivePath("scripts", "assets/scripts");
+	//initialize the drive system
+	Toy_initDriveSystem();
+	Toy_setDrivePath("scripts", "assets/scripts");
 
-    //invoke the engine
-    Box_initEngine("scripts:/init.toy"); //passing in the specified init file
-    Box_execEngine();
-    Box_freeEngine();
+	//invoke the engine
+	Box_initEngine("scripts:/init.toy"); //passing in the specified init file
+	Box_execEngine();
+	Box_freeEngine();
 
-    //clean up the drive system when you're done
-    Toy_freeDriveSystem();
+	//clean up the drive system when you're done
+	Toy_freeDriveSystem();
 
-    return 0;
+	return 0;
 }
 
 ```

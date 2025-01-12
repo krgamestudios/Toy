@@ -62,23 +62,23 @@ Hooks can simply inject native functions into the current scope, or they can do 
 ```c
 //a utility structure for storing the native C functions
 typedef struct Natives {
-    char* name;
-    Toy_NativeFn fn;
+	char* name;
+	Toy_NativeFn fn;
 } Natives;
 
 int Toy_hookStandard(Toy_Interpreter* interpreter, Toy_Literal identifier, Toy_Literal alias) {
-    //the list of available native C functions that can be called from Toy
-    Natives natives[] = {
-        {"clock", nativeClock},
-        {NULL, NULL}
-    };
+	//the list of available native C functions that can be called from Toy
+	Natives natives[] = {
+		{"clock", nativeClock},
+		{NULL, NULL}
+	};
 
-    //inject each native C functions into the current scope
-    for (int i = 0; natives[i].name; i++) {
-        Toy_injectNativeFn(interpreter, natives[i].name, natives[i].fn);
-    }
+	//inject each native C functions into the current scope
+	for (int i = 0; natives[i].name; i++) {
+		Toy_injectNativeFn(interpreter, natives[i].name, natives[i].fn);
+	}
 
-    return 0;
+	return 0;
 }
 ```
 
@@ -88,7 +88,7 @@ In some situations, you may find it convenient to call a function written in Toy
 
 ```c
 TOY_API bool Toy_callLiteralFn(Toy_Interpreter* interpreter, Toy_Literal func, Toy_LiteralArray* arguments, Toy_LiteralArray* returns);
-TOY_API bool Toy_callFn       (Toy_Interpreter* interpreter, char* name,       Toy_LiteralArray* arguments, Toy_LiteralArray* returns);
+TOY_API bool Toy_callFn	   (Toy_Interpreter* interpreter, char* name,	   Toy_LiteralArray* arguments, Toy_LiteralArray* returns);
 ```
 
 The first argument must be an interpreter. The third argument is a pointer to a `Toy_LiteralArray` containing a list of arguments to pass to the function, and the fourth is a pointer to a `Toy_LiteralArray` where the return values can be stored (an array is used here for a potential future feature). The contents of the argument array are consumed and left in an indeterminate state (but is safe to free), while the returns array always has one value - if the function did not return a value, then it contains a `null` literal.

@@ -46,8 +46,8 @@ var entry: type = astype [string: [string]];
 
 //define a phonebook which follows the above signature
 var phonebook: entry = [
-    "Lucy": ["1234", "Cabbage Ln"],
-    "Bob": ["5678", "Candy Rd"]
+	"Lucy": ["1234", "Cabbage Ln"],
+	"Bob": ["5678", "Candy Rd"]
 ];
 ```
 
@@ -82,12 +82,12 @@ Types are first-class citizens. What this means is that they can be used just li
 
 ```
 fn decide(question) {
-    if (question) {
-        return int;
-    }
-    else {
-        return float;
-    }
+	if (question) {
+		return int;
+	}
+	else {
+		return float;
+	}
 }
 
 var t = decide(true);

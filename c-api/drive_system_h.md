@@ -10,19 +10,19 @@ To use the drive system, first you must designate specific folders which can be 
 #include "drive_system.h"
 
 int main(int argc, char* argv[]) {
-    //the drive system uses a LiteralDictionary, which must be initialized with this
-    Toy_initDriveSystem();
+	//the drive system uses a LiteralDictionary, which must be initialized with this
+	Toy_initDriveSystem();
 
-    Toy_setDrivePath("scripts", "assets/scripts");
-    Toy_setDrivePath("sprites", "assets/sprites");
-    Toy_setDrivePath("fonts", "assets/fonts");
+	Toy_setDrivePath("scripts", "assets/scripts");
+	Toy_setDrivePath("sprites", "assets/sprites");
+	Toy_setDrivePath("fonts", "assets/fonts");
 
-    //TODO: do you stuff here
+	//TODO: do you stuff here
 
-    //clean up the drive dictionary when you're done
-    Toy_freeDriveSystem();
+	//clean up the drive dictionary when you're done
+	Toy_freeDriveSystem();
 
-    return 0;
+	return 0;
 }
 ```
 

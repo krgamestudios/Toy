@@ -104,7 +104,7 @@ This function takes either an array or a dictionary as the `self` argument and a
 import standard;
 
 fn p(i, x) {
-    print x;
+	print x;
 }
 
 var a = [1, 3, 5];
@@ -136,7 +136,7 @@ This function takes either an array or a dictionary as the `self` argument, and 
 import standard;
 
 fn increment(k, v) {
-    return v + 1;
+	return v + 1;
 }
 
 var a = [1, 2, 3];
@@ -152,7 +152,7 @@ This function takes either an array or a dictionary as the `self` argument, a de
 import standard;
 
 fn f(acc, k, v) {
-    return acc + v;
+	return acc + v;
 }
 
 var a = [1, 2, 3, 4];
@@ -172,7 +172,7 @@ This function takes an array as the `self` argument, and a comparison function a
 import standard;
 
 fn less(a, b) {
-    return a < b;
+	return a < b;
 }
 
 var a = [4, 1, 3, 2];
