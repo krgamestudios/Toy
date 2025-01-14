@@ -242,7 +242,6 @@ static Toy_Token makeString(Toy_Lexer* lexer, char terminator) {
 	while (!isAtEnd(lexer)) {
 		//stop if you've hit the terminator
 		if (peek(lexer) == terminator) {
-			advance(lexer); //eat the terminator
 			break;
 		}
 
@@ -260,6 +259,8 @@ static Toy_Token makeString(Toy_Lexer* lexer, char terminator) {
 	if (isAtEnd(lexer)) {
 		return makeErrorToken(lexer, "Unterminated string");
 	}
+
+	advance(lexer); //eat the terminator
 
 	//make the token
 	Toy_Token token;

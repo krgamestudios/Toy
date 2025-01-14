@@ -1,26 +1,8 @@
 
 
-//increment & decrement (prefix)
-{
-	var a = 42;
-	assert a == 42;
-	assert ++a == 43;
-	assert a == 43;
-	assert --a == 42;
-	assert a == 42;
 
-	print a;
-}
+var answer = 42;
 
+var question: string = "How many roads must a man walk down?";
 
-//increment & decrement (postfix)
-{
-	var a = 42;
-	assert a == 42;
-	assert a++ == 42;
-	assert a == 43;
-	assert a-- == 43;
-	assert a == 42;
-
-	print a;
-}
+print question;
