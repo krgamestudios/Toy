@@ -178,7 +178,7 @@ void versionCmdLine(int argc, const char* argv[]) {
 
 	//copy/pasted from the license file - there's a way to include it directly, but it's too finnicky to bother
 	const char* license = "\
-Copyright (c) 2020-2024 Kayne Ruse, KR Game Studios\n\
+Copyright (c) 2020-2025 Kayne Ruse, KR Game Studios\n\
 \n\
 This software is provided 'as-is', without any express or implied\n\
 warranty. In no event will the authors be held liable for any damages\n\

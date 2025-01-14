@@ -153,7 +153,7 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	//constness check
 	if (Toy_getNameStringVarConstant( TOY_VALUE_AS_STRING(entryPtr->key) )) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Can't assign to const %s", key->name.data);
+		sprintf(buffer, "Can't reassign to constant variable %s", key->name.data);
 		Toy_error(buffer);
 		return;
 	}
