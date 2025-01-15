@@ -14,7 +14,7 @@
 
 typedef struct Toy_VM {
 	//raw instructions to be executed
-	unsigned char* module;
+	unsigned char* module; //URGENT: rename to 'code'
 	unsigned int moduleSize;
 
 	unsigned int paramSize;

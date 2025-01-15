@@ -56,3 +56,7 @@ typedef struct Toy_Routine {
 } Toy_Routine;
 
 TOY_API void* Toy_compileRoutine(Toy_Ast* ast);
+
+//URGENT: Rename routines to ModuleBuilder
+//URGENT: Rename bytecode to ModuleBundler
+//URGENT: Compiled code is a "module"
