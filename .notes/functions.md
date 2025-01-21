@@ -80,3 +80,4 @@ API:
 # Notes
 
 * Scopes, buckets, strings, etc. will persist until the root VM is cleared
+* The parameters are...

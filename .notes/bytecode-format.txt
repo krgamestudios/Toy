@@ -39,26 +39,26 @@ Additional information may be added later, or multiple 'modules' listed sequenti
 # where 'module' can be omitted if it's local to this module ('identifier' within the symbols is calculated at the module level, it's always unique)
 
 .header:
-	N total size         # size of this routine, including all data and subroutines
-	N .param count     # the number of parameter fields expected
+	N total size       # size of this routine, including all data and subroutines
 	N .jumps count     # the number of entries in the jump table (should be data count + routine count)
+	N .param count     # the number of parameter fields expected
 	N .data count      # the number of data fields expected
 	N .routine count   # the number of routines present
-	.param start       # absolute addess of .param;     omitted if not needed
 	.code start        # absolute address of .code;      mandatory
+	.param start       # absolute addess of .param;      omitted if not needed
 	.datatable start   # absolute address of .datatable; omitted if not needed
 	.data start        # absolute address of .data;      omitted if not needed
 	.routine start     # absolute address of .routine;   omitted if not needed
 	# additional metadata fields can be added later
-
-.param:
-	# a list of symbols to be used as keys in the environment
 
 .code:
 	# instructions read and 'executed' by the interpreter
 	READ 0
 	LOAD 0
 	ASSERT
+
+.param:
+	# a list of symbols to be used as keys in the environment
 
 .jumptable:
 	# a 'symbol -> pointer' jumptable for quickly looking up values in .data and .routines
@@ -71,4 +71,3 @@ Additional information may be added later, or multiple 'modules' listed sequenti
 
 .routines:
 	# inner routines, each of which conforms to this spec
-

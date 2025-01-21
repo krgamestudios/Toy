@@ -2,9 +2,9 @@
 
 #include "toy_common.h"
 
-#include "toy_bytecode.h"
 #include "toy_bucket.h"
 #include "toy_scope.h"
+#include "toy_module.h"
 
 #include "toy_value.h"
 #include "toy_string.h"
@@ -14,40 +14,42 @@
 
 typedef struct Toy_VM {
 	//raw instructions to be executed
-	unsigned char* module; //URGENT: rename to 'code'
-	unsigned int moduleSize;
+	unsigned char* code;
 
-	unsigned int paramSize;
-	unsigned int jumpsSize;
-	unsigned int dataSize;
-	unsigned int subsSize;
+	//metadata
+	unsigned int jumpsCount;
+	unsigned int paramCount;
+	unsigned int dataCount;
+	unsigned int subsCount;
 
-	unsigned int paramAddr;
 	unsigned int codeAddr;
 	unsigned int jumpsAddr;
+	unsigned int paramAddr;
 	unsigned int dataAddr;
 	unsigned int subsAddr;
 
+	//execution utils
 	unsigned int programCounter;
-
-	//stack - immediate-level values only
-	Toy_Stack* stack;
 
 	//scope - block-level key/value pairs
 	Toy_Scope* scope;
 
+	//stack - immediate-level values only
+	Toy_Stack* stack;
+
 	//easy access to memory
 	Toy_Bucket* stringBucket; //stores the string literals
-	Toy_Bucket* scopeBucket; //stores the scopes
+	Toy_Bucket* scopeBucket; //stores the scope instances TODO: is this separation needed?
 } Toy_VM;
 
-TOY_API void Toy_initVM(Toy_VM* vm);
-TOY_API void Toy_bindVM(Toy_VM* vm, struct Toy_Bytecode* bc); //process the version data
-TOY_API void Toy_bindVMToModule(Toy_VM* vm, unsigned char* module); //process the module only
+TOY_API void Toy_resetVM(Toy_VM* vm); //persists memory
 
+TOY_API void Toy_initVM(Toy_VM* vm); //creates memory
+TOY_API void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent); //inherits memory
+
+TOY_API void Toy_bindVMToModule(Toy_VM* vm, Toy_Module* module);
 TOY_API void Toy_runVM(Toy_VM* vm);
-TOY_API void Toy_freeVM(Toy_VM* vm);
 
-TOY_API void Toy_resetVM(Toy_VM* vm); //prepares for another run without deleting stack, scope and memory
+TOY_API void Toy_freeVM(Toy_VM* vm);
 
 //TODO: inject extra data (hook system for external libraries)

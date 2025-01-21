@@ -3,7 +3,7 @@
 #include "toy_common.h"
 #include "toy_ast.h"
 
-//the 'escapes' are lists of data used for processing the 'break' and 'continue' keywords, and can be safely ignored
+//the 'escapes' are lists of data used for processing the 'break' and 'continue' keywords
 typedef struct Toy_private_EscapeEntry_t {
 	unsigned int addr; //the address to write *to*
 	unsigned int depth; //the current depth
@@ -26,12 +26,8 @@ typedef struct Toy_private_EscapeArray {
 
 TOY_API void* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int capacity);
 
-//internal structure that holds the individual parts of a compiled routine
-typedef struct Toy_Routine {
-	unsigned char* param; //c-string params in sequence (could be moved below the jump table?)
-	unsigned int paramCapacity;
-	unsigned int paramCount;
-
+//structure for holding the module as it is built
+typedef struct Toy_ModuleBuilder {
 	unsigned char* code; //the instruction set
 	unsigned int codeCapacity;
 	unsigned int codeCount;
@@ -40,23 +36,27 @@ typedef struct Toy_Routine {
 	unsigned int jumpsCapacity;
 	unsigned int jumpsCount;
 
-	unsigned char* data; //data for longer stuff
+	unsigned char* param; //each 'param' is the starting address of a name string within 'data'
+	unsigned int paramCapacity;
+	unsigned int paramCount;
+
+	unsigned char* data; //a block of read-only data
 	unsigned int dataCapacity;
 	unsigned int dataCount;
 
-	unsigned char* subs; //subroutines, recursively
+	unsigned char* subs; //submodules, built recursively
 	unsigned int subsCapacity;
 	unsigned int subsCount;
 
+	//TODO: duplicate string reuse, see #168
+
+	//tools for handling the build process
 	unsigned int currentScopeDepth;
 	Toy_private_EscapeArray* breakEscapes;
 	Toy_private_EscapeArray* continueEscapes;
 
-	bool panic; //any issues found at this point are compilation errors
-} Toy_Routine;
+	//compilation errors
+	bool panic;
+} Toy_ModuleBuilder;
 
-TOY_API void* Toy_compileRoutine(Toy_Ast* ast);
-
-//URGENT: Rename routines to ModuleBuilder
-//URGENT: Rename bytecode to ModuleBundler
-//URGENT: Compiled code is a "module"
+TOY_API void* Toy_compileModuleBuilder(Toy_Ast* ast);

@@ -325,7 +325,7 @@ int repl(const char* filepath) {
 			continue;
 		}
 
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		Toy_ModuleBundle bc = Toy_compileModuleBundle(ast);
 		Toy_bindVM(&vm, &bc);
 
 		//run
@@ -333,7 +333,7 @@ int repl(const char* filepath) {
 
 		//free the bytecode, and leave the VM ready for the next loop
 		Toy_resetVM(&vm);
-		Toy_freeBytecode(bc);
+		Toy_freeModuleBundle(bc);
 
 		printf("%s> ", prompt); //shows the terminal prompt
 	}
@@ -473,7 +473,7 @@ int main(int argc, const char* argv[]) {
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
 
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		Toy_ModuleBundle bc = Toy_compileModuleBundle(ast);
 
 		//run the setup
 		Toy_VM vm;
@@ -491,7 +491,7 @@ int main(int argc, const char* argv[]) {
 
 		//cleanup
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		Toy_freeModuleBundle(bc);
 		Toy_freeBucket(&bucket);
 		free(source);
 	}

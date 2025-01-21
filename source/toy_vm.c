@@ -10,16 +10,16 @@
 
 //utilities
 #define READ_BYTE(vm) \
-	vm->module[vm->programCounter++]
+	vm->code[vm->programCounter++]
 
 #define READ_UNSIGNED_INT(vm) \
-	*((unsigned int*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
+	*((unsigned int*)(vm->code + readPostfixUtil(&(vm->programCounter), 4)))
 
 #define READ_INT(vm) \
-	*((int*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
+	*((int*)(vm->code + readPostfixUtil(&(vm->programCounter), 4)))
 
 #define READ_FLOAT(vm) \
-	*((float*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
+	*((float*)(vm->code + readPostfixUtil(&(vm->programCounter), 4)))
 
 static inline int readPostfixUtil(unsigned int* ptr, int amount) {
 	int ret = *ptr;
@@ -66,10 +66,10 @@ static void processRead(Toy_VM* vm) {
 			int len = (int)READ_BYTE(vm); //only needed for name strings
 
 			//grab the jump as an integer
-			unsigned int jump = *((int*)(vm->module + vm->jumpsAddr + READ_INT(vm)));
+			unsigned int jump = *((int*)(vm->code + vm->jumpsAddr + READ_INT(vm)));
 
 			//jumps are relative to the data address
-			char* cstring = (char*)(vm->module + vm->dataAddr + jump);
+			char* cstring = (char*)(vm->code + vm->dataAddr + jump);
 
 			//build a string from the data section
 			if (stringType == TOY_STRING_LEAF) {
@@ -192,10 +192,10 @@ static void processDeclare(Toy_VM* vm) {
 	bool constant = READ_BYTE(vm); //constness
 
 	//grab the jump
-	unsigned int jump = *(unsigned int*)(vm->module + vm->jumpsAddr + READ_INT(vm));
+	unsigned int jump = *(unsigned int*)(vm->code + vm->jumpsAddr + READ_INT(vm));
 
 	//grab the data
-	char* cstring = (char*)(vm->module + vm->dataAddr + jump);
+	char* cstring = (char*)(vm->code + vm->dataAddr + jump);
 
 	//build the name string
 	Toy_String* name = Toy_createNameStringLength(&vm->stringBucket, cstring, len, type, constant);
@@ -939,121 +939,17 @@ static void process(Toy_VM* vm) {
 }
 
 //exposed functions
-void Toy_initVM(Toy_VM* vm) {
-	//clear the stack, scope and memory
-	vm->stringBucket = NULL;
-	vm->scopeBucket = NULL;
-	vm->stack = NULL;
-	vm->scope = NULL;
-
-	Toy_resetVM(vm);
-}
-
-void Toy_bindVM(Toy_VM* vm, struct Toy_Bytecode* bc) {
-	if (bc->ptr[0] != TOY_VERSION_MAJOR || bc->ptr[1] > TOY_VERSION_MINOR) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Wrong bytecode version found: expected %d.%d.%d found %d.%d.%d, exiting\n" TOY_CC_RESET, TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, bc->ptr[0], bc->ptr[1], bc->ptr[2]);
-		exit(-1);
-	}
-
-	if (bc->ptr[2] != TOY_VERSION_PATCH) {
-		fprintf(stderr, TOY_CC_WARN "WARNING: Wrong bytecode version found: expected %d.%d.%d found %d.%d.%d, continuing\n" TOY_CC_RESET, TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, bc->ptr[0], bc->ptr[1], bc->ptr[2]);
-	}
-
-	if (strcmp((char*)(bc->ptr + 3), TOY_VERSION_BUILD) != 0) {
-		fprintf(stderr, TOY_CC_WARN "WARNING: Wrong bytecode build info found: expected '%s' found '%s', continuing\n" TOY_CC_RESET, TOY_VERSION_BUILD, (char*)(bc->ptr + 3));
-	}
-
-	//offset by the header size
-	int offset = 3 + strlen(TOY_VERSION_BUILD) + 1;
-	if (offset % 4 != 0) {
-		offset += 4 - (offset % 4); //ceil
-	}
-
-	if (bc->moduleCount != 0) { //tmp check, just in case the bytecode is empty; will rework this when module packing works
-		//delegate to a more specialized function
-		Toy_bindVMToModule(vm, bc->ptr + offset);
-	}
-}
-
-void Toy_bindVMToModule(Toy_VM* vm, unsigned char* module) {
-	vm->module = module;
-
-	//read the header metadata
-	vm->moduleSize = READ_UNSIGNED_INT(vm);
-	vm->paramSize = READ_UNSIGNED_INT(vm);
-	vm->jumpsSize = READ_UNSIGNED_INT(vm);
-	vm->dataSize = READ_UNSIGNED_INT(vm);
-	vm->subsSize = READ_UNSIGNED_INT(vm);
-
-	//read the header addresses
-	if (vm->paramSize > 0) {
-		vm->paramAddr = READ_UNSIGNED_INT(vm);
-	}
-
-	vm->codeAddr = READ_UNSIGNED_INT(vm); //required
-
-	if (vm->jumpsSize > 0) {
-		vm->jumpsAddr = READ_UNSIGNED_INT(vm);
-	}
-
-	if (vm->dataSize > 0) {
-		vm->dataAddr = READ_UNSIGNED_INT(vm);
-	}
-
-	if (vm->subsSize > 0) {
-		vm->subsAddr = READ_UNSIGNED_INT(vm);
-	}
-
-	//allocate the stack, scope, and memory (skip if already in use)
-	if (vm->stringBucket == NULL) {
-		vm->stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-	}
-	if (vm->scopeBucket == NULL) {
-		vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-	}
-	if (vm->stack == NULL) {
-		vm->stack = Toy_allocateStack();
-	}
-	if (vm->scope == NULL) {
-		vm->scope = Toy_pushScope(&vm->scopeBucket, NULL);
-	}
-}
-
-void Toy_runVM(Toy_VM* vm) {
-	//NO-OP on empty VMs
-	if (vm->module == NULL) {
-		return;
-	}
-
-	//TODO: read params into scope
-
-	//prep the program counter for execution
-	vm->programCounter = vm->codeAddr;
-
-	//begin
-	process(vm);
-}
-
-void Toy_freeVM(Toy_VM* vm) {
-	//clear the stack, scope and memory
-	Toy_freeStack(vm->stack);
-	Toy_popScope(vm->scope);
-	Toy_freeBucket(&vm->stringBucket);
-	Toy_freeBucket(&vm->scopeBucket);
-}
-
 void Toy_resetVM(Toy_VM* vm) {
-	vm->module = NULL;
-	vm->moduleSize = 0;
+	vm->code = NULL;
 
-	vm->paramSize = 0;
-	vm->jumpsSize = 0;
-	vm->dataSize = 0;
-	vm->subsSize = 0;
+	vm->jumpsCount = 0;
+	vm->paramCount = 0;
+	vm->dataCount = 0;
+	vm->subsCount = 0;
 
-	vm->paramAddr = 0;
 	vm->codeAddr = 0;
 	vm->jumpsAddr = 0;
+	vm->paramAddr = 0;
 	vm->dataAddr = 0;
 	vm->subsAddr = 0;
 
@@ -1061,5 +957,67 @@ void Toy_resetVM(Toy_VM* vm) {
 
 	Toy_resetStack(&vm->stack);
 
-	//NOTE: scope and memory are not altered during resets
+	//NOTE: scope and buckets are not altered during resets
+}
+
+void Toy_initVM(Toy_VM* vm) {
+	//create persistent memory
+	vm->scope = NULL;
+	vm->stack = Toy_allocateStack();
+	vm->stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+	vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+
+	Toy_resetVM(vm);
+}
+
+void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
+	//inherent persistent memory
+	vm->scope = NULL;
+	vm->stack = Toy_allocateStack();
+	vm->stringBucket = parent->stringBucket;
+	vm->scopeBucket = parent->scopeBucket;
+
+	//TODO: parent bucket pointers are updated after function calls
+
+	Toy_resetVM(vm);
+}
+
+void Toy_bindVMToModule(Toy_VM* vm, Toy_Module* module) {
+	vm->code = module->code;
+
+	vm->jumpsCount = module->jumpsCount;
+	vm->paramCount = module->paramCount;
+	vm->dataCount = module->dataCount;
+	vm->subsCount = module->subsCount;
+
+	vm->codeAddr = module->codeAddr;
+	vm->jumpsAddr = module->jumpsAddr;
+	vm->paramAddr = module->paramAddr;
+	vm->dataAddr = module->dataAddr;
+	vm->subsAddr = module->subsAddr;
+
+	vm->scope = Toy_pushScope(&vm->scopeBucket, module->scopePtr); //new scope for the upcoming run
+}
+
+void Toy_runVM(Toy_VM* vm) {
+	//TODO: read params into scope
+
+	//prep the program counter for execution
+	vm->programCounter = vm->codeAddr;
+
+	//begin
+	process(vm);
+
+	//TODO: add return value extraction
+}
+
+void Toy_freeVM(Toy_VM* vm) {
+	Toy_resetVM(vm);
+
+	Toy_popScope(vm->scope);
+
+	//clear the persistent memory
+	Toy_freeStack(vm->stack);
+	Toy_freeBucket(&vm->stringBucket);
+	Toy_freeBucket(&vm->scopeBucket);
 }
