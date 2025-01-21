@@ -3,3 +3,7 @@
 		display: none !important;
 	}
 }
+
+.ui.segment {
+	overflow-x: unset;
+}
