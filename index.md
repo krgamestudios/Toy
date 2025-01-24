@@ -3,6 +3,8 @@ layout: page
 title: The Toy Programming Language
 ---
 
+{% elements/chicken.html %}
+
 <div style="justify-self: center;">
 	<image src="assets/toylogo.png" width="250" height="250" />
 </div>

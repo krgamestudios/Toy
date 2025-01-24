@@ -1,0 +1,15 @@
+<div style="float:right; padding: 1em;" onclick="chicken();" title="Cluck me!">
+	<script type="text/javascript">
+		let options = [
+			"What the cluck?",
+			"Go cluck yourself!",
+			"I don't give a cluck!",
+			"Cluck off!",
+			"That farmer clucked me over!"
+		];
+		function chicken() {
+			document.getElementById("chirp").textContent = options[ Math.floor(options.length * Math.random()) ];
+		}
+	</script>
+	<p><span id="chirp"></span> 🐔</p>
+</div> 
