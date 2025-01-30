@@ -982,7 +982,7 @@ void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
 	Toy_resetVM(vm);
 }
 
-void Toy_bindVMToModule(Toy_VM* vm, Toy_Module* module) {
+void Toy_bindVM(Toy_VM* vm, Toy_Module* module) {
 	vm->code = module->code;
 
 	vm->jumpsCount = module->jumpsCount;
@@ -1000,6 +1000,11 @@ void Toy_bindVMToModule(Toy_VM* vm, Toy_Module* module) {
 }
 
 void Toy_runVM(Toy_VM* vm) {
+	if (vm->codeAddr == 0) {
+		//ignore uninitialized VMs or empty modules
+		return;
+	}
+
 	//TODO: read params into scope
 
 	//prep the program counter for execution

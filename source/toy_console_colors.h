@@ -41,6 +41,7 @@ NOTE: you need both font AND background for these to work
 #define TOY_CC_NOTICE TOY_CC_FONT_GREEN TOY_CC_BACK_BLACK
 #define TOY_CC_WARN TOY_CC_FONT_YELLOW TOY_CC_BACK_BLACK
 #define TOY_CC_ERROR TOY_CC_FONT_RED TOY_CC_BACK_BLACK
+#define TOY_CC_ASSERT TOY_CC_FONT_PURPLE TOY_CC_BACK_BLACK
 #define TOY_CC_RESET "\033[0m"
 
 //for unsupported platforms, these become no-ops
@@ -72,6 +73,7 @@ NOTE: you need both font AND background for these to work
 #define TOY_CC_NOTICE TOY_CC_FONT_GREEN TOY_CC_BACK_BLACK
 #define TOY_CC_WARN TOY_CC_FONT_YELLOW TOY_CC_BACK_BLACK
 #define TOY_CC_ERROR TOY_CC_FONT_RED TOY_CC_BACK_BLACK
+#define TOY_CC_ASSERT TOY_CC_FONT_PURPLE TOY_CC_BACK_BLACK
 #define TOY_CC_RESET
 
 #endif

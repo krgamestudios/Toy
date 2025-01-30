@@ -1,4 +1,9 @@
-#include "toy.h"
+#include "toy_console_colors.h"
+
+#include "toy_lexer.h"
+#include "toy_parser.h"
+#include "toy_module_builder.h"
+#include "toy_vm.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -111,21 +116,21 @@ static void printCallback(const char* msg) {
 }
 
 static void errorAndExitCallback(const char* msg) {
-	fprintf(stderr, "Error: %s\n", msg);
+	fprintf(stderr, TOY_CC_ERROR "Error: %s\n" TOY_CC_RESET, msg);
 	exit(-1);
 }
 
 static void errorAndContinueCallback(const char* msg) {
-	fprintf(stderr, "Error: %s\n", msg);
+	fprintf(stderr, TOY_CC_ERROR "Error: %s\n" TOY_CC_RESET, msg);
 }
 
 static void assertFailureAndExitCallback(const char* msg) {
-	fprintf(stderr, "Assert Failure: %s\n", msg);
+	fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s\n" TOY_CC_RESET, msg);
 	exit(-1);
 }
 
 static void assertFailureAndContinueCallback(const char* msg) {
-	fprintf(stderr, "Assert Failure: %s\n", msg);
+	fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s\n" TOY_CC_RESET, msg);
 }
 
 static void noOpCallback(const char* msg) {
@@ -222,7 +227,7 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 		}
 
 		else if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "--file")) {
-			if (argc < i + 1) {
+			if (argc <= i + 1) {
 				cmd.error = true;
 			}
 			else {
@@ -291,7 +296,7 @@ int repl(const char* filepath) {
 	Toy_VM vm;
 	Toy_initVM(&vm);
 
-	printf("%s> ", prompt); //shows the terminal prompt
+	printf("%s> ", prompt); //shows the terminal prompt and begin
 
 	//read from the terminal
 	while(fgets(inputBuffer, INPUT_BUFFER_SIZE, stdin)) {
@@ -301,8 +306,8 @@ int repl(const char* filepath) {
 			inputBuffer[--length] = '\0';
 		}
 
-		if (length == 0) {
-			printf("%s> ", prompt); //shows the terminal prompt
+		if (length == 0 || !inputBuffer[ strspn(inputBuffer, " \r\n\t") ]) {
+			printf("%s> ", prompt); //shows the terminal prompt and restart
 			continue;
 		}
 
@@ -311,7 +316,7 @@ int repl(const char* filepath) {
 			break;
 		}
 
-		//parse the input, prep the VM for run
+		//parse the input, prep the VM for execution
 		Toy_Lexer lexer;
 		Toy_bindLexer(&lexer, inputBuffer);
 		Toy_Parser parser;
@@ -325,15 +330,16 @@ int repl(const char* filepath) {
 			continue;
 		}
 
-		Toy_ModuleBundle bc = Toy_compileModuleBundle(ast);
-		Toy_bindVM(&vm, &bc);
+		void* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
+		Toy_bindVM(&vm, &module);
 
 		//run
 		Toy_runVM(&vm);
 
-		//free the bytecode, and leave the VM ready for the next loop
+		//free the memory, and leave the VM ready for the next loop
 		Toy_resetVM(&vm);
-		Toy_freeModuleBundle(bc);
+		free(buffer);
 
 		printf("%s> ", prompt); //shows the terminal prompt
 	}
@@ -435,7 +441,7 @@ int main(int argc, const char* argv[]) {
 		versionCmdLine(argc, argv);
 	}
 	else if (cmd.infile != NULL) {
-		//run the given file
+		//read the source file
 		int size;
 		unsigned char* source = readFile(cmd.infile, &size);
 
@@ -462,6 +468,7 @@ int main(int argc, const char* argv[]) {
 		cmd.infile = NULL;
 		cmd.infileLength = 0;
 
+		//compile the source code
 		Toy_Lexer lexer;
 		Toy_bindLexer(&lexer, (char*)source);
 
@@ -472,15 +479,17 @@ int main(int argc, const char* argv[]) {
 
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
+		void* buffer = Toy_compileModuleBuilder(ast);
+		Toy_freeBucket(&bucket);
+		free(source);
 
-		Toy_ModuleBundle bc = Toy_compileModuleBundle(ast);
-
-		//run the setup
+		//run the compiled code
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
 
-		//run
+		Toy_Module module = Toy_parseModule(buffer);
+		Toy_bindVM(&vm, &module);
+
 		Toy_runVM(&vm);
 
 		//print the debug info
@@ -491,9 +500,7 @@ int main(int argc, const char* argv[]) {
 
 		//cleanup
 		Toy_freeVM(&vm);
-		Toy_freeModuleBundle(bc);
-		Toy_freeBucket(&bucket);
-		free(source);
+		free(buffer);
 	}
 	else {
 		repl(argv[0]);

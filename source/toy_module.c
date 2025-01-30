@@ -8,6 +8,10 @@ static inline unsigned int readUnsignedInt(unsigned char** handle) {
 }
 
 Toy_Module Toy_parseModule(unsigned char* ptr) {
+	if (ptr == NULL) {
+		return (Toy_Module){ 0 };
+	}
+
 	Toy_Module module;
 
 	module.scopePtr = NULL;
