@@ -4,86 +4,61 @@
 #include <stdio.h>
 #include <string.h>
 
-int test_sizeof_ast_64bit(void) {
-	//NOTE: This could've covered both bitness sizes as TEST_SIZEOF(type, bit32, bit32)
-#define TEST_SIZEOF(type, size) \
-	if (sizeof(type) != size) { \
-		fprintf(stderr, TOY_CC_ERROR "ERROR: sizeof(" #type ") is %d, expected %d\n" TOY_CC_RESET, (int)sizeof(type), size); \
+#if TOY_BITNESS == 32
+
+#define TEST_SIZEOF(type, bit32, bit64) \
+	if (sizeof(type) != bit32) { \
+		fprintf(stderr, TOY_CC_ERROR "ERROR: sizeof(" #type ") is %d, expected %d (bitness %d)\n" TOY_CC_RESET, (int)sizeof(type), bit32, TOY_BITNESS); \
 		++err; \
 	}
 
-	//count errors
+#elif TOY_BITNESS == 64
+
+#define TEST_SIZEOF(type, bit32, bit64) \
+	if (sizeof(type) != bit64) { \
+		fprintf(stderr, TOY_CC_ERROR "ERROR: sizeof(" #type ") is %d, expected %d (bitness %d)\n" TOY_CC_RESET, (int)sizeof(type), bit64, TOY_BITNESS); \
+		++err; \
+	}
+
+#else
+
+#pragma message("Unable to test the size of Toy_Ast members, as TOY_BITNESS is not recognized")
+#define TEST_SIZEOF(type, bit32, bit64)
+
+#endif
+
+int test_sizeof_ast(void) {
 	int err = 0;
 
 	//run for each type
-	TEST_SIZEOF(Toy_AstType, 4);
-	TEST_SIZEOF(Toy_AstBlock, 32);
-	TEST_SIZEOF(Toy_AstValue, 24);
-	TEST_SIZEOF(Toy_AstUnary, 16);
-	TEST_SIZEOF(Toy_AstBinary, 24);
-	TEST_SIZEOF(Toy_AstBinaryShortCircuit, 24);
-	TEST_SIZEOF(Toy_AstCompare, 24);
-	TEST_SIZEOF(Toy_AstGroup, 16);
-	TEST_SIZEOF(Toy_AstCompound, 16);
-	TEST_SIZEOF(Toy_AstAggregate, 24);
-	TEST_SIZEOF(Toy_AstAssert, 24);
-	TEST_SIZEOF(Toy_AstIfThenElse, 32);
-	TEST_SIZEOF(Toy_AstWhileThen, 24);
-	TEST_SIZEOF(Toy_AstBreak, 4);
-	TEST_SIZEOF(Toy_AstContinue, 4);
-	TEST_SIZEOF(Toy_AstPrint, 16);
-	TEST_SIZEOF(Toy_AstVarDeclare, 24);
-	TEST_SIZEOF(Toy_AstVarAssign, 24);
-	TEST_SIZEOF(Toy_AstVarAccess, 16);
-	TEST_SIZEOF(Toy_AstPass, 4);
-	TEST_SIZEOF(Toy_AstError, 4);
-	TEST_SIZEOF(Toy_AstEnd, 4);
-	TEST_SIZEOF(Toy_Ast, 32);
-
-#undef TEST_SIZEOF
+	TEST_SIZEOF(Toy_AstType,                    4   , 4);
+	TEST_SIZEOF(Toy_AstBlock,                   20  , 32);
+	TEST_SIZEOF(Toy_AstValue,                   12  , 24);
+	TEST_SIZEOF(Toy_AstUnary,                   12  , 16);
+	TEST_SIZEOF(Toy_AstBinary,                  16  , 24);
+	TEST_SIZEOF(Toy_AstBinaryShortCircuit,      16  , 24);
+	TEST_SIZEOF(Toy_AstCompare,                 16  , 24);
+	TEST_SIZEOF(Toy_AstGroup,                   8   , 16);
+	TEST_SIZEOF(Toy_AstCompound,                12  , 16);
+	TEST_SIZEOF(Toy_AstAggregate,               16  , 24);
+	TEST_SIZEOF(Toy_AstAssert,                  12  , 24);
+	TEST_SIZEOF(Toy_AstIfThenElse,              16  , 32);
+	TEST_SIZEOF(Toy_AstWhileThen,               12  , 24);
+	TEST_SIZEOF(Toy_AstBreak,                   4   , 4);
+	TEST_SIZEOF(Toy_AstContinue,                4   , 4);
+	TEST_SIZEOF(Toy_AstPrint,                   8   , 16);
+	TEST_SIZEOF(Toy_AstVarDeclare,              12  , 24);
+	TEST_SIZEOF(Toy_AstVarAssign,               16  , 24);
+	TEST_SIZEOF(Toy_AstVarAccess,               8   , 16);
+	TEST_SIZEOF(Toy_AstPass,                    4   , 4);
+	TEST_SIZEOF(Toy_AstError,                   4   , 4);
+	TEST_SIZEOF(Toy_AstEnd,                     4   , 4);
+	TEST_SIZEOF(Toy_Ast,                        20  , 32);
 
 	return -err;
 }
 
-int test_sizeof_ast_32bit(void) {
-#define TEST_SIZEOF(type, size) \
-	if (sizeof(type) != size) { \
-		fprintf(stderr, TOY_CC_ERROR "ERROR: sizeof(" #type ") is %d, expected %d\n" TOY_CC_RESET, (int)sizeof(type), size); \
-		++err; \
-	}
-
-	//count errors
-	int err = 0;
-
-	//run for each type
-	TEST_SIZEOF(Toy_AstType, 4);
-	TEST_SIZEOF(Toy_AstBlock, 20);
-	TEST_SIZEOF(Toy_AstValue, 12);
-	TEST_SIZEOF(Toy_AstUnary, 12);
-	TEST_SIZEOF(Toy_AstBinary, 16);
-	TEST_SIZEOF(Toy_AstBinaryShortCircuit, 16);
-	TEST_SIZEOF(Toy_AstCompare, 16);
-	TEST_SIZEOF(Toy_AstGroup, 8);
-	TEST_SIZEOF(Toy_AstCompound, 12);
-	TEST_SIZEOF(Toy_AstAggregate, 16);
-	TEST_SIZEOF(Toy_AstAssert, 12);
-	TEST_SIZEOF(Toy_AstIfThenElse, 16);
-	TEST_SIZEOF(Toy_AstWhileThen, 12);
-	TEST_SIZEOF(Toy_AstBreak, 4);
-	TEST_SIZEOF(Toy_AstContinue, 4);
-	TEST_SIZEOF(Toy_AstPrint, 8);
-	TEST_SIZEOF(Toy_AstVarDeclare, 12);
-	TEST_SIZEOF(Toy_AstVarAssign, 16);
-	TEST_SIZEOF(Toy_AstVarAccess, 8);
-	TEST_SIZEOF(Toy_AstPass, 4);
-	TEST_SIZEOF(Toy_AstError, 4);
-	TEST_SIZEOF(Toy_AstEnd, 4);
-	TEST_SIZEOF(Toy_Ast, 20);
-
 #undef TEST_SIZEOF
-
-	return -err;
-}
 
 int test_type_emission(Toy_Bucket** bucketHandle) {
 	//emit value
@@ -498,21 +473,11 @@ int main(void) {
 	int total = 0, res = 0;
 
 	{
-#if TOY_BITNESS == 64
-		res = test_sizeof_ast_64bit();
-#elif TOY_BITNESS == 32
-		res = test_sizeof_ast_32bit();
-#else
-		res = -1;
-		fprintf(stderr, TOY_CC_WARN "WARNING: Skipping test_sizeof_ast_**bit(); Can't determine the 'bitness' of this platform (seems to be %d)\n" TOY_CC_RESET, TOY_BITNESS);
-#endif
-
+		res = test_sizeof_ast();
 		if (res == 0) {
 			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
 		}
-		else if (res > 0) {
-			total += res;
-		}
+		total += res;
 	}
 
 	{

@@ -88,7 +88,7 @@ typedef struct Toy_AstBlock {
 	bool innerScope;
 	Toy_Ast* child; //begin encoding the line
 	Toy_Ast* next; //'next' is either an AstBlock or null
-	Toy_Ast* tail; //'tail' - either points to the tail of the current list, or null; only used by the head of a list as an optimisation
+	Toy_Ast* tail; //'tail' - either points to the tail of the current list, or null; only used as an optimisation in toy_ast.c
 } Toy_AstBlock;
 
 typedef struct Toy_AstValue {
@@ -203,30 +203,30 @@ typedef struct Toy_AstEnd {
 	Toy_AstType type;
 } Toy_AstEnd;
 
-union Toy_Ast {                                             //32 | 64 BITNESS
-	Toy_AstType type;                                       //4  | 4
-	Toy_AstBlock block;                                     //16 | 32
-	Toy_AstValue value;                                     //12 | 24
-	Toy_AstUnary unary;                                     //12 | 16
-	Toy_AstBinary binary;                                   //16 | 24
-	Toy_AstBinaryShortCircuit binaryShortCircuit;           //16 | 24
-	Toy_AstCompare compare;                                 //16 | 24
-	Toy_AstGroup group;                                     //8  | 16
-	Toy_AstCompound compound;                               //12 | 16
-	Toy_AstAggregate aggregate;                             //16 | 24
-	Toy_AstAssert assert;                                   //16 | 24
-	Toy_AstIfThenElse ifThenElse;                           //16 | 32
-	Toy_AstWhileThen whileThen;                             //16 | 24
-	Toy_AstBreak breakPoint;                                //4  | 4
-	Toy_AstContinue continuePoint;                          //4  | 4
-	Toy_AstPrint print;                                     //8  | 16
-	Toy_AstVarDeclare varDeclare;                           //16 | 24
-	Toy_AstVarAssign varAssign;                             //16 | 24
-	Toy_AstVarAccess varAccess;                             //8  | 16
-	Toy_AstPass pass;                                       //4  | 4
-	Toy_AstError error;                                     //4  | 4
-	Toy_AstEnd end;                                         //4  | 4
-};                                                          //16 | 32
+union Toy_Ast { //see 'test_ast.c' for bitness tests
+	Toy_AstType type;
+	Toy_AstBlock block;
+	Toy_AstValue value;
+	Toy_AstUnary unary;
+	Toy_AstBinary binary;
+	Toy_AstBinaryShortCircuit binaryShortCircuit;
+	Toy_AstCompare compare;
+	Toy_AstGroup group;
+	Toy_AstCompound compound;
+	Toy_AstAggregate aggregate;
+	Toy_AstAssert assert;
+	Toy_AstIfThenElse ifThenElse;
+	Toy_AstWhileThen whileThen;
+	Toy_AstBreak breakPoint;
+	Toy_AstContinue continuePoint;
+	Toy_AstPrint print;
+	Toy_AstVarDeclare varDeclare;
+	Toy_AstVarAssign varAssign;
+	Toy_AstVarAccess varAccess;
+	Toy_AstPass pass;
+	Toy_AstError error;
+	Toy_AstEnd end;
+};
 
 void Toy_private_initAstBlock(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 void Toy_private_appendAstBlock(Toy_Bucket** bucketHandle, Toy_Ast* block, Toy_Ast* child);
