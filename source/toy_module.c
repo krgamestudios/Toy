@@ -20,7 +20,7 @@ Toy_Module Toy_parseModule(unsigned char* ptr) {
 
 	//header
 	readUnsignedInt(&ptr);
-	// module.codeCount = readUnsignedInt(&ptr); NOTE: note used
+
 	module.jumpsCount = readUnsignedInt(&ptr);
 	module.paramCount = readUnsignedInt(&ptr);
 	module.dataCount = readUnsignedInt(&ptr);

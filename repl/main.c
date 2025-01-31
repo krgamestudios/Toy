@@ -298,6 +298,8 @@ int repl(const char* filepath) {
 
 	printf("%s> ", prompt); //shows the terminal prompt and begin
 
+	unsigned int runCount = 0; //used for initial preserveScope
+
 	//read from the terminal
 	while(fgets(inputBuffer, INPUT_BUFFER_SIZE, stdin)) {
 		//work around fgets() adding a newline
@@ -332,13 +334,13 @@ int repl(const char* filepath) {
 
 		void* buffer = Toy_compileModuleBuilder(ast);
 		Toy_Module module = Toy_parseModule(buffer);
-		Toy_bindVM(&vm, &module);
+		Toy_bindVM(&vm, &module, runCount++ > 0);
 
 		//run
 		Toy_runVM(&vm);
 
 		//free the memory, and leave the VM ready for the next loop
-		Toy_resetVM(&vm);
+		Toy_resetVM(&vm, true);
 		free(buffer);
 
 		printf("%s> ", prompt); //shows the terminal prompt
@@ -488,7 +490,7 @@ int main(int argc, const char* argv[]) {
 		Toy_initVM(&vm);
 
 		Toy_Module module = Toy_parseModule(buffer);
-		Toy_bindVM(&vm, &module);
+		Toy_bindVM(&vm, &module, false);
 
 		Toy_runVM(&vm);
 

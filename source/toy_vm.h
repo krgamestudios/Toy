@@ -42,12 +42,12 @@ typedef struct Toy_VM {
 	Toy_Bucket* scopeBucket; //stores the scope instances TODO: is this separation needed?
 } Toy_VM;
 
-TOY_API void Toy_resetVM(Toy_VM* vm); //persists memory
+TOY_API void Toy_resetVM(Toy_VM* vm, bool preserveScope);
 
 TOY_API void Toy_initVM(Toy_VM* vm); //creates memory
 TOY_API void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent); //inherits memory
 
-TOY_API void Toy_bindVM(Toy_VM* vm, Toy_Module* module);
+TOY_API void Toy_bindVM(Toy_VM* vm, Toy_Module* module, bool preserveScope);
 TOY_API void Toy_runVM(Toy_VM* vm);
 
 TOY_API void Toy_freeVM(Toy_VM* vm);

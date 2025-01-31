@@ -939,7 +939,7 @@ static void process(Toy_VM* vm) {
 }
 
 //exposed functions
-void Toy_resetVM(Toy_VM* vm) {
+void Toy_resetVM(Toy_VM* vm, bool preserveScope) {
 	vm->code = NULL;
 
 	vm->jumpsCount = 0;
@@ -957,7 +957,11 @@ void Toy_resetVM(Toy_VM* vm) {
 
 	Toy_resetStack(&vm->stack);
 
-	//NOTE: scope and buckets are not altered during resets
+	if (preserveScope == false) {
+		vm->scope = Toy_popScope(vm->scope);
+	}
+
+	//NOTE: buckets are not altered during resets
 }
 
 void Toy_initVM(Toy_VM* vm) {
@@ -967,7 +971,7 @@ void Toy_initVM(Toy_VM* vm) {
 	vm->stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 	vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
-	Toy_resetVM(vm);
+	Toy_resetVM(vm, true);
 }
 
 void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
@@ -979,10 +983,10 @@ void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
 
 	//TODO: parent bucket pointers are updated after function calls
 
-	Toy_resetVM(vm);
+	Toy_resetVM(vm, true);
 }
 
-void Toy_bindVM(Toy_VM* vm, Toy_Module* module) {
+void Toy_bindVM(Toy_VM* vm, Toy_Module* module, bool preserveScope) {
 	vm->code = module->code;
 
 	vm->jumpsCount = module->jumpsCount;
@@ -996,7 +1000,9 @@ void Toy_bindVM(Toy_VM* vm, Toy_Module* module) {
 	vm->dataAddr = module->dataAddr;
 	vm->subsAddr = module->subsAddr;
 
-	vm->scope = Toy_pushScope(&vm->scopeBucket, module->scopePtr); //new scope for the upcoming run
+	if (preserveScope == false) {
+		vm->scope = Toy_pushScope(&vm->scopeBucket, module->scopePtr);
+	}
 }
 
 void Toy_runVM(Toy_VM* vm) {
@@ -1017,9 +1023,7 @@ void Toy_runVM(Toy_VM* vm) {
 }
 
 void Toy_freeVM(Toy_VM* vm) {
-	Toy_resetVM(vm);
-
-	Toy_popScope(vm->scope);
+	Toy_resetVM(vm, false);
 
 	//clear the persistent memory
 	Toy_freeStack(vm->stack);

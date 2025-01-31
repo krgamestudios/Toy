@@ -3,7 +3,7 @@
 
 #include "toy_lexer.h"
 #include "toy_parser.h"
-#include "toy_bytecode.h"
+#include "toy_module_builder.h"
 #include "toy_print.h"
 
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #include <string.h>
 
 //utils
-Toy_Bytecode makeBytecodeFromSource(Toy_Bucket** bucketHandle, const char* source) { //did I forget this?
+unsigned char* makeCodeFromSource(Toy_Bucket** bucketHandle, const char* source) {
 	Toy_Lexer lexer;
 	Toy_bindLexer(&lexer, source);
 
@@ -19,16 +19,14 @@ Toy_Bytecode makeBytecodeFromSource(Toy_Bucket** bucketHandle, const char* sourc
 	Toy_bindParser(&parser, &lexer);
 
 	Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-	Toy_Bytecode bc = Toy_compileBytecode(ast);
-
-	return bc;
+	return Toy_compileModuleBuilder(ast);
 }
 
 //tests
 int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 	//basic init & quit
 	{
-		//generate bytecode for testing
+		//generate module for testing
 		const char* source = "(1 + 2) * (3 + 4);";
 
 		Toy_Lexer lexer;
@@ -38,41 +36,34 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
-
-		//check the header size
-		int headerSize = 3 + strlen(TOY_VERSION_BUILD) + 1;
-		if (headerSize % 4 != 0) {
-			headerSize += 4 - (headerSize % 4); //ceil
-		}
+		Toy_bindVM(&vm, &module, false);
 
 		//check the module was loaded correctly
 		if (
-			vm.module - bc.ptr != headerSize ||
-			vm.moduleSize != 72 ||
-			vm.paramSize != 0 ||
-			vm.jumpsSize != 0 ||
-			vm.dataSize != 0 ||
-			vm.subsSize != 0
+			vm.codeAddr != 24 || // module header is: total, jumps, prams, data, subs, codeAddr
+			vm.jumpsCount != 0 ||
+			vm.paramCount != 0 ||
+			vm.dataCount != 0 ||
+			vm.subsCount != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to setup and teadown Toy_VM, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
 		//don't run it this time, simply teadown
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	return 0;
@@ -91,13 +82,13 @@ int test_simple_execution(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -113,13 +104,13 @@ int test_simple_execution(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
 		//teadown
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	return 0;
@@ -138,13 +129,13 @@ int test_opcode_not_equal(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -160,13 +151,13 @@ int test_opcode_not_equal(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
 		//teadown
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	return 0;
@@ -195,11 +186,13 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -213,7 +206,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 			Toy_resetAssertFailureCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -222,7 +215,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	//test assert false
@@ -238,11 +231,13 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -257,7 +252,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 			Toy_resetAssertFailureCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -266,7 +261,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	//test assert false with message
@@ -282,11 +277,13 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -301,7 +298,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 			Toy_resetAssertFailureCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -310,7 +307,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	return 0;
@@ -330,11 +327,13 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -349,7 +348,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -358,7 +357,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	//test print with a string
@@ -374,11 +373,13 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -393,7 +394,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -402,7 +403,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	//test print with a string concat
@@ -418,11 +419,13 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -437,7 +440,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -446,7 +449,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	return 0;
@@ -466,11 +469,13 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -485,7 +490,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -494,7 +499,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	//test if-then (falsy)
@@ -510,11 +515,13 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -528,7 +535,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -537,7 +544,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	//test if-then-else (truthy)
@@ -553,11 +560,13 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -572,7 +581,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -581,7 +590,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	//test if-then-else (falsy)
@@ -597,11 +606,13 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
+		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -616,7 +627,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 			Toy_resetPrintCallback();
 			free(callbackUtilReceived);
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
@@ -625,7 +636,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = NULL;
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	return 0;
@@ -644,13 +655,13 @@ int test_scope(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -672,13 +683,13 @@ int test_scope(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
 		//teadown
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	//test declaration with absent value
@@ -693,13 +704,13 @@ int test_scope(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-
-		Toy_Bytecode bc = Toy_compileBytecode(ast);
+		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, &bc);
+		Toy_bindVM(&vm, &module, false);
 
 		//run
 		Toy_runVM(&vm);
@@ -719,13 +730,13 @@ int test_scope(Toy_Bucket** bucketHandle) {
 
 			//cleanup and return
 			Toy_freeVM(&vm);
-			Toy_freeBytecode(bc);
+			free(buffer);
 			return -1;
 		}
 
 		//teadown
 		Toy_freeVM(&vm);
-		Toy_freeBytecode(bc);
+		free(buffer);
 	}
 
 	return 0;
@@ -740,10 +751,12 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 		Toy_initVM(&vm);
 
 		//run 1
-		Toy_Bytecode bc1 = makeBytecodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, &bc1);
+		unsigned char* buffer1 = makeCodeFromSource(bucketHandle, "print \"Hello world!\";");
+		Toy_Module module1 = Toy_parseModule(buffer1);
+		Toy_bindVM(&vm, &module1, false);
+
 		Toy_runVM(&vm);
-		Toy_resetVM(&vm);
+		Toy_resetVM(&vm, true);
 
 		if (callbackUtilReceived == NULL || strcmp(callbackUtilReceived, "Hello world!") != 0) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' found in VM reuse run 1\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL");
@@ -751,18 +764,20 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 			//cleanup and return
 			free(callbackUtilReceived);
 			callbackUtilReceived = NULL;
-			Toy_freeBytecode(bc1);
+			free(buffer1);
 			Toy_freeVM(&vm);
 			Toy_resetPrintCallback();
 			return -1;
 		}
-		Toy_freeBytecode(bc1);
+		free(buffer1);
 
 		//run 2
-		Toy_Bytecode bc2 = makeBytecodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, &bc2);
+		unsigned char* buffer2 = makeCodeFromSource(bucketHandle, "print \"Hello world!\";");
+		Toy_Module module2 = Toy_parseModule(buffer2);
+		Toy_bindVM(&vm, &module2, true); //preserve during repeated calls
+
 		Toy_runVM(&vm);
-		Toy_resetVM(&vm);
+		Toy_resetVM(&vm, true);
 
 		if (callbackUtilReceived == NULL || strcmp(callbackUtilReceived, "Hello world!") != 0) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' found in VM reuse run 2\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL");
@@ -770,18 +785,20 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 			//cleanup and return
 			free(callbackUtilReceived);
 			callbackUtilReceived = NULL;
-			Toy_freeBytecode(bc2);
+			free(buffer2);
 			Toy_freeVM(&vm);
 			Toy_resetPrintCallback();
 			return -1;
 		}
-		Toy_freeBytecode(bc2);
+		free(buffer2);
 
 		//run 3
-		Toy_Bytecode bc3 = makeBytecodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, &bc3);
+		unsigned char* buffer3 = makeCodeFromSource(bucketHandle, "print \"Hello world!\";");
+		Toy_Module module3 = Toy_parseModule(buffer3);
+		Toy_bindVM(&vm, &module3, true); //preserve during repeated calls
+
 		Toy_runVM(&vm);
-		Toy_resetVM(&vm);
+		Toy_resetVM(&vm, true);
 
 		if (callbackUtilReceived == NULL || strcmp(callbackUtilReceived, "Hello world!") != 0) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' found in VM reuse run 3\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL");
@@ -789,12 +806,12 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 			//cleanup and return
 			free(callbackUtilReceived);
 			callbackUtilReceived = NULL;
-			Toy_freeBytecode(bc3);
+			free(buffer3);
 			Toy_freeVM(&vm);
 			Toy_resetPrintCallback();
 			return -1;
 		}
-		Toy_freeBytecode(bc3);
+		free(buffer3);
 
 		//cleanup
 		Toy_freeVM(&vm);

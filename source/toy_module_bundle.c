@@ -10,10 +10,10 @@
 //utils
 static void expand(Toy_ModuleBundle* bundle, unsigned int amount) {
 	if (bundle->count + amount > bundle->capacity) {
-		bundle->capacity = 0;
+		bundle->capacity = 8; //DON'T bitshift zero
 
 		while (bundle->count + amount > bundle->capacity) { //expand as much as needed
-			bundle->capacity >>= 2;
+			bundle->capacity <<= 2;
 		}
 
 		bundle->ptr = realloc(bundle->ptr, bundle->capacity);

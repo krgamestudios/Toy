@@ -12,7 +12,7 @@ typedef struct Toy_ModuleBundle {
 
 //create a bundle
 TOY_API void Toy_initModuleBundle(Toy_ModuleBundle* bundle);
-TOY_API void Toy_appendModuleBundle(Toy_ModuleBundle* bundle, Toy_Ast* ast);
+TOY_API void Toy_appendModuleBundle(Toy_ModuleBundle* bundle, Toy_Ast* ast); //TODO: raw bytes
 TOY_API void Toy_freeModuleBundle(Toy_ModuleBundle* bundle);
 
 //load module bundle with external data (makes an internal copy)
