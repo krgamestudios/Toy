@@ -899,10 +899,11 @@ static unsigned int writeInstructionAccess(Toy_ModuleBuilder** mb, Toy_AstVarAcc
 	return 1;
 }
 
-//routine structure
-// static void writeModuleBuilderParam(Toy_ModuleBuilder* mb) {
-// 	//
-// }
+static unsigned int writeInstructionFnDeclare(Toy_ModuleBuilder** mb, Toy_AstFnDeclare ast) {
+	(void)mb;
+	(void)ast;
+	return 0;
+}
 
 static unsigned int writeModuleBuilderCode(Toy_ModuleBuilder** mb, Toy_Ast* ast) {
 	if (ast == NULL) {
@@ -1008,6 +1009,10 @@ static unsigned int writeModuleBuilderCode(Toy_ModuleBuilder** mb, Toy_Ast* ast)
 
 		case TOY_AST_VAR_ACCESS:
 			result += writeInstructionAccess(mb, ast->varAccess);
+			break;
+
+		case TOY_AST_FN_DECLARE:
+			result += writeInstructionFnDeclare(mb, ast->fnDeclare);
 			break;
 
 		case TOY_AST_PASS:

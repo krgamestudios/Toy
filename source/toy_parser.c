@@ -890,7 +890,7 @@ static void makeVariableDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 		}
 	}
 
-	//build the string
+	//build the name string
 	Toy_String* nameStr = Toy_createNameStringLength(bucketHandle, nameToken.lexeme, nameToken.length, varType, constant);
 
 	//if there's an assignment, read it, or default to null
@@ -906,6 +906,31 @@ static void makeVariableDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 	Toy_private_emitAstVariableDeclaration(bucketHandle, rootHandle, nameStr, expr);
 
 	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of var statement");
+}
+
+static void makeFunctionDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	consume(parser, TOY_TOKEN_NAME, "Expected function name after 'fn' keyword");
+
+	if (parser->previous.length > 255) {
+		printError(parser, parser->previous, "Can't have a function name longer than 255 characters");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return;
+	}
+
+	//build the name string
+	Toy_Token nameToken = parser->previous;
+	Toy_String* nameStr = Toy_createNameStringLength(bucketHandle, nameToken.lexeme, nameToken.length, TOY_VALUE_FUNCTION, true);
+
+	//read the function parameters, as a grouping
+	Toy_Ast* params = NULL;
+	parsePrecedence(bucketHandle, parser, &params, PREC_GROUP);
+
+	//read the body
+	Toy_Ast* body = NULL;
+	makeBlockStmt(bucketHandle, parser, &body);
+
+	//finally, emit the declaration as an Ast
+	Toy_private_emitAstFunctionDeclaration(bucketHandle, rootHandle, nameStr, params, body);
 }
 
 static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
@@ -984,10 +1009,10 @@ static void makeDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, T
 		makeVariableDeclarationStmt(bucketHandle, parser, rootHandle);
 	}
 
-	// //function declarations
-	// else if (match(parser, TOY_TOKEN_KEYWORD_FUNCTION)) {
-	// 	makeFunctionDeclarationStmt(bucketHandle, parser, rootHandle);
-	// }
+	//function declarations
+	else if (match(parser, TOY_TOKEN_KEYWORD_FUNCTION)) {
+		makeFunctionDeclarationStmt(bucketHandle, parser, rootHandle);
+	}
 
 	//otherwise
 	else {

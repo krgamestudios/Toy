@@ -202,6 +202,17 @@ void Toy_private_emitAstVariableAccess(Toy_Bucket** bucketHandle, Toy_Ast** astH
 	(*astHandle) = tmp;
 }
 
+void Toy_private_emitAstFunctionDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_Ast* params, Toy_Ast* body) {
+	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
+
+	tmp->type = TOY_AST_FN_DECLARE;
+	tmp->fnDeclare.name = name;
+	tmp->fnDeclare.params = params;
+	tmp->fnDeclare.body = body;
+
+	(*astHandle) = tmp;
+}
+
 void Toy_private_emitAstPass(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 
