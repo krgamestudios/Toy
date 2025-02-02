@@ -194,6 +194,14 @@ bool Toy_checkValueIsTruthy(Toy_Value value) {
 		return value.as.boolean;
 	}
 
+	if (value.type == TOY_VALUE_INTEGER) {
+		return value.as.integer != 0;
+	}
+
+	if (value.type == TOY_VALUE_FLOAT) {
+		return value.as.number != 0.0f;
+	}
+
 	//anything else is truthy
 	return true;
 }

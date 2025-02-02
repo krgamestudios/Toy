@@ -203,6 +203,11 @@ static void processDeclare(Toy_VM* vm) {
 	//get the value
 	Toy_Value value = Toy_popStack(&vm->stack);
 
+	//BUGFIX: only allowable type coersion
+	if (type == TOY_VALUE_FLOAT && value.type == TOY_VALUE_INTEGER) {
+		value = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(value) );
+	}
+
 	//declare it
 	Toy_declareScope(vm->scope, name, value);
 
@@ -221,6 +226,11 @@ static void processAssign(Toy_VM* vm) {
 		Toy_freeValue(name);
 		Toy_freeValue(value);
 		return;
+	}
+
+	//BUGFIX: only allowable type coersion
+	if (TOY_VALUE_AS_STRING(name)->name.varType == TOY_VALUE_FLOAT && value.type == TOY_VALUE_INTEGER) {
+		value = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(value) );
 	}
 
 	//assign it
