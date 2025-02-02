@@ -14,7 +14,7 @@ The `print` keyword takes one value as a parameter, which is sent to stdout by d
 
 The value can be redirected elsewhere using the [debug C API](c_api/debug).
 
-```toy
+```
 print "Hello World!";
 ```
 
@@ -26,7 +26,7 @@ The second value, which is replaced by a default error message if omitted, can b
 
 The generation of assert statements can be disabled using the [parser C API](c_api/parser).
 
-```toy
+```
 assert 1 < 2;
 
 assert null, "Hello world!";
@@ -36,7 +36,7 @@ assert null, "Hello world!";
 
 Values can be stored in variables, by specifying a name with the `var` keyword. The name can also be declared with a type, which restricts what kind of value can be stored in the name. Types are optional, and defaults to `any` when not used.
 
-```toy
+```
 var answer = 42;
 
 var question: string = "How many roads must a man walk down?";
@@ -44,7 +44,7 @@ var question: string = "How many roads must a man walk down?";
 
 To make a variable unchangeable after declaration, you can add the `const` keyword after the type.
 
-```toy
+```
 var quote: string const = "War. War never changes.";
 ```
 
@@ -70,7 +70,7 @@ Performing different actions, or repeating an action multiple times, is essentia
 
 Choosing between two options can be done with the `if-then-else` else statement. If the condition is 'truthy', the 'then-branch' will be executed. If the condition is not truthy, the optional 'else-branch' is executed instead.
 
-```toy
+```
 var answer = 42;
 
 if (answer < 56) {
@@ -81,7 +81,7 @@ else {
 }
 ```
 
-```toy
+```
 var challenge = "hard";
 
 if (challenge == "hard") {
@@ -93,7 +93,7 @@ if (challenge == "hard") {
 
 To repeat a certain action, use the `while-then` loop, which repeats the body as long as the condition is true at the beginning of each loop.
 
-```toy
+```
 var loops = 0;
 
 while (loops++ < 8) {
@@ -103,7 +103,7 @@ while (loops++ < 8) {
 
 To break out of a loop, you can use the `break` keyword. Alternatively, to restart the loop early, use the `continue` keyword.
 
-```toy
+```
 var loops = 0;
 
 while (true) {
