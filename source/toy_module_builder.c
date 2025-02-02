@@ -617,7 +617,7 @@ static unsigned int writeInstructionWhileThen(Toy_ModuleBuilder** mb, Toy_AstWhi
 
 		unsigned int diff = depth - (*mb)->currentScopeDepth;
 
-		OVERWRITE_INT(mb, code, addr, CURRENT_ADDRESS(mb, code) - (addr + 8)); //tell continue to return to the start AFTER reading the instruction
+		OVERWRITE_INT(mb, code, addr, beginAddr - (addr + 8)); //tell continue to return to the start AFTER reading the instruction
 		OVERWRITE_INT(mb, code, addr, diff);
 
 		//tick down

@@ -16,8 +16,6 @@ while (flag1) {
 	assert false, "continue failed";
 }
 
-print "done";
-
 //-------------------------
 
 //test break
@@ -33,8 +31,6 @@ while (flag2) {
 	continue;
 	assert false, "continue failed";
 }
-
-print "done";
 
 //-------------------------
 
@@ -52,8 +48,6 @@ while (flag3) {
 	assert false, "continue failed";
 }
 
-print "done";
-
 //-------------------------
 
 {
@@ -70,8 +64,6 @@ print "done";
 		continue;
 		assert false, "continue failed";
 	}
-
-	print "done";
 }
 
 //-------------------------
@@ -94,8 +86,6 @@ print "done";
 		}
 		assert false, "continue failed";
 	}
-
-	print "done";
 }
 
 //-------------------------
@@ -122,3 +112,21 @@ print "done";
 		count += 1;
 	}
 }
+
+//-------------------------
+
+{
+	//make sure break and continue point to the correct locations
+	var loops = 0;
+
+	while (true) {
+		if (++loops < 15532) {
+			continue;
+		}
+
+		break;
+	}
+
+	assert loops == 15532, "Yuki loop failed (break + continue)";
+}
+
