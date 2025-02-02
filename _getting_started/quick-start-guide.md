@@ -20,7 +20,7 @@ print "Hello World!";
 
 The `assert` keyword takes two values as parameters, separated by a comma. If the first value is falsy or `null`, the optional second parameter is sent to stderr by default, or can be redirected elsewhere using the [output C API](/c_api/output). If no second parameter is provided, a generic message is used instead.
 
-An option to disable the `assert` keyword during compilation is provided in the [parser C API](c_api/parser).
+An option to disable the `assert` keyword during compilation is provided in the [parser C API](/c_api/parser).
 
 ```
 //nothing happens
