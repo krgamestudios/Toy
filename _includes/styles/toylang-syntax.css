@@ -1,0 +1,7 @@
+/* copied from the main theme */
+pre:has(> code.language-toy) {
+    line-height: 1.18em;
+    overflow-x: auto;
+    width: fit-content;
+    max-width: 100%;
+}

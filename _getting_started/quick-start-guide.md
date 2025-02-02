@@ -66,14 +66,53 @@ The usable types are as follows:
 
 ## Control Flow
 
-Watch this space.
+Performing different actions, or repeating an action multiple times, is essential for any general purpose language.
 
+Choosing between two options can be done with the `if-then-else` else statement. If the condition is 'truthy', the 'then-branch' will be executed. If the condition is not truthy, the optional 'else-branch' is executed instead.
+
+```toy
+var answer = 42;
+
+if (answer < 56) {
+    print "Success";
+}
+else {
+    print "Something's fishy here...";
+}
 ```
-if-then-else
-while
-for //not yet implemented
-continue
-break
+
+```toy
+var challenge = "hard";
+
+if (challenge == "hard") {
+    print "I choose to build a scripting language, not because it's easy, but because it's hard!";
+}
+
+//the else-branch is optional
+```
+
+To repeat a certain action, use the `while-then` loop, which repeats the body as long as the condition is true at the beginning of each loop.
+
+```toy
+var loops = 0;
+
+while (loops++ < 8) {
+    print "These episodes are endless.";
+}
+```
+
+To break out of a loop, you can use the `break` keyword. Alternatively, to restart the loop early, use the `continue` keyword.
+
+```toy
+var loops = 0;
+
+while (true) {
+    if (++loops < 15532) {
+        continue;
+    }
+
+    break; //poor yuki ;_;
+}
 ```
 
 ## Functions
