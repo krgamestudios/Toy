@@ -1,8 +1,17 @@
 
 
-fn name(param1, param2) {
+fn name(param1, param2, param3, param4) {
 	//return 42;
 }
+
+//params (group -> aggregate):
+//	left: varAccess (name string "param1")
+//	right (aggregate):
+//		left: varAccess (name string "param2")
+//		right (aggregate):
+//			//continues
+
+
 
 /*
 fn name(param1: int, param2: float) {
