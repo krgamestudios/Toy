@@ -51,7 +51,7 @@ static Toy_TableEntry* lookupScope(Toy_Scope* scope, Toy_String* key, unsigned i
 
 //exposed functions
 Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
-	Toy_Scope* newScope = Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
+	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
 
 	newScope->next = scope;
 	newScope->table = Toy_allocateTable();
@@ -73,7 +73,7 @@ Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 
 Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	//copy/pasted from pushScope, so I can allocate the table manually
-	Toy_Scope* newScope = Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
+	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
 
 	newScope->next = scope->next;
 	newScope->table = Toy_private_adjustTableCapacity(NULL, scope->table->capacity);

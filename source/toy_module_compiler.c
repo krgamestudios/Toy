@@ -30,7 +30,7 @@ static bool checkForChaining(Toy_Ast* ptr) {
 }
 
 //escapes
-void* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int capacity) {
+Toy_private_EscapeArray* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int capacity) {
 	//if you're freeing everything, just return
 	if (capacity == 0) {
 		free(ptr);
@@ -1035,7 +1035,7 @@ static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* as
 	return result;
 }
 
-static void* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
+static unsigned char* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
 	//code
 	writeModuleCompilerCode(&mb, ast);
 
@@ -1122,7 +1122,7 @@ static void* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
 }
 
 //exposed functions
-void* Toy_compileModule(Toy_Ast* ast) {
+unsigned char* Toy_compileModule(Toy_Ast* ast) {
 	//setup
 	Toy_ModuleCompiler compiler;
 
@@ -1153,7 +1153,7 @@ void* Toy_compileModule(Toy_Ast* ast) {
 	compiler.panic = false;
 
 	//compile the ast to memory
-	void * buffer = writeModuleCompiler(&compiler, ast);
+	unsigned char* buffer = writeModuleCompiler(&compiler, ast);
 
 	//cleanup
 	Toy_private_resizeEscapeArray(compiler.breakEscapes, 0);

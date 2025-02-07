@@ -13,11 +13,11 @@ typedef struct Toy_Bucket {  //32 | 64 BITNESS
 	struct Toy_Bucket* next; //4  | 8
 	unsigned int capacity;   //4  | 4
 	unsigned int count;      //4  | 4
-	char data[];             //-  | -
+	unsigned char data[];    //-  | -
 } Toy_Bucket;                //12 | 16
 
 TOY_API Toy_Bucket* Toy_allocateBucket(unsigned int capacity);
-TOY_API void* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount);
+TOY_API unsigned char* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount);
 TOY_API void Toy_freeBucket(Toy_Bucket** bucketHandle);
 
 //standard capacity sizes

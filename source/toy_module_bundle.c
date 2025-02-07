@@ -87,7 +87,7 @@ void Toy_appendModuleBundle(Toy_ModuleBundle* bundle, Toy_Ast* ast) {
 		exit(-1);
 	}
 
-	void* module = Toy_compileModule(ast);
+	unsigned char* module = Toy_compileModule(ast);
 
 	//don't try writing an empty module
 	if (module == NULL) {

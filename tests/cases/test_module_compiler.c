@@ -392,7 +392,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* data = jumps + 4;
+		unsigned char* data = jumps + 4;
 
 		//check data
 		if (
@@ -1179,7 +1179,7 @@ int test_compiler_keywords(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* data = jumps + 4;
+		unsigned char* data = jumps + 4;
 
 		//check data
 		if (
@@ -1286,7 +1286,7 @@ int test_compiler_keywords(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		void* data = jumps + 4;
+		unsigned char* data = jumps + 4;
 
 		//check data
 		if (
