@@ -18,3 +18,5 @@ TOY_API void Toy_freeModuleBundle(Toy_ModuleBundle* bundle);
 //load module bundle with external data (makes an internal copy)
 TOY_API void Toy_bindModuleBundle(Toy_ModuleBundle* bundle, unsigned char* ptr, unsigned int size);
 TOY_API Toy_Module Toy_extractModuleFromBundle(Toy_ModuleBundle* bundle, unsigned char index);
+
+//NOTE: 'Toy_ModuleBundle' isn't used anywhere?

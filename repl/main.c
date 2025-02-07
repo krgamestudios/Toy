@@ -2,7 +2,7 @@
 
 #include "toy_lexer.h"
 #include "toy_parser.h"
-#include "toy_module_builder.h"
+#include "toy_module_compiler.h"
 #include "toy_vm.h"
 
 #include <stdio.h>
@@ -332,7 +332,7 @@ int repl(const char* filepath) {
 			continue;
 		}
 
-		void* buffer = Toy_compileModuleBuilder(ast);
+		void* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 		Toy_bindVM(&vm, &module, runCount++ > 0);
 
@@ -481,7 +481,7 @@ int main(int argc, const char* argv[]) {
 
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
-		void* buffer = Toy_compileModuleBuilder(ast);
+		void* buffer = Toy_compileModule(ast);
 		Toy_freeBucket(&bucket);
 		free(source);
 

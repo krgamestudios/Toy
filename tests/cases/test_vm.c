@@ -3,7 +3,7 @@
 
 #include "toy_lexer.h"
 #include "toy_parser.h"
-#include "toy_module_builder.h"
+#include "toy_module_compiler.h"
 #include "toy_print.h"
 
 #include <stdio.h>
@@ -19,7 +19,7 @@ unsigned char* makeCodeFromSource(Toy_Bucket** bucketHandle, const char* source)
 	Toy_bindParser(&parser, &lexer);
 
 	Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-	return Toy_compileModuleBuilder(ast);
+	return Toy_compileModule(ast);
 }
 
 //tests
@@ -36,7 +36,7 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -82,7 +82,7 @@ int test_simple_execution(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -129,7 +129,7 @@ int test_opcode_not_equal(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -186,7 +186,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -231,7 +231,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -277,7 +277,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -327,7 +327,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -373,7 +373,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -419,7 +419,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -469,7 +469,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -515,7 +515,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -560,7 +560,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -606,7 +606,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -655,7 +655,7 @@ int test_scope(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup
@@ -704,7 +704,7 @@ int test_scope(Toy_Bucket** bucketHandle) {
 		Toy_bindParser(&parser, &lexer);
 
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 		Toy_Module module = Toy_parseModule(buffer);
 
 		//run the setup

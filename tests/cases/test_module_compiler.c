@@ -1,4 +1,4 @@
-#include "toy_module_builder.h"
+#include "toy_module_compiler.h"
 #include "toy_console_colors.h"
 
 #include "toy_opcodes.h"
@@ -12,7 +12,7 @@
 //NOTE: This set of tests also covers 'Toy_Module'
 
 //tests
-int test_builder_expressions(Toy_Bucket** bucketHandle) {
+int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 	//simple test to ensure the header looks right with an empty ast
 	{
 		//setup
@@ -20,7 +20,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 		Toy_private_emitAstPass(bucketHandle, &ast);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -31,7 +31,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, ast: PASS\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, ast: PASS\n" TOY_CC_RESET);
 
 			//cleanup and return
 			free(buffer);
@@ -45,7 +45,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 27)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, ast: PASS\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, ast: PASS\n" TOY_CC_RESET);
 
 			//cleanup and return
 			free(buffer);
@@ -68,7 +68,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -79,7 +79,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -93,7 +93,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 27)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -116,7 +116,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -127,7 +127,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -145,7 +145,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 31)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -168,7 +168,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -179,7 +179,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -197,7 +197,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 31)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -220,7 +220,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -231,7 +231,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -250,7 +250,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 35)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -273,7 +273,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -284,7 +284,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -303,7 +303,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 35)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -326,7 +326,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* header = (int*)buffer;
@@ -345,7 +345,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -369,7 +369,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -385,7 +385,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder jumps, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module jumps, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -401,7 +401,7 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder data, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module data, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -415,11 +415,11 @@ int test_builder_expressions(Toy_Bucket** bucketHandle) {
 	return 0;
 }
 
-// int test_builder_unary(Toy_Bucket** bucketHandle) {
+// int test_compiler_unary(Toy_Bucket** bucketHandle) {
 // 	//Nothing produces a unary instruction yet
 // }
 
-int test_builder_binary(Toy_Bucket** bucketHandle) {
+int test_compiler_binary(Toy_Bucket** bucketHandle) {
 	//produce a simple algorithm
 	{
 		//setup
@@ -432,7 +432,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -443,7 +443,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -474,7 +474,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 47)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -497,7 +497,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -508,7 +508,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -539,7 +539,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 47)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -562,7 +562,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -573,7 +573,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -604,7 +604,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 47)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -627,7 +627,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -638,7 +638,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -695,7 +695,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 71)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -709,7 +709,7 @@ int test_builder_binary(Toy_Bucket** bucketHandle) {
 	return 0;
 }
 
-int test_builder_keywords(Toy_Bucket** bucketHandle) {
+int test_compiler_keywords(Toy_Bucket** bucketHandle) {
 	//assert
 	{
 		//setup
@@ -722,7 +722,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -733,7 +733,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -757,7 +757,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 35)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -780,7 +780,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -791,7 +791,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -820,7 +820,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 39)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -843,7 +843,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -862,7 +862,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -910,7 +910,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -933,7 +933,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -952,7 +952,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1024,7 +1024,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1047,7 +1047,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* ptr = (int*)buffer;
@@ -1058,7 +1058,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 			(ptr++)[0] != 0 || //data count
 			(ptr++)[0] != 0) //subs count
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1081,7 +1081,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 39)) != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1104,7 +1104,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* header = (int*)buffer;
@@ -1123,7 +1123,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1156,7 +1156,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1172,7 +1172,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder jumps, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module jumps, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1188,7 +1188,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder data, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module data, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1211,7 +1211,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
 
 		//run
-		unsigned char* buffer = Toy_compileModuleBuilder(ast);
+		unsigned char* buffer = Toy_compileModule(ast);
 
 		//check header
 		int* header = (int*)buffer;
@@ -1230,7 +1230,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder header, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module header, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1263,7 +1263,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder code, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1279,7 +1279,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder jumps, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module jumps, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1295,7 +1295,7 @@ int test_builder_keywords(Toy_Bucket** bucketHandle) {
 
 			false)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module builder data, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module data, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			free(buffer);
@@ -1315,7 +1315,7 @@ int main(void) {
 
 	{
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-		res = test_builder_expressions(&bucket);
+		res = test_compiler_expressions(&bucket);
 		Toy_freeBucket(&bucket);
 		if (res == 0) {
 			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
@@ -1325,7 +1325,7 @@ int main(void) {
 
 	{
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-		res = test_builder_binary(&bucket);
+		res = test_compiler_binary(&bucket);
 		Toy_freeBucket(&bucket);
 		if (res == 0) {
 			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
@@ -1335,7 +1335,7 @@ int main(void) {
 
 	{
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-		res = test_builder_keywords(&bucket);
+		res = test_compiler_keywords(&bucket);
 		Toy_freeBucket(&bucket);
 		if (res == 0) {
 			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);

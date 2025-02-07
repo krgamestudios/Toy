@@ -27,7 +27,7 @@ typedef struct Toy_private_EscapeArray {
 TOY_API void* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int capacity);
 
 //structure for holding the module as it is built
-typedef struct Toy_ModuleBuilder {
+typedef struct Toy_ModuleCompiler {
 	unsigned char* code; //the instruction set
 	unsigned int codeCapacity;
 	unsigned int codeCount;
@@ -57,6 +57,6 @@ typedef struct Toy_ModuleBuilder {
 
 	//compilation errors
 	bool panic;
-} Toy_ModuleBuilder;
+} Toy_ModuleCompiler;
 
-TOY_API void* Toy_compileModuleBuilder(Toy_Ast* ast);
+TOY_API void* Toy_compileModule(Toy_Ast* ast);

@@ -1,7 +1,7 @@
 #include "toy_module_bundle.h"
 #include "toy_console_colors.h"
 
-#include "toy_module_builder.h"
+#include "toy_module_compiler.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -87,7 +87,7 @@ void Toy_appendModuleBundle(Toy_ModuleBundle* bundle, Toy_Ast* ast) {
 		exit(-1);
 	}
 
-	void* module = Toy_compileModuleBuilder(ast);
+	void* module = Toy_compileModule(ast);
 
 	//don't try writing an empty module
 	if (module == NULL) {

@@ -206,7 +206,7 @@ char* Toy_getStringRawBuffer(Toy_String* str) {
 }
 
 static int deepCompareUtil(Toy_String* left, Toy_String* right, const char** leftHead, const char** rightHead) {
-	//WARNING: this function can't handle strings of zero length
+	//NOTE: this function can't handle strings of zero length
 	int result = 0;
 
 	//if it's the same object, of course they match

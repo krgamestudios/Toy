@@ -1,4 +1,4 @@
-#include "toy_module_builder.h"
+#include "toy_module_compiler.h"
 #include "toy_console_colors.h"
 
 #include "toy_opcodes.h"
@@ -43,7 +43,7 @@ void* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int c
 	ptr = (Toy_private_EscapeArray*)realloc(ptr, capacity * sizeof(Toy_private_EscapeEntry_t) + sizeof(Toy_private_EscapeArray));
 
 	if (ptr == NULL) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to resize an escape array within 'Toy_ModuleBuilder' from %d to %d capacity\n" TOY_CC_RESET, (int)originalCapacity, (int)capacity);
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to resize an escape array within 'Toy_ModuleCompiler' from %d to %d capacity\n" TOY_CC_RESET, (int)originalCapacity, (int)capacity);
 		exit(-1);
 	}
 
@@ -62,7 +62,7 @@ static void expand(unsigned char** handle, unsigned int* capacity, unsigned int*
 		(*handle) = realloc((*handle), (*capacity));
 
 		if ((*handle) == NULL) {
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate %d space for a part of 'Toy_ModuleBuilder'\n" TOY_CC_RESET, (int)(*capacity));
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate %d space for a part of 'Toy_ModuleCompiler'\n" TOY_CC_RESET, (int)(*capacity));
 			exit(1);
 		}
 	}
@@ -108,12 +108,12 @@ static void emitFloat(unsigned char** handle, unsigned int* capacity, unsigned i
 //simply get the address (always an integer)
 #define CURRENT_ADDRESS(mb, part) ((*mb)->part##Count)
 
-static void emitToJumpTable(Toy_ModuleBuilder** mb, unsigned int startAddr) {
+static void emitToJumpTable(Toy_ModuleCompiler** mb, unsigned int startAddr) {
 	EMIT_INT(mb, code, (*mb)->jumpsCount); //mark the jump index in the code
 	EMIT_INT(mb, jumps, startAddr); //save address at the jump index
 }
 
-static unsigned int emitString(Toy_ModuleBuilder** mb, Toy_String* str) {
+static unsigned int emitString(Toy_ModuleCompiler** mb, Toy_String* str) {
 	//4-byte alignment
 	unsigned int length = str->info.length + 1;
 	if (length % 4 != 0) {
@@ -146,10 +146,10 @@ static unsigned int emitString(Toy_ModuleBuilder** mb, Toy_String* str) {
 	return 1;
 }
 
-static unsigned int writeModuleBuilderCode(Toy_ModuleBuilder** mb, Toy_Ast* ast); //forward declare for recursion
-static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAssign ast, bool chainedAssignment); //forward declare for chaining of var declarations
+static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* ast); //forward declare for recursion
+static unsigned int writeInstructionAssign(Toy_ModuleCompiler** mb, Toy_AstVarAssign ast, bool chainedAssignment); //forward declare for chaining of var declarations
 
-static unsigned int writeInstructionValue(Toy_ModuleBuilder** mb, Toy_AstValue ast) {
+static unsigned int writeInstructionValue(Toy_ModuleCompiler** mb, Toy_AstValue ast) {
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
 	EMIT_BYTE(mb, code, ast.value.type);
 
@@ -196,11 +196,11 @@ static unsigned int writeInstructionValue(Toy_ModuleBuilder** mb, Toy_AstValue a
 	return 1;
 }
 
-static unsigned int writeInstructionUnary(Toy_ModuleBuilder** mb, Toy_AstUnary ast) {
+static unsigned int writeInstructionUnary(Toy_ModuleCompiler** mb, Toy_AstUnary ast) {
 	unsigned int result = 0;
 
 	if (ast.flag == TOY_AST_FLAG_NEGATE) {
-		result = writeModuleBuilderCode(mb, ast.child);
+		result = writeModuleCompilerCode(mb, ast.child);
 
 		EMIT_BYTE(mb, code, TOY_OPCODE_NEGATE);
 
@@ -304,10 +304,10 @@ static unsigned int writeInstructionUnary(Toy_ModuleBuilder** mb, Toy_AstUnary a
 	return result;
 }
 
-static unsigned int writeInstructionBinary(Toy_ModuleBuilder** mb, Toy_AstBinary ast) {
+static unsigned int writeInstructionBinary(Toy_ModuleCompiler** mb, Toy_AstBinary ast) {
 	//left, then right, then the binary's operation
-	writeModuleBuilderCode(mb, ast.left);
-	writeModuleBuilderCode(mb, ast.right);
+	writeModuleCompilerCode(mb, ast.left);
+	writeModuleCompilerCode(mb, ast.right);
 
 	if (ast.flag == TOY_AST_FLAG_ADD) {
 		EMIT_BYTE(mb, code,TOY_OPCODE_ADD);
@@ -341,9 +341,9 @@ static unsigned int writeInstructionBinary(Toy_ModuleBuilder** mb, Toy_AstBinary
 	return 1; //leaves only 1 value on the stack
 }
 
-static unsigned int writeInstructionBinaryShortCircuit(Toy_ModuleBuilder** mb, Toy_AstBinaryShortCircuit ast) {
+static unsigned int writeInstructionBinaryShortCircuit(Toy_ModuleCompiler** mb, Toy_AstBinaryShortCircuit ast) {
 	//lhs
-	writeModuleBuilderCode(mb, ast.left);
+	writeModuleCompilerCode(mb, ast.left);
 
 	//duplicate the top (so the lhs can be 'returned' by this expression, if needed)
 	EMIT_BYTE(mb, code,TOY_OPCODE_DUPLICATE);
@@ -382,7 +382,7 @@ static unsigned int writeInstructionBinaryShortCircuit(Toy_ModuleBuilder** mb, T
 	EMIT_BYTE(mb, code, 0);
 
 	//rhs
-	writeModuleBuilderCode(mb, ast.right);
+	writeModuleCompilerCode(mb, ast.right);
 
 	//set the parameter
 	OVERWRITE_INT(mb, code, paramAddr, CURRENT_ADDRESS(mb, code) - (paramAddr + 4));
@@ -390,10 +390,10 @@ static unsigned int writeInstructionBinaryShortCircuit(Toy_ModuleBuilder** mb, T
 	return 1; //leaves only 1 value on the stack
 }
 
-static unsigned int writeInstructionCompare(Toy_ModuleBuilder** mb, Toy_AstCompare ast) {
+static unsigned int writeInstructionCompare(Toy_ModuleCompiler** mb, Toy_AstCompare ast) {
 	//left, then right, then the compare's operation
-	writeModuleBuilderCode(mb, ast.left);
-	writeModuleBuilderCode(mb, ast.right);
+	writeModuleCompilerCode(mb, ast.left);
+	writeModuleCompilerCode(mb, ast.right);
 
 	if (ast.flag == TOY_AST_FLAG_COMPARE_EQUAL) {
 		EMIT_BYTE(mb, code,TOY_OPCODE_COMPARE_EQUAL);
@@ -432,13 +432,13 @@ static unsigned int writeInstructionCompare(Toy_ModuleBuilder** mb, Toy_AstCompa
 	return 1; //leaves only 1 value on the stack
 }
 
-static unsigned int writeInstructionGroup(Toy_ModuleBuilder** mb, Toy_AstGroup ast) {
+static unsigned int writeInstructionGroup(Toy_ModuleCompiler** mb, Toy_AstGroup ast) {
 	//not certain what this leaves
-	return writeModuleBuilderCode(mb, ast.child);
+	return writeModuleCompilerCode(mb, ast.child);
 }
 
-static unsigned int writeInstructionCompound(Toy_ModuleBuilder** mb, Toy_AstCompound ast) {
-	unsigned int result = writeModuleBuilderCode(mb, ast.child);
+static unsigned int writeInstructionCompound(Toy_ModuleCompiler** mb, Toy_AstCompound ast) {
+	unsigned int result = writeModuleCompilerCode(mb, ast.child);
 
 	if (ast.flag == TOY_AST_FLAG_COMPOUND_ARRAY) {
 		//signal how many values to read in as array elements
@@ -475,12 +475,12 @@ static unsigned int writeInstructionCompound(Toy_ModuleBuilder** mb, Toy_AstComp
 	}
 }
 
-static unsigned int writeInstructionAggregate(Toy_ModuleBuilder** mb, Toy_AstAggregate ast) {
+static unsigned int writeInstructionAggregate(Toy_ModuleCompiler** mb, Toy_AstAggregate ast) {
 	unsigned int result = 0;
 
 	//left, then right
-	result += writeModuleBuilderCode(mb, ast.left);
-	result += writeModuleBuilderCode(mb, ast.right);
+	result += writeModuleCompilerCode(mb, ast.left);
+	result += writeModuleCompilerCode(mb, ast.right);
 
 	if (ast.flag == TOY_AST_FLAG_COLLECTION) {
 		//collections are handled above
@@ -508,10 +508,10 @@ static unsigned int writeInstructionAggregate(Toy_ModuleBuilder** mb, Toy_AstAgg
 	}
 }
 
-static unsigned int writeInstructionAssert(Toy_ModuleBuilder** mb, Toy_AstAssert ast) {
+static unsigned int writeInstructionAssert(Toy_ModuleCompiler** mb, Toy_AstAssert ast) {
 	//the thing to print
-	writeModuleBuilderCode(mb, ast.child);
-	writeModuleBuilderCode(mb, ast.message);
+	writeModuleCompilerCode(mb, ast.child);
+	writeModuleCompilerCode(mb, ast.message);
 
 	//output the print opcode
 	EMIT_BYTE(mb, code, TOY_OPCODE_ASSERT);
@@ -524,9 +524,9 @@ static unsigned int writeInstructionAssert(Toy_ModuleBuilder** mb, Toy_AstAssert
 	return 0;
 }
 
-static unsigned int writeInstructionIfThenElse(Toy_ModuleBuilder** mb, Toy_AstIfThenElse ast) {
+static unsigned int writeInstructionIfThenElse(Toy_ModuleCompiler** mb, Toy_AstIfThenElse ast) {
 	//cond-branch
-	writeModuleBuilderCode(mb, ast.condBranch);
+	writeModuleCompilerCode(mb, ast.condBranch);
 
 	//emit the jump word (opcode, type, condition, padding)
 	EMIT_BYTE(mb, code, TOY_OPCODE_JUMP);
@@ -537,7 +537,7 @@ static unsigned int writeInstructionIfThenElse(Toy_ModuleBuilder** mb, Toy_AstIf
 	unsigned int thenParamAddr = SKIP_INT(mb, code); //parameter to be written later
 
 	//emit then-branch
-	writeModuleBuilderCode(mb, ast.thenBranch);
+	writeModuleCompilerCode(mb, ast.thenBranch);
 
 	if (ast.elseBranch != NULL) {
 		//emit the jump-to-end (opcode, type, condition, padding)
@@ -552,7 +552,7 @@ static unsigned int writeInstructionIfThenElse(Toy_ModuleBuilder** mb, Toy_AstIf
 		OVERWRITE_INT(mb, code, thenParamAddr, CURRENT_ADDRESS(mb, code) - (thenParamAddr + 4));
 
 		//emit the else branch
-		writeModuleBuilderCode(mb, ast.elseBranch);
+		writeModuleCompilerCode(mb, ast.elseBranch);
 
 		//specify the ending position for the else branch
 		OVERWRITE_INT(mb, code, elseParamAddr, CURRENT_ADDRESS(mb, code) - (elseParamAddr + 4));
@@ -566,12 +566,12 @@ static unsigned int writeInstructionIfThenElse(Toy_ModuleBuilder** mb, Toy_AstIf
 	return 0;
 }
 
-static unsigned int writeInstructionWhileThen(Toy_ModuleBuilder** mb, Toy_AstWhileThen ast) {
+static unsigned int writeInstructionWhileThen(Toy_ModuleCompiler** mb, Toy_AstWhileThen ast) {
 	//begin
 	unsigned int beginAddr = CURRENT_ADDRESS(mb, code);
 
 	//cond-branch
-	writeModuleBuilderCode(mb, ast.condBranch);
+	writeModuleCompilerCode(mb, ast.condBranch);
 
 	//emit the jump word (opcode, type, condition, padding)
 	EMIT_BYTE(mb, code, TOY_OPCODE_JUMP);
@@ -582,7 +582,7 @@ static unsigned int writeInstructionWhileThen(Toy_ModuleBuilder** mb, Toy_AstWhi
 	unsigned int paramAddr = SKIP_INT(mb, code); //parameter to be written later
 
 	//emit then-branch
-	writeModuleBuilderCode(mb, ast.thenBranch);
+	writeModuleCompilerCode(mb, ast.thenBranch);
 
 	//jump to begin to repeat the conditional test
 	EMIT_BYTE(mb, code, TOY_OPCODE_JUMP);
@@ -627,7 +627,7 @@ static unsigned int writeInstructionWhileThen(Toy_ModuleBuilder** mb, Toy_AstWhi
 	return 0;
 }
 
-static unsigned int writeInstructionBreak(Toy_ModuleBuilder** mb, Toy_AstBreak ast) {
+static unsigned int writeInstructionBreak(Toy_ModuleCompiler** mb, Toy_AstBreak ast) {
 	//unused
 	(void)ast;
 
@@ -651,7 +651,7 @@ static unsigned int writeInstructionBreak(Toy_ModuleBuilder** mb, Toy_AstBreak a
 	return 0;
 }
 
-static unsigned int writeInstructionContinue(Toy_ModuleBuilder** mb, Toy_AstContinue ast) {
+static unsigned int writeInstructionContinue(Toy_ModuleCompiler** mb, Toy_AstContinue ast) {
 	//unused
 	(void)ast;
 
@@ -675,9 +675,9 @@ static unsigned int writeInstructionContinue(Toy_ModuleBuilder** mb, Toy_AstCont
 	return 0;
 }
 
-static unsigned int writeInstructionPrint(Toy_ModuleBuilder** mb, Toy_AstPrint ast) {
+static unsigned int writeInstructionPrint(Toy_ModuleCompiler** mb, Toy_AstPrint ast) {
 	//the thing to print
-	writeModuleBuilderCode(mb, ast.child);
+	writeModuleCompilerCode(mb, ast.child);
 
 	//output the print opcode
 	EMIT_BYTE(mb, code,TOY_OPCODE_PRINT);
@@ -690,13 +690,13 @@ static unsigned int writeInstructionPrint(Toy_ModuleBuilder** mb, Toy_AstPrint a
 	return 0;
 }
 
-static unsigned int writeInstructionVarDeclare(Toy_ModuleBuilder** mb, Toy_AstVarDeclare ast) {
+static unsigned int writeInstructionVarDeclare(Toy_ModuleCompiler** mb, Toy_AstVarDeclare ast) {
 	//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
 	if (checkForChaining(ast.expr)) {
 		writeInstructionAssign(mb, ast.expr->varAssign, true);
 	}
 	else {
-		writeModuleBuilderCode(mb, ast.expr); //default value
+		writeModuleCompilerCode(mb, ast.expr); //default value
 	}
 
 	//delcare with the given name string
@@ -710,7 +710,7 @@ static unsigned int writeInstructionVarDeclare(Toy_ModuleBuilder** mb, Toy_AstVa
 	return 0;
 }
 
-static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAssign ast, bool chainedAssignment) {
+static unsigned int writeInstructionAssign(Toy_ModuleCompiler** mb, Toy_AstVarAssign ast, bool chainedAssignment) {
 	unsigned int result = 0;
 
 	//target is a name string
@@ -729,15 +729,15 @@ static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAss
 
 	//target is an indexing of some compound value
 	else if (ast.target->type == TOY_AST_AGGREGATE && ast.target->aggregate.flag == TOY_AST_FLAG_INDEX) {
-		writeModuleBuilderCode(mb, ast.target->aggregate.left); //any deeper indexing will just work, using reference values
-		writeModuleBuilderCode(mb, ast.target->aggregate.right); //key
+		writeModuleCompilerCode(mb, ast.target->aggregate.left); //any deeper indexing will just work, using reference values
+		writeModuleCompilerCode(mb, ast.target->aggregate.right); //key
 
 		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
 		if (checkForChaining(ast.expr)) {
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else {
-			result += writeModuleBuilderCode(mb, ast.expr); //default value
+			result += writeModuleCompilerCode(mb, ast.expr); //default value
 		}
 
 		EMIT_BYTE(mb, code, TOY_OPCODE_ASSIGN_COMPOUND); //uses the top three values on the stack
@@ -762,7 +762,7 @@ static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAss
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else {
-			result += writeModuleBuilderCode(mb, ast.expr); //default value
+			result += writeModuleCompilerCode(mb, ast.expr); //default value
 		}
 
 		EMIT_BYTE(mb, code, TOY_OPCODE_ASSIGN);
@@ -781,7 +781,7 @@ static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAss
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else {
-			result += writeModuleBuilderCode(mb, ast.expr); //default value
+			result += writeModuleCompilerCode(mb, ast.expr); //default value
 		}
 
 		EMIT_BYTE(mb, code,TOY_OPCODE_ADD);
@@ -800,7 +800,7 @@ static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAss
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else {
-			result += writeModuleBuilderCode(mb, ast.expr); //default value
+			result += writeModuleCompilerCode(mb, ast.expr); //default value
 		}
 
 		EMIT_BYTE(mb, code,TOY_OPCODE_SUBTRACT);
@@ -819,7 +819,7 @@ static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAss
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else {
-			result += writeModuleBuilderCode(mb, ast.expr); //default value
+			result += writeModuleCompilerCode(mb, ast.expr); //default value
 		}
 
 		EMIT_BYTE(mb, code,TOY_OPCODE_MULTIPLY);
@@ -838,7 +838,7 @@ static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAss
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else {
-			result += writeModuleBuilderCode(mb, ast.expr); //default value
+			result += writeModuleCompilerCode(mb, ast.expr); //default value
 		}
 
 		EMIT_BYTE(mb, code,TOY_OPCODE_DIVIDE);
@@ -857,7 +857,7 @@ static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAss
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else {
-			result += writeModuleBuilderCode(mb, ast.expr); //default value
+			result += writeModuleCompilerCode(mb, ast.expr); //default value
 		}
 
 		EMIT_BYTE(mb, code,TOY_OPCODE_MODULO);
@@ -874,7 +874,7 @@ static unsigned int writeInstructionAssign(Toy_ModuleBuilder** mb, Toy_AstVarAss
 	return result + (chainedAssignment ? 1 : 0);
 }
 
-static unsigned int writeInstructionAccess(Toy_ModuleBuilder** mb, Toy_AstVarAccess ast) {
+static unsigned int writeInstructionAccess(Toy_ModuleCompiler** mb, Toy_AstVarAccess ast) {
 	if (!(ast.child->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.child->value.value) && TOY_VALUE_AS_STRING(ast.child->value.value)->info.type == TOY_STRING_NAME)) {
 		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Found a non-name-string in a value node when trying to write access\n" TOY_CC_RESET);
 		exit(-1);
@@ -899,13 +899,14 @@ static unsigned int writeInstructionAccess(Toy_ModuleBuilder** mb, Toy_AstVarAcc
 	return 1;
 }
 
-static unsigned int writeInstructionFnDeclare(Toy_ModuleBuilder** mb, Toy_AstFnDeclare ast) {
+static unsigned int writeInstructionFnDeclare(Toy_ModuleCompiler** mb, Toy_AstFnDeclare ast) {
+	//URGENT: currently a no-op
 	(void)mb;
 	(void)ast;
 	return 0;
 }
 
-static unsigned int writeModuleBuilderCode(Toy_ModuleBuilder** mb, Toy_Ast* ast) {
+static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* ast) {
 	if (ast == NULL) {
 		return 0;
 	}
@@ -930,8 +931,8 @@ static unsigned int writeModuleBuilderCode(Toy_ModuleBuilder** mb, Toy_Ast* ast)
 				(*mb)->currentScopeDepth++;
 			}
 
-			result += writeModuleBuilderCode(mb, ast->block.child);
-			result += writeModuleBuilderCode(mb, ast->block.next);
+			result += writeModuleCompilerCode(mb, ast->block.child);
+			result += writeModuleCompilerCode(mb, ast->block.next);
 
 			if (ast->block.innerScope) {
 				EMIT_BYTE(mb, code, TOY_OPCODE_SCOPE_POP);
@@ -1034,9 +1035,9 @@ static unsigned int writeModuleBuilderCode(Toy_ModuleBuilder** mb, Toy_Ast* ast)
 	return result;
 }
 
-static void* writeModuleBuilder(Toy_ModuleBuilder* mb, Toy_Ast* ast) {
+static void* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
 	//code
-	writeModuleBuilderCode(&mb, ast);
+	writeModuleCompilerCode(&mb, ast);
 
 	EMIT_BYTE(&mb, code, TOY_OPCODE_RETURN); //end terminator
 	EMIT_BYTE(&mb, code, 0); //4-byte alignment
@@ -1121,48 +1122,48 @@ static void* writeModuleBuilder(Toy_ModuleBuilder* mb, Toy_Ast* ast) {
 }
 
 //exposed functions
-void* Toy_compileModuleBuilder(Toy_Ast* ast) {
+void* Toy_compileModule(Toy_Ast* ast) {
 	//setup
-	Toy_ModuleBuilder builder;
+	Toy_ModuleCompiler compiler;
 
-	builder.code = NULL;
-	builder.codeCapacity = 0;
-	builder.codeCount = 0;
+	compiler.code = NULL;
+	compiler.codeCapacity = 0;
+	compiler.codeCount = 0;
 
-	builder.jumps = NULL;
-	builder.jumpsCapacity = 0;
-	builder.jumpsCount = 0;
+	compiler.jumps = NULL;
+	compiler.jumpsCapacity = 0;
+	compiler.jumpsCount = 0;
 
-	builder.param = NULL;
-	builder.paramCapacity = 0;
-	builder.paramCount = 0;
+	compiler.param = NULL;
+	compiler.paramCapacity = 0;
+	compiler.paramCount = 0;
 
-	builder.data = NULL;
-	builder.dataCapacity = 0;
-	builder.dataCount = 0;
+	compiler.data = NULL;
+	compiler.dataCapacity = 0;
+	compiler.dataCount = 0;
 
-	builder.subs = NULL;
-	builder.subsCapacity = 0;
-	builder.subsCount = 0;
+	compiler.subs = NULL;
+	compiler.subsCapacity = 0;
+	compiler.subsCount = 0;
 
-	builder.currentScopeDepth = 0;
-	builder.breakEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
-	builder.continueEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
+	compiler.currentScopeDepth = 0;
+	compiler.breakEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
+	compiler.continueEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
 
-	builder.panic = false;
+	compiler.panic = false;
 
-	//build
-	void * buffer = writeModuleBuilder(&builder, ast);
+	//compile the ast to memory
+	void * buffer = writeModuleCompiler(&compiler, ast);
 
 	//cleanup
-	Toy_private_resizeEscapeArray(builder.breakEscapes, 0);
-	Toy_private_resizeEscapeArray(builder.continueEscapes, 0);
+	Toy_private_resizeEscapeArray(compiler.breakEscapes, 0);
+	Toy_private_resizeEscapeArray(compiler.continueEscapes, 0);
 
-	free(builder.param);
-	free(builder.code);
-	free(builder.jumps);
-	free(builder.data);
-	free(builder.subs);
+	free(compiler.param);
+	free(compiler.code);
+	free(compiler.jumps);
+	free(compiler.data);
+	free(compiler.subs);
 
 	return buffer;
 }
