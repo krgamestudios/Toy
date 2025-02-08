@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         platforms:
-          - { os: ubuntu-latest, preinstall: sudo apt-get install gdb, gdb_enabled: true }
+          - { os: ubuntu-latest, preinstall: sudo apt update && sudo apt install gdb, gdb_enabled: true }
           - { os: windows-latest, preinstall: , gdb_enabled: true }
           - { os: macos-latest, preinstall: , gdb_enabled: false }
         commands:
@@ -44,7 +44,7 @@ jobs:
     strategy:
       matrix:
         platforms:
-          - { os: ubuntu-latest, preinstall: sudo apt-get install gdb, gdb_enabled: true }
+          - { os: ubuntu-latest, preinstall: sudo apt update && sudo apt install gdb, gdb_enabled: true }
           - { os: windows-latest, preinstall: , gdb_enabled: true }
           - { os: macos-latest, preinstall: , gdb_enabled: false }
         commands:
@@ -67,7 +67,7 @@ jobs:
     strategy:
       matrix:
         platforms:
-          - { os: ubuntu-latest, preinstall: sudo apt-get install valgrind }
+          - { os: ubuntu-latest, preinstall: sudo apt update && sudo apt install valgrind }
         commands:
           - { exec: make tests-valgrind }
     
