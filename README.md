@@ -96,6 +96,8 @@ Here's a flexible outline for the upcoming feature milestones. On each review da
 
 Supported platforms are: `linux-latest`, `windows-latest`, `macos-latest`, using [GitHub's standard runners](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories).
 
+Support for NetBSD is present, but not guaranteed.
+
 To build the shared library, run `make source`.  
 To build the shared library and repl, run `make repl`.  
 To build and run the test suites, run `make tests` (`make tests-gdb` and `make tests-valgrind` options are also available).  
@@ -116,7 +118,8 @@ This source code is covered by the Zlib license (see [LICENSE.md](LICENSE.md)).
 
 For a guide on how you can contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-@Gipson62 - v1 docs spell checking
+@NishiOwO - Unofficial NetBSD support  
+@Gipson62 - v1 docs spell checking  
 @8051Enthusiast - `fixAlignment()` trick  
 @hiperiondev - v1 Disassembler, v1 porting support and feedback  
 @add00 - v1 Library support  
