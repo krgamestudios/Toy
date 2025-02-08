@@ -21,6 +21,10 @@ ifeq ($(shell uname),Linux)
 	SRC_TARGETEXT=.so
 	SRC_LIBLINE=-shared -Wl,-rpath,. -Wl,--out-implib=$(SRC_OUTDIR)/lib$(SRC_TARGETNAME).a -Wl,--whole-archive $(SRC_OBJFILES) -Wl,--no-whole-archive
 	CFLAGS+=-fPIC
+else ifeq ($(shell uname),NetBSD)
+	SRC_TARGETEXT=.so
+	SRC_LIBLINE=-shared -Wl,-rpath,. -Wl,--out-implib=$(SRC_OUTDIR)/lib$(SRC_TARGETNAME).a -Wl,--whole-archive $(SRC_OBJFILES) -Wl,--no-whole-archive
+	CFLAGS+=-fPIC
 else ifeq ($(OS),Windows_NT)
 	SRC_TARGETEXT=.dll
 	SRC_LIBLINE=-shared -Wl,-rpath,. -Wl,--out-implib=$(SRC_OUTDIR)/lib$(SRC_TARGETNAME).a -Wl,--whole-archive $(SRC_OBJFILES) -Wl,--no-whole-archive -Wl,--export-all-symbols -Wl,--enable-auto-import
