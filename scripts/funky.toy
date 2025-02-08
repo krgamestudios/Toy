@@ -1,22 +1,17 @@
 
 
-fn name(param1, param2, param3, param4) {
+fn name() {
 	//return 42;
 }
 
-//params (group -> aggregate):
-//	left: varAccess (name string "param1")
-//	right (aggregate):
-//		left: varAccess (name string "param2")
-//		right (aggregate):
-//			//continues
 
 
 
-/*
-fn name(param1: int, param2: float) {
-	return 42;
+fn name(param1: int, param2: float, param3: string, param4) {
+	//return 42;
 }
-*/
 
 
+fn name(foobar: bool const) {
+	//return 42;
+}

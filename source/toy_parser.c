@@ -921,13 +921,53 @@ static void makeFunctionDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 	Toy_Token nameToken = parser->previous;
 	Toy_String* nameStr = Toy_createNameStringLength(bucketHandle, nameToken.lexeme, nameToken.length, TOY_VALUE_FUNCTION, true);
 
-	//read the function parameters, as a grouping
+	//read the function parameters (done manually to avoid other syntax issues)
 	Toy_Ast* params = NULL;
-	parsePrecedence(bucketHandle, parser, &params, PREC_GROUP);
+
+	if (!match(parser, TOY_TOKEN_OPERATOR_PAREN_LEFT)) {
+		printError(parser, parser->previous, "Expected '(' at the beginning of parameter list");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return;
+	}
+
+	unsigned int paramIterations = 0;
+
+	while (parser->current.type != TOY_TOKEN_OPERATOR_PAREN_RIGHT && (paramIterations++ == 0 || match(parser, TOY_TOKEN_OPERATOR_COMMA))) {
+		//grab the name token
+		advance(parser);
+		Toy_Token nameToken = parser->previous;
+
+		//read the type specifier if present
+		Toy_ValueType varType = TOY_VALUE_ANY;
+		bool constant = false;
+
+		if (match(parser, TOY_TOKEN_OPERATOR_COLON)) {
+			varType = readType(parser);
+
+			if (match(parser, TOY_TOKEN_KEYWORD_CONST)) {
+				constant = true;
+			}
+		}
+
+		//emit the parameter as a name string
+		Toy_String* name = Toy_createNameStringLength(bucketHandle, nameToken.lexeme, nameToken.length, varType, constant);
+		Toy_Value value = TOY_VALUE_FROM_STRING(name);
+		Toy_Ast* ast = NULL;
+		Toy_private_emitAstValue(bucketHandle, &ast, value);
+
+		//add to the params aggregate (is added backwards, because weird)
+		Toy_private_emitAstAggregate(bucketHandle, &params, TOY_AST_FLAG_COLLECTION, ast);
+	}
+
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' at the end of parameter list");
 
 	//read the body
+	consume(parser, TOY_TOKEN_OPERATOR_BRACE_LEFT, "Expected '{' at the beginning of function body");
+
 	Toy_Ast* body = NULL;
 	makeBlockStmt(bucketHandle, parser, &body);
+
+	consume(parser, TOY_TOKEN_OPERATOR_BRACE_RIGHT, "Expected '}' at the end of function body");
 
 	//finally, emit the declaration as an Ast
 	Toy_private_emitAstFunctionDeclaration(bucketHandle, rootHandle, nameStr, params, body);

@@ -900,6 +900,24 @@ static unsigned int writeInstructionAccess(Toy_ModuleCompiler** mb, Toy_AstVarAc
 }
 
 static unsigned int writeInstructionFnDeclare(Toy_ModuleCompiler** mb, Toy_AstFnDeclare ast) {
+	/*
+	FnDeclare: name, params, body
+
+	fn name(param1: int, param2: float, param3: string, param4) {
+		//
+	}
+
+	ast->params->aggregate
+		.left->aggregate
+			.left->aggregate
+				.left->aggregate
+					.left = (NULL)
+					.right->value.value.as.string.name (param1: int)
+				.right->value.value.as.string.name (param2: float)
+			.right->value.value.as.string.name (param3: string)
+		.right->value.value.as.string.name (param4: any)
+	*/
+
 	//URGENT: currently a no-op
 	(void)mb;
 	(void)ast;
@@ -1054,9 +1072,9 @@ static unsigned char* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) 
 	unsigned int capacity = 0, count = 0;
 	int codeAddr = 0;
 	int jumpsAddr = 0;
-	// int paramAddr = 0;
+	int paramAddr = 0;
 	int dataAddr = 0;
-	// int subsAddr = 0;
+	int subsAddr = 0;
 
 	emitInt(&buffer, &capacity, &count, 0); //total size (overwritten later)
 	emitInt(&buffer, &capacity, &count, mb->jumpsCount); //jumps size
@@ -1074,7 +1092,7 @@ static unsigned char* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) 
 		emitInt(&buffer, &capacity, &count, 0); //jumps
 	}
 	if (mb->paramCount > 0) {
-		// paramAddr = count;
+		paramAddr = count;
 		emitInt(&buffer, &capacity, &count, 0); //params
 	}
 	if (mb->dataCount > 0) {
@@ -1082,7 +1100,7 @@ static unsigned char* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) 
 		emitInt(&buffer, &capacity, &count, 0); //data
 	}
 	if (mb->subsCount > 0) {
-		// subsAddr = count;
+		subsAddr = count;
 		emitInt(&buffer, &capacity, &count, 0); //subs
 	}
 
@@ -1103,7 +1121,13 @@ static unsigned char* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) 
 		count += mb->jumpsCount;
 	}
 
-	//TODO: param region
+	if (mb->paramCount > 0) {
+		expand(&buffer, &capacity, &count, mb->paramCount);
+		memcpy((buffer + count), mb->param, mb->paramCount);
+
+		*((int*)(buffer + paramAddr)) = count;
+		count += mb->paramCount;
+	}
 
 	if (mb->dataCount > 0) {
 		expand(&buffer, &capacity, &count, mb->dataCount);
@@ -1113,7 +1137,13 @@ static unsigned char* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) 
 		count += mb->dataCount;
 	}
 
-	//TODO: subs region
+	if (mb->subsCount > 0) {
+		expand(&buffer, &capacity, &count, mb->subsCount);
+		memcpy((buffer + count), mb->subs, mb->subsCount);
+
+		*((int*)(buffer + subsAddr)) = count;
+		count += mb->subsCount;
+	}
 
 	//finally, record the total size within the header, and return the result
 	((int*)buffer)[0] = count;
