@@ -87,6 +87,16 @@ ifeq ($(shell uname),Linux)
 	find . -type f -name '*.dylib' -delete
 	find . -type d -name 'out' -delete
 	find . -type d -name 'obj' -delete
+else ifeq ($(shell uname),NetBSD)
+	find . -type f -name '*.o' -delete
+	find . -type f -name '*.a' -delete
+	find . -type f -name '*.exe' -delete
+	find . -type f -name '*.dll' -delete
+	find . -type f -name '*.lib' -delete
+	find . -type f -name '*.so' -delete
+	find . -type f -name '*.dylib' -delete
+	find . -type d -name 'out' -delete
+	find . -type d -name 'obj' -delete
 else ifeq ($(OS),Windows_NT)
 	$(RM) *.o *.a *.exe *.dll *.lib *.so *.dylib
 	$(RM) out
