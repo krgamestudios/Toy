@@ -30,6 +30,12 @@
 	#else
 		#define TOY_BITNESS 32
 	#endif
+#elif defined(__NetBSD__)
+	#if defined(__LP64__)
+		#define TOY_BITNESS 64
+	#else
+		#define TOY_BITNESS 32
+	#endif
 #elif defined(_WIN32) || defined(_WIN64)
 	#if defined(_WIN64)
 		#define TOY_BITNESS 64

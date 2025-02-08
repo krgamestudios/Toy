@@ -6,6 +6,8 @@ LDFLAGS+=
 
 ifeq ($(shell uname),Linux)
 LDFLAGS=-Wl,--gc-sections
+else ifeq ($(shell uname),NetBSD)
+LDFLAGS=-Wl,--gc-sections
 else ifeq ($(OS),Windows_NT)
 LDFLAGS=-Wl,--gc-sections
 else ifeq ($(shell uname),Darwin)
