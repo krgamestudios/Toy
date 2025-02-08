@@ -108,43 +108,75 @@ static void emitFloat(unsigned char** handle, unsigned int* capacity, unsigned i
 //simply get the address (always an integer)
 #define CURRENT_ADDRESS(mb, part) ((*mb)->part##Count)
 
-static void emitToJumpTable(Toy_ModuleCompiler** mb, unsigned int startAddr) {
-	EMIT_INT(mb, code, (*mb)->jumpsCount); //mark the jump index in the code
-	EMIT_INT(mb, jumps, startAddr); //save address at the jump index
+//Cached write to data, enabling string reuse, see #168
+static unsigned int emitCStringToData(unsigned char** dataHandle, unsigned int* capacity, unsigned int* count, const char* cstr) {
+	const unsigned int slen = (unsigned int)strlen(cstr) + 1; //+1 for null
+
+	//See if the string already exists in the data NOTE: assumes data only ever holds c-strings
+	unsigned int pos = 0;
+	while (pos < *count) {
+		const char* entry = ((char*)(*dataHandle)) + pos;
+		unsigned int elen = strlen(entry) + 1; //+1 for null
+
+		//compare
+		if (slen == elen && strncmp(cstr, entry, slen) == 0) {
+			return pos;
+		}
+
+		//next
+		pos += (elen + 3) & ~3;
+	}
+
+	//default, append the new entry
+	unsigned int addr = *count; //save the target address
+	expand(dataHandle, capacity, count, (slen + 3) & ~3); //4-byte aligned
+	memcpy((*dataHandle) + addr, cstr, slen);
+	*count += (slen + 3) & ~3;
+
+	return addr; //return the address of the string in the data section
 }
 
 static unsigned int emitString(Toy_ModuleCompiler** mb, Toy_String* str) {
 	//4-byte alignment
 	unsigned int length = str->info.length + 1;
-	if (length % 4 != 0) {
-		length += 4 - (length % 4); //ceil
-	}
+	length = (length + 3) & ~3;
 
-	//grab the current start address
-	unsigned int startAddr = (*mb)->dataCount;
+	//the address within the data section
+	unsigned int dataAddr = 0;
 
 	//move the string into the data section
-	expand((&((*mb)->data)), &((*mb)->dataCapacity), &((*mb)->dataCount), length);
-
 	if (str->info.type == TOY_STRING_NODE) {
 		char* buffer = Toy_getStringRawBuffer(str);
-		memcpy((*mb)->data + (*mb)->dataCount, buffer, str->info.length + 1);
+
+		dataAddr = emitCStringToData(&(*mb)->data, &(*mb)->dataCapacity, &(*mb)->dataCount, buffer);
+
 		free(buffer);
 	}
 	else if (str->info.type == TOY_STRING_LEAF) {
-		memcpy((*mb)->data + (*mb)->dataCount, str->leaf.data, str->info.length + 1);
+		dataAddr = emitCStringToData(&(*mb)->data, &(*mb)->dataCapacity, &(*mb)->dataCount, str->leaf.data);
 	}
 	else if (str->info.type == TOY_STRING_NAME) {
-		memcpy((*mb)->data + (*mb)->dataCount, str->name.data, str->info.length + 1);
+		dataAddr = emitCStringToData(&(*mb)->data, &(*mb)->dataCapacity, &(*mb)->dataCount, str->name.data);
 	}
 
-	(*mb)->dataCount += length;
+	//mark the position within the jump index, reusing an existing entry if it exists
+	for (unsigned int i = 0; i < (*mb)->jumpsCount; i++) {
+		if ((*mb)->jumps[i] == dataAddr) {
+			//reuse, and finish
+			EMIT_INT(mb, code, i);
+			return 1;
+		}
+	}
 
-	//mark the jump position
-	emitToJumpTable(mb, startAddr);
+	EMIT_INT(mb, code, (*mb)->jumpsCount); //mark the new jump index in the code
+	EMIT_INT(mb, jumps, dataAddr); //append to the jump table
 
 	return 1;
 }
+
+// static unsigned int emitParameter(Toy_ModuleCompiler** mb, Toy_String* str) {
+//
+// }
 
 static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* ast); //forward declare for recursion
 static unsigned int writeInstructionAssign(Toy_ModuleCompiler** mb, Toy_AstVarAssign ast, bool chainedAssignment); //forward declare for chaining of var declarations

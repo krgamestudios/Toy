@@ -126,7 +126,7 @@ void Toy_bindModuleBundle(Toy_ModuleBundle* bundle, unsigned char* ptr, unsigned
 	memcpy(bundle->ptr, ptr, size);
 	bundle->count = size;
 
-	//URGENT: test this
+	//TODO: test this
 	int valid = validateModuleBundleHeader(bundle);
 
 	if (valid < 0) {

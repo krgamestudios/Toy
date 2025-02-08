@@ -1309,6 +1309,90 @@ int test_compiler_keywords(Toy_Bucket** bucketHandle) {
 	return 0;
 }
 
+int test_compiler_string_reuse(Toy_Bucket** bucketHandle) {
+	//test string literals
+	{
+		//setup
+		const char* source = "var first: string = \"Hello world\"; var second: string = \"Hello world\";";
+		Toy_Lexer lexer;
+		Toy_Parser parser;
+
+		Toy_bindLexer(&lexer, source);
+		Toy_bindParser(&parser, &lexer);
+		Toy_Ast* ast = Toy_scanParser(bucketHandle, &parser);
+
+		//run
+		unsigned char* buffer = Toy_compileModule(ast);
+
+		//check header
+		int* ptr = (int*)buffer;
+
+		if ((ptr++)[0] != 108 || //total size
+			(ptr++)[0] != 12 || //jump count
+			(ptr++)[0] != 0 || //param count
+			(ptr++)[0] != 28 || //data count
+			(ptr++)[0] != 0 || //subs count
+			(ptr++)[0] != 32 || //code addr
+			(ptr++)[0] != 68 || //jumps addr
+			(ptr++)[0] != 80 || //data addr
+			false) //terminator
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to reuse strings in module header, source: %s\n" TOY_CC_RESET, source);
+
+			//cleanup and return
+			free(buffer);
+			return -1;
+		}
+
+		//check code
+		if (*((unsigned char*)(buffer + 32)) != TOY_OPCODE_READ ||
+			*((unsigned char*)(buffer + 33)) != TOY_VALUE_STRING ||
+			*((unsigned char*)(buffer + 34)) != TOY_STRING_LEAF ||
+			*((unsigned char*)(buffer + 35)) != 0 ||
+
+			*((unsigned int*)(buffer + 36)) != 0 ||
+
+			*((unsigned char*)(buffer + 40)) != TOY_OPCODE_DECLARE ||
+			*((unsigned char*)(buffer + 41)) != TOY_VALUE_STRING ||
+			*((unsigned char*)(buffer + 42)) != 5 ||
+			*((unsigned char*)(buffer + 43)) != 0 ||
+
+			*((unsigned int*)(buffer + 44)) != 4 ||
+
+			*((unsigned char*)(buffer + 48)) != TOY_OPCODE_READ ||
+			*((unsigned char*)(buffer + 49)) != TOY_VALUE_STRING ||
+			*((unsigned char*)(buffer + 50)) != TOY_STRING_LEAF ||
+			*((unsigned char*)(buffer + 51)) != 0 ||
+
+			*((unsigned int*)(buffer + 52)) != 0 || //duplicate
+
+			*((unsigned char*)(buffer + 56)) != TOY_OPCODE_DECLARE ||
+			*((unsigned char*)(buffer + 57)) != TOY_VALUE_STRING ||
+			*((unsigned char*)(buffer + 58)) != 6 ||
+			*((unsigned char*)(buffer + 59)) != 0 ||
+
+			*((unsigned int*)(buffer + 60)) != 8 ||
+
+			*((unsigned char*)(buffer + 64)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 65)) != 0 ||
+			*((unsigned char*)(buffer + 66)) != 0 ||
+			*((unsigned char*)(buffer + 67)) != 0
+		)
+		{
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected module code, source: %s\n" TOY_CC_RESET, source);
+
+			//cleanup and return
+			free(buffer);
+			return -1;
+		}
+
+		//cleanup
+		free(buffer);
+	}
+
+	return 0;
+}
+
 int main(void) {
 	//run each test set, returning the total errors given
 	int total = 0, res = 0;
@@ -1336,6 +1420,16 @@ int main(void) {
 	{
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		res = test_compiler_keywords(&bucket);
+		Toy_freeBucket(&bucket);
+		if (res == 0) {
+			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
+		}
+		total += res;
+	}
+
+	{
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+		res = test_compiler_string_reuse(&bucket);
 		Toy_freeBucket(&bucket);
 		if (res == 0) {
 			printf(TOY_CC_NOTICE "All good\n" TOY_CC_RESET);
