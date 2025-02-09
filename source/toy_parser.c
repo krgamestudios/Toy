@@ -939,7 +939,7 @@ static void makeFunctionDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 
 		//read the type specifier if present
 		Toy_ValueType varType = TOY_VALUE_ANY;
-		bool constant = false;
+		bool constant = true; //parameters are immutable
 
 		if (match(parser, TOY_TOKEN_OPERATOR_COLON)) {
 			varType = readType(parser);
