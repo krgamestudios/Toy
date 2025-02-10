@@ -89,6 +89,12 @@ static void emitFloat(unsigned char** handle, unsigned int* capacity, unsigned i
 	emitByte(handle, capacity, count, *(ptr++));
 }
 
+static void emitBuffer(unsigned char** handle, unsigned int* capacity, unsigned int* count, unsigned char* buffer, unsigned int bufferSize) {
+	expand(handle, capacity, count, bufferSize); //4-byte aligned
+	memcpy((*handle) + *count, buffer, bufferSize);
+	*count += bufferSize;
+}
+
 //curry writing utils
 #define EMIT_BYTE(mb, part, byte) \
 	emitByte((&((*mb)->part)), &((*mb)->part##Capacity), &((*mb)->part##Count), byte)
@@ -137,10 +143,6 @@ static unsigned int emitCStringToData(unsigned char** dataHandle, unsigned int* 
 }
 
 static unsigned int emitString(Toy_ModuleCompiler** mb, Toy_String* str) {
-	//4-byte alignment
-	unsigned int length = str->info.length + 1;
-	length = (length + 3) & ~3;
-
 	//the address within the data section
 	unsigned int dataAddr = 0;
 
@@ -174,11 +176,53 @@ static unsigned int emitString(Toy_ModuleCompiler** mb, Toy_String* str) {
 	return 1;
 }
 
-// static unsigned int emitParameter(Toy_ModuleCompiler** mb, Toy_String* str) {
-//
-// }
+static unsigned int emitParameters(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
+	//recursive checks
+	if (ast == NULL) {
+		return 0;
+	}
+	else if (ast->type == TOY_AST_AGGREGATE) {
+		unsigned int total = 0;
+		total += emitParameters(mb, ast->aggregate.left);
+		total += emitParameters(mb, ast->aggregate.right);
+		return total;
+	}
+	else if (ast->type != TOY_AST_VALUE) {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown AST type passed to 'emitParameters()'\n" TOY_CC_RESET);
+		exit(-1);
+		return 0;
+	}
+
+	//check the string type
+	if (TOY_VALUE_IS_STRING(ast->value.value) == false || TOY_VALUE_AS_STRING(ast->value.value)->info.type != TOY_STRING_NAME) {
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Function parameters must be name strings\n" TOY_CC_RESET);
+		mb->panic = true;
+		return 0;
+	}
+
+	//the address within the data section
+	unsigned int dataAddr = emitCStringToData(&(mb->data), &(mb->dataCapacity), &(mb->dataCount), TOY_VALUE_AS_STRING(ast->value.value)->name.data);
+
+	//check the param index for that entry i.e. don't reuse parameter names
+	for (unsigned int i = 0; i < mb->paramCount; i++) {
+		if (mb->param[i] == dataAddr) {
+			//not allowed
+			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Function parameters must have unique names\n" TOY_CC_RESET);
+			mb->panic = true;
+			return 0;
+		}
+	}
+
+	//emit to the param index
+	EMIT_INT(&mb, param, dataAddr);
+
+	//this returns the number of written parameters
+	return 1;
+}
 
 static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* ast); //forward declare for recursion
+static void writeModuleCompilerBody(Toy_ModuleCompiler* mb, Toy_Ast* ast);
+static unsigned char* writeModuleCompilerResult(Toy_ModuleCompiler* mb);
 static unsigned int writeInstructionAssign(Toy_ModuleCompiler** mb, Toy_AstVarAssign ast, bool chainedAssignment); //forward declare for chaining of var declarations
 
 static unsigned int writeInstructionValue(Toy_ModuleCompiler** mb, Toy_AstValue ast) {
@@ -909,7 +953,8 @@ static unsigned int writeInstructionAssign(Toy_ModuleCompiler** mb, Toy_AstVarAs
 static unsigned int writeInstructionAccess(Toy_ModuleCompiler** mb, Toy_AstVarAccess ast) {
 	if (!(ast.child->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.child->value.value) && TOY_VALUE_AS_STRING(ast.child->value.value)->info.type == TOY_STRING_NAME)) {
 		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Found a non-name-string in a value node when trying to write access\n" TOY_CC_RESET);
-		exit(-1);
+		(*mb)->panic = true;
+		return 0;
 	}
 
 	Toy_String* name = TOY_VALUE_AS_STRING(ast.child->value.value);
@@ -950,9 +995,49 @@ static unsigned int writeInstructionFnDeclare(Toy_ModuleCompiler** mb, Toy_AstFn
 		.right->value.value.as.string.name (param4: any)
 	*/
 
-	//URGENT: currently a no-op
-	(void)mb;
-	(void)ast;
+	//generate the submodule
+	Toy_ModuleCompiler compiler = { 0 };
+
+	compiler.breakEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
+	compiler.continueEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
+
+	//compile the ast to memory
+	unsigned int paramCount = emitParameters(&compiler, ast.params);
+	writeModuleCompilerBody(&compiler, ast.body);
+	unsigned char* submodule = writeModuleCompilerResult(&compiler);
+
+	//cleanup the compiler
+	Toy_private_resizeEscapeArray(compiler.breakEscapes, 0);
+	Toy_private_resizeEscapeArray(compiler.continueEscapes, 0);
+
+	free(compiler.param);
+	free(compiler.code);
+	free(compiler.jumps);
+	free(compiler.data);
+	free(compiler.subs);
+
+	//write the submodule to the subs section
+	unsigned int subsAddr = (*mb)->subsCount;
+	emitBuffer(&((*mb)->subs), &((*mb)->subsCapacity), &((*mb)->subsCount), submodule, *((unsigned int*)submodule));
+	free(submodule);
+
+	//read the function as a value, with the address as a parameter
+	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
+	EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+	EMIT_BYTE(mb, code, (unsigned char)paramCount);
+	EMIT_BYTE(mb, code, 0);
+
+	EMIT_INT(mb, code, subsAddr);
+
+	//delcare the function
+	EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
+	EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+	EMIT_BYTE(mb, code, ast.name->info.length); //quick optimisation to skip a 'strlen()' call
+	EMIT_BYTE(mb, code, true); //functions are const for now
+
+	//time to write to the actual function name
+	emitString(mb, ast.name);
+
 	return 0;
 }
 
@@ -1085,15 +1170,18 @@ static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* as
 	return result;
 }
 
-static unsigned char* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
-	//code
+static void writeModuleCompilerBody(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
+	//this is separated from 'writeModuleCompilerResult', to separate the concerns for modules & functions
+
 	writeModuleCompilerCode(&mb, ast);
 
 	EMIT_BYTE(&mb, code, TOY_OPCODE_RETURN); //end terminator
 	EMIT_BYTE(&mb, code, 0); //4-byte alignment
 	EMIT_BYTE(&mb, code, 0);
 	EMIT_BYTE(&mb, code, 0);
+}
 
+static unsigned char* writeModuleCompilerResult(Toy_ModuleCompiler* mb) {
 	//if an error occurred, just exit
 	if (mb->panic) {
 		return NULL;
@@ -1186,36 +1274,14 @@ static unsigned char* writeModuleCompiler(Toy_ModuleCompiler* mb, Toy_Ast* ast) 
 //exposed functions
 unsigned char* Toy_compileModule(Toy_Ast* ast) {
 	//setup
-	Toy_ModuleCompiler compiler;
+	Toy_ModuleCompiler compiler = { 0 };
 
-	compiler.code = NULL;
-	compiler.codeCapacity = 0;
-	compiler.codeCount = 0;
-
-	compiler.jumps = NULL;
-	compiler.jumpsCapacity = 0;
-	compiler.jumpsCount = 0;
-
-	compiler.param = NULL;
-	compiler.paramCapacity = 0;
-	compiler.paramCount = 0;
-
-	compiler.data = NULL;
-	compiler.dataCapacity = 0;
-	compiler.dataCount = 0;
-
-	compiler.subs = NULL;
-	compiler.subsCapacity = 0;
-	compiler.subsCount = 0;
-
-	compiler.currentScopeDepth = 0;
 	compiler.breakEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
 	compiler.continueEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
 
-	compiler.panic = false;
-
 	//compile the ast to memory
-	unsigned char* buffer = writeModuleCompiler(&compiler, ast);
+	writeModuleCompilerBody(&compiler, ast);
+	unsigned char* buffer = writeModuleCompilerResult(&compiler);
 
 	//cleanup
 	Toy_private_resizeEscapeArray(compiler.breakEscapes, 0);

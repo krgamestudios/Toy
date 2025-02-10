@@ -1,17 +1,5 @@
 
 
-fn name() {
-	//return 42;
-}
-
-
-
-
-fn name(param1: int, param2: float, param3: string, param4) {
-	//return 42;
-}
-
-
 fn name(foobar: bool const) {
 	//return 42;
 }
