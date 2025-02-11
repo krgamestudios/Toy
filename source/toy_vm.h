@@ -11,6 +11,7 @@
 #include "toy_stack.h"
 #include "toy_array.h"
 #include "toy_table.h"
+#include "toy_function.h"
 
 typedef struct Toy_VM {
 	//raw instructions to be executed
@@ -38,7 +39,7 @@ typedef struct Toy_VM {
 	Toy_Stack* stack;
 
 	//easy access to memory
-	Toy_Bucket* stringBucket; //stores the string literals
+	Toy_Bucket* literalBucket; //stores the value literals (strings, functions, etc.)
 	Toy_Bucket* scopeBucket; //stores the scope instances TODO: is this separation needed?
 } Toy_VM;
 

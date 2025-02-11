@@ -6,7 +6,7 @@
 //runtime module info
 typedef struct Toy_Module {
 	//closure support - points to parent scope
-	Toy_Scope* scopePtr;
+	Toy_Scope* parentScope;
 
 	unsigned char* code;
 

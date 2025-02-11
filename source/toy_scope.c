@@ -30,6 +30,11 @@ static Toy_TableEntry* lookupScope(Toy_Scope* scope, Toy_String* key, unsigned i
 		return NULL;
 	}
 
+	//continue after a dummy
+	if (scope->table == NULL) {
+		return recursive ? lookupScope(scope->next, key, hash, recursive) : NULL;
+	}
+
 	//copy and modify the code from Toy_lookupTable, so it can behave slightly differently
 	unsigned int probe = hash % scope->table->capacity;
 
@@ -62,6 +67,18 @@ Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	return newScope;
 }
 
+Toy_Scope* Toy_private_pushDummyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
+	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
+
+	newScope->next = scope;
+	newScope->table = NULL;
+	newScope->refCount = 0;
+
+	incrementRefCount(newScope);
+
+	return newScope;
+}
+
 Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 	if (scope == NULL) {
 		return NULL;
@@ -76,15 +93,17 @@ Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
 
 	newScope->next = scope->next;
-	newScope->table = Toy_private_adjustTableCapacity(NULL, scope->table->capacity);
+	newScope->table = scope->table != NULL ? Toy_private_adjustTableCapacity(NULL, scope->table->capacity) : NULL;
 	newScope->refCount = 0;
 
 	incrementRefCount(newScope);
 
-	//forcibly copy the contents
-	for (unsigned int i = 0; i < scope->table->capacity; i++) {
-		if (!TOY_VALUE_IS_NULL(scope->table->data[i].key)) {
-			Toy_insertTable(&newScope->table, Toy_copyValue(scope->table->data[i].key), Toy_copyValue(scope->table->data[i].value));
+	if (newScope->table != NULL) {
+		//forcibly copy the contents
+		for (unsigned int i = 0; i < scope->table->capacity; i++) {
+			if (!TOY_VALUE_IS_NULL(scope->table->data[i].key)) {
+				Toy_insertTable(&newScope->table, Toy_copyValue(scope->table->data[i].key), Toy_copyValue(scope->table->data[i].value));
+			}
 		}
 	}
 
@@ -94,6 +113,11 @@ Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	if (key->info.type != TOY_STRING_NAME) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
+		exit(-1);
+	}
+
+	if (scope->table == NULL) {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't declare in a dummy scope\n" TOY_CC_RESET);
 		exit(-1);
 	}
 

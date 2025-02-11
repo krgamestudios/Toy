@@ -17,6 +17,7 @@ typedef struct Toy_Scope {
 //handle deep scopes - the scope is stored in the bucket, not the table
 TOY_API Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope);
 TOY_API Toy_Scope* Toy_popScope(Toy_Scope* scope);
+TOY_API Toy_Scope* Toy_private_pushDummyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope); //doesn't delcare a table for storage
 
 TOY_API Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope);
 

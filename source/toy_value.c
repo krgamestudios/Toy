@@ -80,7 +80,7 @@ unsigned int Toy_hashValue(Toy_Value value) {
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't hash an unknown value type, exiting\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't hash an unknown value type (%d), exiting\n" TOY_CC_RESET, (int)value.type);
 			exit(-1);
 	}
 
@@ -134,6 +134,8 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_TABLE(result);
 		}
 		case TOY_VALUE_FUNCTION:
+			return value;
+
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
@@ -172,6 +174,9 @@ void Toy_freeValue(Toy_Value value) {
 			return;
 
 		case TOY_VALUE_FUNCTION:
+			//not sure this needs to be freed
+			return;
+
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_UNKNOWN:
@@ -304,6 +309,8 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 		}
 
 		case TOY_VALUE_FUNCTION:
+			return false; //URGENT: check this
+
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
@@ -343,6 +350,9 @@ bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
 			return false;
 
 		case TOY_VALUE_FUNCTION:
+			//nothing is comparable with a function
+			return false;
+
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
@@ -398,6 +408,8 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 			break;
 
 		case TOY_VALUE_FUNCTION:
+			break;
+
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
@@ -608,7 +620,8 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			return string;
 		}
 
-		case TOY_VALUE_FUNCTION:
+		case TOY_VALUE_FUNCTION: //URGENT: check this
+
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:

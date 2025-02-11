@@ -14,7 +14,7 @@ Toy_Module Toy_parseModule(unsigned char* ptr) {
 
 	Toy_Module module;
 
-	module.scopePtr = NULL;
+	module.parentScope = NULL;
 
 	module.code = ptr;
 

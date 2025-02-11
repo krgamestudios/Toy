@@ -1,5 +1,5 @@
 
 
 fn name(foobar: bool const) {
-	//return 42;
+	print foobar;
 }
