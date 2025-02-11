@@ -116,8 +116,6 @@ This source code is covered by the Zlib license (see [LICENSE.md](LICENSE.md)).
 
 # Contributors and Special Thanks
 
-For a guide on how you can contribute, see [CONTRIBUTING.md](CONTRIBUTING.md).
-
 @NishiOwO - Unofficial NetBSD support  
 @Gipson62 - v1 docs spell checking  
 @8051Enthusiast - `fixAlignment()` trick  
