@@ -84,13 +84,14 @@ Here's a flexible outline for the upcoming feature milestones. On each review da
 | [Arrays & Tables](https://github.com/Ratstail91/Toy/issues/155) | -  | 1st Jan ✅ |
 | [Control Flow](https://github.com/Ratstail91/Toy/issues/152) | 2 weeks | 15th Jan ✅ |
 | Functions* | ~~2 weeks~~ | ~~29th Jan~~ |
-| [Functions](https://github.com/Ratstail91/Toy/issues/163) | 2 weeks | 12th Feb |
+| [Functions](https://github.com/Ratstail91/Toy/issues/163)** | 2 weeks | 12th Feb |
 | [Dot Operator & Slices](https://github.com/Ratstail91/Toy/issues/156) | 2 weeks | 26th Feb |
 | [Native Libraries](https://github.com/Ratstail91/Toy/issues/165) | 2 weeks | 12th Mar |
 | [Standard Libraries](https://github.com/Ratstail91/Toy/issues/164) | 2 weeks | 26th Mar |
 | [Documentation](https://github.com/Ratstail91/Toy/issues/169) | - | - |
 
-*Info about and strategies for missed milestones can be found on [my blog here](https://krgamestudios.com/posts/2025-01-29-missed-by-a-mile).
+*Info about and strategies for missed milestones can be found on [my blog here](https://krgamestudios.com/posts/2025-01-29-missed-by-a-mile).  
+**I'm late, I'm late, for a very important date!
 
 # Building
 
@@ -130,4 +131,4 @@ Various Anons - Feedback
 
 * Seth A. Robinson
 
-
+You can show your support and be listed here by joining my [Patreon](https://patreon.com/krgamestudios).
