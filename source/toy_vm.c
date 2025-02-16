@@ -271,7 +271,14 @@ static void processAssignCompound(Toy_VM* vm) {
 		if (valuePtr == NULL) {
 			return;
 		}
-		target = TOY_REFERENCE_FROM_POINTER(valuePtr);
+
+		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
+		if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr)) {
+			target = TOY_REFERENCE_FROM_POINTER(valuePtr);
+		}
+		else {
+			target = Toy_copyValue(*valuePtr);
+		}
 	}
 
 	//assign based on target's type
@@ -297,7 +304,7 @@ static void processAssignCompound(Toy_VM* vm) {
 		}
 
 		//set the value
-		array->data[index] = Toy_copyValue(Toy_unwrapValue(value));
+		array->data[index] = Toy_copyValue(TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value);
 
 		//in case of chaining, leave a copy on the stack
 		bool chainedAssignment = READ_BYTE(vm);
@@ -313,7 +320,7 @@ static void processAssignCompound(Toy_VM* vm) {
 		Toy_Table* table = TOY_VALUE_AS_TABLE(target);
 
 		//set the value
-		Toy_insertTable(&table, Toy_copyValue(Toy_unwrapValue(key)), Toy_copyValue(Toy_unwrapValue(value)));
+		Toy_insertTable(&table, Toy_copyValue(TOY_VALUE_IS_REFERENCE(key) ? Toy_unwrapValue(key) : key), Toy_copyValue(TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value));
 
 		//in case of chaining, leave a copy on the stack
 		bool chainedAssignment = READ_BYTE(vm);
@@ -358,7 +365,6 @@ static void processAccess(Toy_VM* vm) {
 		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
 		Toy_pushStack(&vm->stack, ref);
 	}
-
 	else {
 		Toy_pushStack(&vm->stack, Toy_copyValue(*valuePtr));
 	}
@@ -799,7 +805,6 @@ static void processIndex(Toy_VM* vm) {
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(array->data[i]));
 			Toy_pushStack(&vm->stack, ref);
 		}
-
 		else {
 			Toy_pushStack(&vm->stack, Toy_copyValue(array->data[i]));
 		}
@@ -833,7 +838,6 @@ static void processIndex(Toy_VM* vm) {
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(entry->value));
 			Toy_pushStack(&vm->stack, ref);
 		}
-
 		else {
 			Toy_pushStack(&vm->stack, Toy_copyValue(entry->value));
 		}

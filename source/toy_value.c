@@ -18,6 +18,8 @@ static unsigned int hashUInt(unsigned int x) {
     return x;
 }
 
+#define MAYBE_UNWRAP(value) if (TOY_VALUE_IS_REFERENCE(value)) { value = Toy_unwrapValue(value); }
+
 //exposed functions
 Toy_Value Toy_unwrapValue(Toy_Value value) {
 	//turns out C doesn't have actual references
@@ -30,7 +32,7 @@ Toy_Value Toy_unwrapValue(Toy_Value value) {
 }
 
 unsigned int Toy_hashValue(Toy_Value value) {
-	value = Toy_unwrapValue(value);
+	MAYBE_UNWRAP(value);
 
 	switch(value.type) {
 		case TOY_VALUE_NULL:
@@ -88,7 +90,7 @@ unsigned int Toy_hashValue(Toy_Value value) {
 }
 
 Toy_Value Toy_copyValue(Toy_Value value) {
-	value = Toy_unwrapValue(value);
+	MAYBE_UNWRAP(value);
 
 	switch(value.type) {
 		case TOY_VALUE_NULL:
@@ -186,7 +188,7 @@ void Toy_freeValue(Toy_Value value) {
 }
 
 bool Toy_checkValueIsTruthy(Toy_Value value) {
-	value = Toy_unwrapValue(value);
+	MAYBE_UNWRAP(value);
 
 	//null is an error
 	if (value.type == TOY_VALUE_NULL) {
@@ -212,8 +214,8 @@ bool Toy_checkValueIsTruthy(Toy_Value value) {
 }
 
 bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
-	left = Toy_unwrapValue(left);
-	right = Toy_unwrapValue(right);
+	MAYBE_UNWRAP(left);
+	MAYBE_UNWRAP(right);
 
 	switch(left.type) {
 		case TOY_VALUE_NULL:
@@ -323,8 +325,8 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 }
 
 bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
-	left = Toy_unwrapValue(left);
-	right = Toy_unwrapValue(right);
+	MAYBE_UNWRAP(left);
+	MAYBE_UNWRAP(right);
 
 	//NOTE: "equal" and "comparable" are different - equal means they're identical, comparable is only possible for certain types
 	switch(left.type) {
@@ -365,8 +367,8 @@ bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
 }
 
 int Toy_compareValues(Toy_Value left, Toy_Value right) {
-	left = Toy_unwrapValue(left);
-	right = Toy_unwrapValue(right);
+	MAYBE_UNWRAP(left);
+	MAYBE_UNWRAP(right);
 
 	//comparison means there's a difference in value, with some kind of quantity - so null, bool, etc. aren't comparable
 	switch(left.type) {
@@ -424,7 +426,7 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 }
 
 Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
-	value = Toy_unwrapValue(value);
+	MAYBE_UNWRAP(value);
 
 	//TODO: could have "constant" strings that can be referenced, instead of null, true, false, etc. - new string type of 'permanent'
 
