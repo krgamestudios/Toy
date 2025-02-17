@@ -24,6 +24,7 @@ output(name);
 
 */
 
+//TODO: Not yet functional
 fn makeCounter() {
 	var counter: int = 0;
 

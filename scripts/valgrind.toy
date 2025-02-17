@@ -1,8 +1,0 @@
-
-
-
-var answer = 42;
-
-var question: string = "How many roads must a man walk down?";
-
-print question;

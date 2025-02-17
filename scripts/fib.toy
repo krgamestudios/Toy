@@ -1,4 +1,4 @@
-//TODO: functions don't work yet
+//TODO: Not yet functional
 
 //example of the fibonacci sequence
 fn fib(n: int) {
@@ -11,4 +11,5 @@ for (var i = 1; i <= 10; i++) {
 	print i .. ":" .. fib(i);
 }
 
-//Note to self: yes, the base case in 'fib()' is 'n < 2', stop second guessing yourself!
+//Note to my future self: yes, the base case in 'fib()' is 'n < 2', stop second guessing yourself!
+//Note to my past self: don't tell me what to do!

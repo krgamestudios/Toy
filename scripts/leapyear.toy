@@ -1,4 +1,4 @@
-//TODO: functions don't work yet
+//TODO: Not yet functional
 
 //find the leap years
 fn isLeapYear(n: int) {
