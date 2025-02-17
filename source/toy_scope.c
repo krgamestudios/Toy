@@ -139,14 +139,6 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 		return;
 	}
 
-	//constness check
-	if (Toy_getNameStringVarConstant(key) && value.type == TOY_VALUE_NULL) {
-		char buffer[key->info.length + 256];
-		sprintf(buffer, "Can't declare %s as const with value 'null'", key->name.data);
-		Toy_error(buffer);
-		return;
-	}
-
 	Toy_insertTable(&scope->table, TOY_VALUE_FROM_STRING(Toy_copyString(key)), value);
 }
 

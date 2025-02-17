@@ -120,6 +120,7 @@ static Toy_AstFlag group(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag unaryPostfix(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
+static Toy_AstFlag invoke(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 
 //precedence definitions
 static ParsingTuple parsingRulesetTable[] = {
@@ -181,8 +182,8 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_MULTIPLY_ASSIGN,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_DIVIDE_ASSIGN,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_MODULO_ASSIGN,
-	{PREC_CALL,unary,unaryPostfix},// TOY_TOKEN_OPERATOR_INCREMENT,
-	{PREC_CALL,unary,unaryPostfix},// TOY_TOKEN_OPERATOR_DECREMENT,
+	{PREC_UNARY,unary,unaryPostfix},// TOY_TOKEN_OPERATOR_INCREMENT,
+	{PREC_UNARY,unary,unaryPostfix},// TOY_TOKEN_OPERATOR_DECREMENT,
 	{PREC_ASSIGNMENT,NULL,binary},// TOY_TOKEN_OPERATOR_ASSIGN,
 
 	//comparator operators
@@ -194,7 +195,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_COMPARISON,NULL,binary},// TOY_TOKEN_OPERATOR_COMPARE_GREATER_EQUAL,
 
 	//structural operators
-	{PREC_GROUP,group,NULL},// TOY_TOKEN_OPERATOR_PAREN_LEFT,
+	{PREC_CALL,group,invoke},// TOY_TOKEN_OPERATOR_PAREN_LEFT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_PAREN_RIGHT,
 	{PREC_GROUP,compound,aggregate},// TOY_TOKEN_OPERATOR_BRACKET_LEFT,
 	{PREC_NONE,compound,aggregate},// TOY_TOKEN_OPERATOR_BRACKET_RIGHT,
@@ -212,7 +213,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_GROUP,NULL,aggregate},// TOY_TOKEN_OPERATOR_COMMA, // ,
 
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_DOT, // .
-	{PREC_CALL,NULL,binary},// TOY_TOKEN_OPERATOR_CONCAT, // ..
+	{PREC_UNARY,NULL,binary},// TOY_TOKEN_OPERATOR_CONCAT, // ..
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_REST, // ...
 
 	//unused operators
@@ -557,7 +558,7 @@ static Toy_AstFlag binary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 		}
 
 		case TOY_TOKEN_OPERATOR_CONCAT: {
-			parsePrecedence(bucketHandle, parser, rootHandle, PREC_CALL + 1);
+			parsePrecedence(bucketHandle, parser, rootHandle, PREC_UNARY + 1);
 			return TOY_AST_FLAG_CONCAT;
 		}
 
@@ -708,6 +709,31 @@ static Toy_AstFlag unaryPostfix(Toy_Bucket** bucketHandle, Toy_Parser* parser, T
 	}
 }
 
+static Toy_AstFlag invoke(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	//infix must advance
+	advance(parser);
+
+	//read in args
+	Toy_Ast* args = NULL;
+	unsigned int paramIterations = 0;
+
+	while (parser->current.type != TOY_TOKEN_OPERATOR_PAREN_RIGHT && (paramIterations++ == 0 || match(parser, TOY_TOKEN_OPERATOR_COMMA))) {
+		//get the next arg
+		Toy_Ast* ast = NULL;
+		parsePrecedence(bucketHandle, parser, &ast, PREC_GROUP);
+
+		//add to the args aggregate (is added backwards, because weird)
+		Toy_private_emitAstAggregate(bucketHandle, &args, TOY_AST_FLAG_COLLECTION, ast);
+	}
+
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' at the end of argument list");
+
+	//finally, emit the call as an Ast
+	Toy_private_emitAstFunctionInvokation(bucketHandle, rootHandle, args);
+
+	return TOY_AST_FLAG_NONE;
+}
+
 //grammar rules
 static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle, ParsingPrecedence precRule) {
 	//'step over' the token to parse
@@ -741,7 +767,7 @@ static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 			return;
 		}
 
-		Toy_Ast* ptr = NULL;
+		Toy_Ast* ptr = (*rootHandle); //NOTE: infix functions will need to be careful not to damage the pre-existing tree, if they can avoid it
 		Toy_AstFlag flag = infix(bucketHandle, parser, &ptr);
 
 		//finished

@@ -215,6 +215,7 @@ static unsigned int emitParameters(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
 
 	//emit to the param index
 	EMIT_INT(&mb, param, dataAddr);
+	EMIT_INT(&mb, param, (unsigned int)(TOY_VALUE_AS_STRING(ast->value.value)->name.varType)); //don't forget this bit
 
 	//this returns the number of written parameters
 	return 1;
@@ -1041,6 +1042,32 @@ static unsigned int writeInstructionFnDeclare(Toy_ModuleCompiler** mb, Toy_AstFn
 	return 0;
 }
 
+static unsigned int writeInstructionFnInvoke(Toy_ModuleCompiler** mb, Toy_AstFnInvoke ast) {
+	unsigned int argCount = writeModuleCompilerCode(mb, ast.args);
+
+	if (argCount > 255) {
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid function invokation with %d functions arguments (maximum 255)\n" TOY_CC_RESET, (int)argCount);
+		(*mb)->panic = true;
+		return 0;
+	}
+
+	unsigned int fnCount = writeModuleCompilerCode(mb, ast.function);
+
+	if (fnCount != 1) {
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid function invokation with %d function AST nodes (expected 1)\n" TOY_CC_RESET, (int)fnCount);
+		(*mb)->panic = true;
+		return 0;
+	}
+
+	//call the function
+	EMIT_BYTE(mb, code, TOY_OPCODE_INVOKE);
+	EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+	EMIT_BYTE(mb, code, (unsigned char)argCount);
+	EMIT_BYTE(mb, code, 0); //IDK how many returns
+
+	return 0;
+}
+
 static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* ast) {
 	if (ast == NULL) {
 		return 0;
@@ -1149,6 +1176,10 @@ static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* as
 
 		case TOY_AST_FN_DECLARE:
 			result += writeInstructionFnDeclare(mb, ast->fnDeclare);
+			break;
+
+		case TOY_AST_FN_INVOKE:
+			result += writeInstructionFnInvoke(mb, ast->fnInvoke);
 			break;
 
 		case TOY_AST_PASS:

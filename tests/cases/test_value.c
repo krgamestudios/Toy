@@ -369,7 +369,7 @@ int test_value_stringify(void) {
 
 		//check
 		if (string->info.type != TOY_STRING_LEAF ||
-			strcmp(string->leaf.data, "null") != 0)
+			strcmp(string->leaf.data, "<null>") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify 'null' failed\n" TOY_CC_RESET);
 			Toy_freeString(string);
@@ -395,7 +395,7 @@ int test_value_stringify(void) {
 
 		//check
 		if (string->info.type != TOY_STRING_LEAF ||
-			strcmp(string->leaf.data, "true") != 0)
+			strcmp(string->leaf.data, "<true>") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify boolean 'true' failed\n" TOY_CC_RESET);
 			Toy_freeString(string);
@@ -421,7 +421,7 @@ int test_value_stringify(void) {
 
 		//check
 		if (string->info.type != TOY_STRING_LEAF ||
-			strcmp(string->leaf.data, "false") != 0)
+			strcmp(string->leaf.data, "<false>") != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: stringify boolean 'false' failed\n" TOY_CC_RESET);
 			Toy_freeString(string);

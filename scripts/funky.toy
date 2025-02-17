@@ -1,5 +1,23 @@
-
-
-fn name(foobar: bool const) {
-	print foobar;
+fn name(param1: int, param2: float, param3: string, param4) {
+	print param1;
+	print param2;
+	print param3;
+	print param4;
 }
+
+name(42, 3.14, "hello world", -1);
+
+//URGENT: return values are still needed
+
+fn output(arg) {
+	print arg;
+}
+
+output(null);
+output(true);
+output(42);
+output(3.1415);
+output("woot!");
+output([1, 23, 3]);
+output(["key":1]);
+output(name);

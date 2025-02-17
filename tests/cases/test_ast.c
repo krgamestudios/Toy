@@ -51,6 +51,7 @@ int test_sizeof_ast(void) {
 	TEST_SIZEOF(Toy_AstVarAssign,               16  , 24);
 	TEST_SIZEOF(Toy_AstVarAccess,               8   , 16);
 	TEST_SIZEOF(Toy_AstFnDeclare,               16  , 32);
+	TEST_SIZEOF(Toy_AstFnInvoke,                12  , 24);
 	TEST_SIZEOF(Toy_AstPass,                    4   , 4);
 	TEST_SIZEOF(Toy_AstError,                   4   , 4);
 	TEST_SIZEOF(Toy_AstEnd,                     4   , 4);

@@ -311,7 +311,7 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 		}
 
 		case TOY_VALUE_FUNCTION:
-			return false; //URGENT: check this
+			return false; //URGENT: test this
 
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
@@ -432,10 +432,10 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 	switch(value.type) {
 		case TOY_VALUE_NULL:
-			return Toy_createString(bucketHandle, "null");
+			return Toy_createString(bucketHandle, "<null>");
 
 		case TOY_VALUE_BOOLEAN:
-			return Toy_createString(bucketHandle, value.as.boolean ? "true" : "false");
+			return Toy_createString(bucketHandle, value.as.boolean ? "<true>" : "<false>");
 
 		case TOY_VALUE_INTEGER: {
 			char buffer[16];
@@ -622,7 +622,9 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			return string;
 		}
 
-		case TOY_VALUE_FUNCTION: //URGENT: check this
+		case TOY_VALUE_FUNCTION:
+			//dummy
+			return Toy_createString(bucketHandle, "<fn>");
 
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:

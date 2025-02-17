@@ -9,12 +9,12 @@ typedef enum Toy_FunctionType {
 	TOY_FUNCTION_NATIVE,
 } Toy_FunctionType;
 
-typedef union Toy_FunctionModule {
+typedef struct Toy_FunctionModule {
 	Toy_FunctionType type;
 	Toy_Module module;
 } Toy_FunctionModule;
 
-typedef union Toy_FunctionNative {
+typedef struct Toy_FunctionNative {
 	Toy_FunctionType type;
 	void* native; //TODO: replace with the native function pointer
 } Toy_FunctionNative;

@@ -373,6 +373,79 @@ static void processAccess(Toy_VM* vm) {
 	Toy_freeValue(name);
 }
 
+static void processInvoke(Toy_VM* vm) {
+	Toy_ValueType valueType = READ_BYTE(vm); //unused for now
+	unsigned int argCount = (unsigned int)READ_BYTE(vm);
+	fixAlignment(vm);
+
+	//check for invoking bad values
+	if (valueType != TOY_VALUE_FUNCTION) {
+		Toy_error("Unrecognized invoke on a non-function value");
+		return;
+	}
+
+	//function to call
+	Toy_Value value = Toy_popStack(&vm->stack);
+	if (TOY_VALUE_IS_FUNCTION(value) != true) {
+		Toy_error("Can't call a non-function value");
+		return;
+	}
+
+	//process based on the function type
+	Toy_Function* fn = TOY_VALUE_AS_FUNCTION(value);
+
+	switch(fn->type) {
+		case TOY_FUNCTION_MODULE: {
+			Toy_Module module = fn->module.module;
+
+			//NOTE: counts within the modules actually specify size in memory, so the argCount is multiplied by 8 for the 8 bytes used in the params table
+
+			//check args count
+			if (argCount * 8 != module.paramCount) {
+				Toy_error("Incorrect number of parameters specified for function call");
+				break;
+			}
+
+			if (argCount > vm->stack->count) {
+				Toy_error("Incorrect number of parameters on the stack for function call");
+				break;
+			}
+
+			//spin up a new sub-vm
+			Toy_VM subVM;
+			Toy_initVM(&subVM);
+			Toy_bindVM(&subVM, &module, false);
+
+			//inject params, backwards from the stack
+			for (unsigned int i = argCount; i > 0; i--) {
+				Toy_Value argValue = Toy_popStack(&vm->stack);
+
+				//paramAddr is relative to the data section, and is followed by the param type
+				unsigned int paramAddr = ((unsigned int*)(module.code + module.paramAddr))[(i-1)*2];
+				Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(module.code + module.paramAddr))[(i-1)*2 + 1]);
+
+				//c-string of the param's name
+				const char* cstr = ((char*)(module.code + module.dataAddr)) + paramAddr;
+
+				//as a name string
+				Toy_String* name = Toy_createNameStringLength(&subVM.literalBucket, cstr, strlen(cstr), paramType, true);
+
+				Toy_declareScope(subVM.scope, name, argValue);
+			}
+
+			//run and cleanup
+			Toy_runVM(&subVM);
+			Toy_freeVM(&subVM);
+		}
+		break;
+
+		case TOY_FUNCTION_NATIVE:
+		default:
+			Toy_error("Can't call an unknown function type");
+			break;
+	}
+}
+
 static void processDuplicate(Toy_VM* vm) {
 	Toy_Value value = Toy_copyValue(Toy_peekStack(&vm->stack));
 	Toy_pushStack(&vm->stack, value);
@@ -880,6 +953,10 @@ static void process(Toy_VM* vm) {
 
 			case TOY_OPCODE_ACCESS:
 				processAccess(vm);
+				break;
+
+			case TOY_OPCODE_INVOKE:
+				processInvoke(vm);
 				break;
 
 			case TOY_OPCODE_DUPLICATE:
