@@ -5,6 +5,7 @@
 #include "toy_string.h"
 #include "toy_array.h"
 #include "toy_table.h"
+#include "toy_function.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,13 +137,77 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_TABLE(result);
 		}
 		case TOY_VALUE_FUNCTION:
-			return value;
+			// return value; //URGENT: concerning
 
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy an unknown value type, exiting\n" TOY_CC_RESET);
+			exit(-1);
+	}
+
+	//dummy return
+	return TOY_VALUE_FROM_NULL();
+}
+
+Toy_Value Toy_deepCopyValue(struct Toy_Bucket** bucketHandle, Toy_Value value) {
+	//this should be the same as Toy_copyValue(), but it forces a deep copy for the strings
+	MAYBE_UNWRAP(value);
+
+	switch(value.type) {
+		case TOY_VALUE_NULL:
+		case TOY_VALUE_BOOLEAN:
+		case TOY_VALUE_INTEGER:
+		case TOY_VALUE_FLOAT:
+			return value;
+
+		case TOY_VALUE_STRING: {
+			return TOY_VALUE_FROM_STRING(Toy_deepCopyString(bucketHandle, value.as.string));
+		}
+
+		case TOY_VALUE_ARRAY: {
+			//arrays probably won't get copied much
+			Toy_Array* ptr = value.as.array;
+			Toy_Array* result = Toy_resizeArray(NULL, ptr->capacity);
+
+			for (unsigned int i = 0; i < ptr->count; i++) {
+				result->data[i] = Toy_deepCopyValue(bucketHandle, ptr->data[i]);
+			}
+
+			result->capacity = ptr->capacity;
+			result->count = ptr->count;
+
+			return TOY_VALUE_FROM_ARRAY(result);
+		}
+
+		case TOY_VALUE_TABLE: {
+			//tables probably won't get copied much
+			Toy_Table* ptr = value.as.table;
+			Toy_Table* result = Toy_private_adjustTableCapacity(NULL, ptr->capacity);
+
+			for (unsigned int i = 0; i < ptr->capacity; i++) {
+				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {
+					result->data[i].key = Toy_deepCopyValue(bucketHandle, ptr->data[i].key);
+					result->data[i].value = Toy_deepCopyValue(bucketHandle, ptr->data[i].value);
+				}
+			}
+
+			result->capacity = ptr->capacity;
+			result->count = ptr->count;
+
+			return TOY_VALUE_FROM_TABLE(result);
+		}
+		case TOY_VALUE_FUNCTION: {
+			Toy_Function* fn = Toy_createModuleFunction(bucketHandle, TOY_VALUE_AS_FUNCTION(value)->module.module); //URGENT: concerning
+			return TOY_VALUE_FROM_FUNCTION(fn);
+		}
+
+		case TOY_VALUE_OPAQUE:
+		case TOY_VALUE_ANY:
+		case TOY_VALUE_REFERENCE:
+		case TOY_VALUE_UNKNOWN:
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't deep-copy an unknown value type, exiting\n" TOY_CC_RESET);
 			exit(-1);
 	}
 

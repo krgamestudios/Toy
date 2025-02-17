@@ -46,6 +46,7 @@ int test_sizeof_ast(void) {
 	TEST_SIZEOF(Toy_AstWhileThen,               12  , 24);
 	TEST_SIZEOF(Toy_AstBreak,                   4   , 4);
 	TEST_SIZEOF(Toy_AstContinue,                4   , 4);
+	TEST_SIZEOF(Toy_AstReturn,                  8   , 16);
 	TEST_SIZEOF(Toy_AstPrint,                   8   , 16);
 	TEST_SIZEOF(Toy_AstVarDeclare,              12  , 24);
 	TEST_SIZEOF(Toy_AstVarAssign,               16  , 24);

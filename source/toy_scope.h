@@ -27,3 +27,5 @@ TOY_API void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value)
 TOY_API Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key);
 
 TOY_API bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key);
+
+//TODO: delcare with a custom table (game engine entities)

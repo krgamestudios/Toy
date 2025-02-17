@@ -360,6 +360,8 @@ static void processAccess(Toy_VM* vm) {
 		return;
 	}
 
+	//URGENT: should I loop functions into the reference system?
+
 	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
 	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr)) {
 		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
@@ -433,8 +435,23 @@ static void processInvoke(Toy_VM* vm) {
 				Toy_declareScope(subVM.scope, name, argValue);
 			}
 
-			//run and cleanup
-			Toy_runVM(&subVM);
+			//run
+			unsigned int resultCount = Toy_runVM(&subVM);
+
+			//extract and store any results
+			if (resultCount > 0) {
+				Toy_Array* results = Toy_extractResultsFromVM(&vm->literalBucket, &subVM, resultCount);
+
+				for (unsigned int i = 0; i < results->count; i++) {
+					//NOTE: since the results array is being immediately freed, just push each element without a call to copy
+					Toy_pushStack(&vm->stack, results->data[i]);
+				}
+
+				//a bit naughty
+				free(results);
+			}
+
+			//cleanup
 			Toy_freeVM(&subVM);
 		}
 		break;
@@ -626,6 +643,14 @@ static void processLogical(Toy_VM* vm, Toy_OpcodeType opcode) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid opcode %d passed to processLogical, exiting\n" TOY_CC_RESET, opcode);
 		exit(-1);
 	}
+}
+
+static unsigned int processReturn(Toy_VM* vm) {
+	//the values to be returned are waiting on the stack
+	unsigned int resultCount = (unsigned int)READ_BYTE(vm);
+	fixAlignment(vm);
+
+	return resultCount;
 }
 
 static void processJump(Toy_VM* vm) {
@@ -926,7 +951,7 @@ static void processIndex(Toy_VM* vm) {
 	Toy_freeValue(length);
 }
 
-static void process(Toy_VM* vm) {
+static unsigned int process(Toy_VM* vm) {
 	while(true) {
 		//prep by aligning to the 4-byte word
 		fixAlignment(vm);
@@ -995,8 +1020,7 @@ static void process(Toy_VM* vm) {
 
 			//control instructions
 			case TOY_OPCODE_RETURN:
-				//temp terminator
-				return;
+				return processReturn(vm); //the only return statement, which signals the number of values for extraction
 
 			case TOY_OPCODE_JUMP:
 				processJump(vm);
@@ -1074,6 +1098,8 @@ void Toy_initVM(Toy_VM* vm) {
 	vm->literalBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 	vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
+	vm->scopeBucketHandle = NULL; //not used
+
 	Toy_resetVM(vm, true);
 }
 
@@ -1081,10 +1107,10 @@ void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
 	//inherent persistent memory
 	vm->scope = NULL;
 	vm->stack = Toy_allocateStack();
-	vm->literalBucket = parent->literalBucket;
+	vm->literalBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 	vm->scopeBucket = parent->scopeBucket;
 
-	//TODO: parent bucket pointers are updated after function calls
+	vm->scopeBucketHandle = &parent->scopeBucket; //track this to update it later
 
 	Toy_resetVM(vm, true);
 }
@@ -1108,21 +1134,17 @@ void Toy_bindVM(Toy_VM* vm, Toy_Module* module, bool preserveScope) {
 	}
 }
 
-void Toy_runVM(Toy_VM* vm) {
+unsigned int Toy_runVM(Toy_VM* vm) {
 	if (vm->codeAddr == 0) {
 		//ignore uninitialized VMs or empty modules
-		return;
+		return 0;
 	}
-
-	//TODO: read params into scope
 
 	//prep the program counter for execution
 	vm->programCounter = vm->codeAddr;
 
 	//begin
-	process(vm);
-
-	//TODO: add return value extraction
+	return process(vm);
 }
 
 void Toy_freeVM(Toy_VM* vm) {
@@ -1131,5 +1153,28 @@ void Toy_freeVM(Toy_VM* vm) {
 	//clear the persistent memory
 	Toy_freeStack(vm->stack);
 	Toy_freeBucket(&vm->literalBucket);
-	Toy_freeBucket(&vm->scopeBucket);
+
+	if (vm->scopeBucketHandle != NULL) {
+		*(vm->scopeBucketHandle) = vm->scopeBucket; //re-adjust the parent's scopeBucket pointer, in case it was expanded
+	}
+	else {
+		Toy_freeBucket(&vm->scopeBucket);
+	}
+}
+
+Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** bucketHandle, Toy_VM* subVM, unsigned int resultCount) {
+	if (subVM->stack->count < resultCount) {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Too many results requested from VM, exiting\n" TOY_CC_RESET);
+		exit(-1);
+	}
+
+	Toy_Array* results = Toy_resizeArray(NULL, resultCount);
+
+	const unsigned int offset = subVM->stack->count - resultCount; //first element to extract
+
+	for (/* EMPTY */; results->count < resultCount; results->count++) {
+		results->data[results->count] = Toy_deepCopyValue(bucketHandle, subVM->stack->data[offset + results->count]);
+	}
+
+	return results;
 }

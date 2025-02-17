@@ -1,3 +1,5 @@
+/*
+
 fn name(param1: int, param2: float, param3: string, param4) {
 	print param1;
 	print param2;
@@ -6,8 +8,6 @@ fn name(param1: int, param2: float, param3: string, param4) {
 }
 
 name(42, 3.14, "hello world", -1);
-
-//URGENT: return values are still needed
 
 fn output(arg) {
 	print arg;
@@ -21,3 +21,21 @@ output("woot!");
 output([1, 23, 3]);
 output(["key":1]);
 output(name);
+
+*/
+
+fn makeCounter() {
+	var counter: int = 0;
+
+	fn increment() {
+		return counter++;
+	}
+
+	return increment;
+}
+
+var tally = makeCounter();
+
+print tally();
+print tally();
+print tally();

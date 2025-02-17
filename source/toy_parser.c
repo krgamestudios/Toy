@@ -881,6 +881,13 @@ static void makeContinueStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of continue statement");
 }
 
+static void makeReturnStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //expect an aggregate
+	Toy_private_emitAstReturn(bucketHandle, rootHandle);
+
+	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of return statement");
+}
+
 static void makePrintStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	makeExpr(bucketHandle, parser, rootHandle);
 	Toy_private_emitAstPrint(bucketHandle, rootHandle);
@@ -1026,9 +1033,7 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//for-pre-clause-post-then
-	//return
-	//import
+	//TODO: for-pre-clause-post-then
 
 	//break
 	else if (match(parser, TOY_TOKEN_KEYWORD_BREAK)) {
@@ -1041,6 +1046,14 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		makeContinueStmt(bucketHandle, parser, rootHandle);
 		return;
 	}
+
+	//return
+	else if (match(parser, TOY_TOKEN_KEYWORD_RETURN)) {
+		makeReturnStmt(bucketHandle, parser, rootHandle);
+		return;
+	}
+
+	//TODO: import
 
 	//print
 	else if (match(parser, TOY_TOKEN_KEYWORD_PRINT)) {

@@ -10,6 +10,12 @@
 //utils
 static void incrementRefCount(Toy_Scope* scope) {
 	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
+		//check for issues
+		if (iter->next != NULL && iter->next->refCount == 0) {
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0'\n" TOY_CC_RESET);
+			exit(-1);
+		}
+
 		iter->refCount++;
 	}
 }

@@ -752,6 +752,21 @@ static unsigned int writeInstructionContinue(Toy_ModuleCompiler** mb, Toy_AstCon
 	return 0;
 }
 
+static unsigned int writeInstructionReturn(Toy_ModuleCompiler** mb, Toy_AstReturn ast) {
+	//the things to return
+	unsigned int retCount = writeModuleCompilerCode(mb, ast.child);
+
+	//output the print opcode
+	EMIT_BYTE(mb, code,TOY_OPCODE_RETURN);
+
+	//4-byte alignment
+	EMIT_BYTE(mb, code,(unsigned char)retCount);
+	EMIT_BYTE(mb, code,0);
+	EMIT_BYTE(mb, code,0);
+
+	return 0;
+}
+
 static unsigned int writeInstructionPrint(Toy_ModuleCompiler** mb, Toy_AstPrint ast) {
 	//the thing to print
 	writeModuleCompilerCode(mb, ast.child);
@@ -1156,6 +1171,10 @@ static unsigned int writeModuleCompilerCode(Toy_ModuleCompiler** mb, Toy_Ast* as
 
 		case TOY_AST_CONTINUE:
 			result += writeInstructionContinue(mb, ast->continuePoint);
+			break;
+
+		case TOY_AST_RETURN:
+			result += writeInstructionReturn(mb, ast->fnReturn);
 			break;
 
 		case TOY_AST_PRINT:
