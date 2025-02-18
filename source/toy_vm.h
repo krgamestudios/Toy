@@ -53,6 +53,6 @@ TOY_API void Toy_bindVM(Toy_VM* vm, Toy_Module* module, bool preserveScope);
 TOY_API unsigned int Toy_runVM(Toy_VM* vm);
 TOY_API void Toy_freeVM(Toy_VM* vm);
 
-TOY_API Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** bucketHandle, Toy_VM* subVM, unsigned int resultCount);
+TOY_API Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** scopeBucketHandle, Toy_Bucket** literalBucketHandle, Toy_VM* subVM, unsigned int resultCount);
 
 //TODO: inject extra data (hook system for external libraries)

@@ -273,7 +273,7 @@ static void processAssignCompound(Toy_VM* vm) {
 		}
 
 		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-		if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr)) {
+		if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr) || TOY_VALUE_IS_FUNCTION(*valuePtr)) {
 			target = TOY_REFERENCE_FROM_POINTER(valuePtr);
 		}
 		else {
@@ -363,7 +363,7 @@ static void processAccess(Toy_VM* vm) {
 	//URGENT: should I loop functions into the reference system?
 
 	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr)) {
+	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr) || TOY_VALUE_IS_FUNCTION(*valuePtr)) {
 		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
 		Toy_pushStack(&vm->stack, ref);
 	}
@@ -415,7 +415,7 @@ static void processInvoke(Toy_VM* vm) {
 
 			//spin up a new sub-vm
 			Toy_VM subVM;
-			Toy_initVM(&subVM);
+			Toy_inheritVM(&subVM, vm);
 			Toy_bindVM(&subVM, &module, false);
 
 			//inject params, backwards from the stack
@@ -440,7 +440,7 @@ static void processInvoke(Toy_VM* vm) {
 
 			//extract and store any results
 			if (resultCount > 0) {
-				Toy_Array* results = Toy_extractResultsFromVM(&vm->literalBucket, &subVM, resultCount);
+				Toy_Array* results = Toy_extractResultsFromVM(&vm->scopeBucket, &vm->literalBucket, &subVM, resultCount);
 
 				for (unsigned int i = 0; i < results->count; i++) {
 					//NOTE: since the results array is being immediately freed, just push each element without a call to copy
@@ -899,7 +899,7 @@ static void processIndex(Toy_VM* vm) {
 		}
 
 		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-		if (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i])) {
+		if (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i]) || TOY_VALUE_IS_FUNCTION(array->data[i])) {
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(array->data[i]));
 			Toy_pushStack(&vm->stack, ref);
 		}
@@ -932,7 +932,7 @@ static void processIndex(Toy_VM* vm) {
 		}
 
 		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-		if (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value)) {
+		if (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value) || TOY_VALUE_IS_FUNCTION(entry->value)) {
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(entry->value));
 			Toy_pushStack(&vm->stack, ref);
 		}
@@ -1162,7 +1162,7 @@ void Toy_freeVM(Toy_VM* vm) {
 	}
 }
 
-Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** bucketHandle, Toy_VM* subVM, unsigned int resultCount) {
+Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** scopeBucketHandle, Toy_Bucket** literalBucketHandle, Toy_VM* subVM, unsigned int resultCount) {
 	if (subVM->stack->count < resultCount) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Too many results requested from VM, exiting\n" TOY_CC_RESET);
 		exit(-1);
@@ -1173,7 +1173,7 @@ Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** bucketHandle, Toy_VM* subVM, un
 	const unsigned int offset = subVM->stack->count - resultCount; //first element to extract
 
 	for (/* EMPTY */; results->count < resultCount; results->count++) {
-		results->data[results->count] = Toy_deepCopyValue(bucketHandle, subVM->stack->data[offset + results->count]);
+		results->data[results->count] = Toy_private_deepCopyValue(scopeBucketHandle, literalBucketHandle, subVM->stack->data[offset + results->count]);
 	}
 
 	return results;

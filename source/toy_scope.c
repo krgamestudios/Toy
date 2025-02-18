@@ -94,9 +94,9 @@ Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 	return scope->next;
 }
 
-Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
+Toy_Scope* Toy_private_deepCopyScope(Toy_Bucket** scopeBucketHandle, Toy_Bucket** literalBucketHandle, Toy_Scope* scope) {
 	//copy/pasted from pushScope, so I can allocate the table manually
-	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
+	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(scopeBucketHandle, sizeof(Toy_Scope));
 
 	newScope->next = scope->next;
 	newScope->table = scope->table != NULL ? Toy_private_adjustTableCapacity(NULL, scope->table->capacity) : NULL;
@@ -108,7 +108,7 @@ Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 		//forcibly copy the contents
 		for (unsigned int i = 0; i < scope->table->capacity; i++) {
 			if (!TOY_VALUE_IS_NULL(scope->table->data[i].key)) {
-				Toy_insertTable(&newScope->table, Toy_copyValue(scope->table->data[i].key), Toy_copyValue(scope->table->data[i].value));
+				Toy_insertTable(&newScope->table, Toy_private_deepCopyValue(scopeBucketHandle, literalBucketHandle, scope->table->data[i].key), Toy_private_deepCopyValue(scopeBucketHandle, literalBucketHandle, scope->table->data[i].value));
 			}
 		}
 	}

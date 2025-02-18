@@ -104,41 +104,9 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_STRING(Toy_copyString(value.as.string));
 		}
 
-		case TOY_VALUE_ARRAY: {
-			//arrays probably won't get copied much
-			Toy_Array* ptr = value.as.array;
-			Toy_Array* result = Toy_resizeArray(NULL, ptr->capacity);
-
-			for (unsigned int i = 0; i < ptr->count; i++) {
-				result->data[i] = Toy_copyValue(ptr->data[i]);
-			}
-
-			result->capacity = ptr->capacity;
-			result->count = ptr->count;
-
-			return TOY_VALUE_FROM_ARRAY(result);
-		}
-
-		case TOY_VALUE_TABLE: {
-			//tables probably won't get copied much
-			Toy_Table* ptr = value.as.table;
-			Toy_Table* result = Toy_private_adjustTableCapacity(NULL, ptr->capacity);
-
-			for (unsigned int i = 0; i < ptr->capacity; i++) {
-				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {
-					result->data[i].key = Toy_copyValue(ptr->data[i].key);
-					result->data[i].value = Toy_copyValue(ptr->data[i].value);
-				}
-			}
-
-			result->capacity = ptr->capacity;
-			result->count = ptr->count;
-
-			return TOY_VALUE_FROM_TABLE(result);
-		}
+		case TOY_VALUE_ARRAY:
+		case TOY_VALUE_TABLE:
 		case TOY_VALUE_FUNCTION:
-			// return value; //URGENT: concerning
-
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
@@ -151,7 +119,7 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 	return TOY_VALUE_FROM_NULL();
 }
 
-Toy_Value Toy_deepCopyValue(struct Toy_Bucket** bucketHandle, Toy_Value value) {
+Toy_Value Toy_private_deepCopyValue(Toy_Bucket** scopeBucketHandle, Toy_Bucket** literalBucketHandle, Toy_Value value) {
 	//this should be the same as Toy_copyValue(), but it forces a deep copy for the strings
 	MAYBE_UNWRAP(value);
 
@@ -163,7 +131,7 @@ Toy_Value Toy_deepCopyValue(struct Toy_Bucket** bucketHandle, Toy_Value value) {
 			return value;
 
 		case TOY_VALUE_STRING: {
-			return TOY_VALUE_FROM_STRING(Toy_deepCopyString(bucketHandle, value.as.string));
+			return TOY_VALUE_FROM_STRING(Toy_deepCopyString(literalBucketHandle, value.as.string));
 		}
 
 		case TOY_VALUE_ARRAY: {
@@ -172,7 +140,7 @@ Toy_Value Toy_deepCopyValue(struct Toy_Bucket** bucketHandle, Toy_Value value) {
 			Toy_Array* result = Toy_resizeArray(NULL, ptr->capacity);
 
 			for (unsigned int i = 0; i < ptr->count; i++) {
-				result->data[i] = Toy_deepCopyValue(bucketHandle, ptr->data[i]);
+				result->data[i] = Toy_private_deepCopyValue(scopeBucketHandle, literalBucketHandle, ptr->data[i]);
 			}
 
 			result->capacity = ptr->capacity;
@@ -188,8 +156,8 @@ Toy_Value Toy_deepCopyValue(struct Toy_Bucket** bucketHandle, Toy_Value value) {
 
 			for (unsigned int i = 0; i < ptr->capacity; i++) {
 				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {
-					result->data[i].key = Toy_deepCopyValue(bucketHandle, ptr->data[i].key);
-					result->data[i].value = Toy_deepCopyValue(bucketHandle, ptr->data[i].value);
+					result->data[i].key = Toy_private_deepCopyValue(scopeBucketHandle, literalBucketHandle, ptr->data[i].key);
+					result->data[i].value = Toy_private_deepCopyValue(scopeBucketHandle, literalBucketHandle, ptr->data[i].value);
 				}
 			}
 
@@ -199,8 +167,27 @@ Toy_Value Toy_deepCopyValue(struct Toy_Bucket** bucketHandle, Toy_Value value) {
 			return TOY_VALUE_FROM_TABLE(result);
 		}
 		case TOY_VALUE_FUNCTION: {
-			Toy_Function* fn = Toy_createModuleFunction(bucketHandle, TOY_VALUE_AS_FUNCTION(value)->module.module); //URGENT: concerning
-			return TOY_VALUE_FROM_FUNCTION(fn);
+			if (TOY_VALUE_AS_FUNCTION(value)->type == TOY_FUNCTION_MODULE) {
+				Toy_Function* fn = Toy_createModuleFunction(literalBucketHandle, TOY_VALUE_AS_FUNCTION(value)->module.module);
+
+				//BUGFIX: rewire any and all strings within the function's ancestors
+				if (fn->module.module.parentScope != NULL && fn->module.module.parentScope->next != NULL) {
+
+					//break the loop to prevent infinite loops...???
+					//URGENT: fuck
+					Toy_Scope* tmp = fn->module.module.parentScope;
+					fn->module.module.parentScope = NULL;
+
+					Toy_Scope* duplicate = Toy_private_deepCopyScope(scopeBucketHandle, literalBucketHandle, tmp->next);
+					fn->module.module.parentScope = Toy_private_pushDummyScope(scopeBucketHandle, duplicate); //insert a new dummy
+				}
+
+				return TOY_VALUE_FROM_FUNCTION(fn);
+			}
+
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't deep-copy an unknown function type value, exiting\n" TOY_CC_RESET);
+			exit(-1);
+			break;
 		}
 
 		case TOY_VALUE_OPAQUE:

@@ -19,7 +19,7 @@ TOY_API Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope);
 TOY_API Toy_Scope* Toy_popScope(Toy_Scope* scope);
 TOY_API Toy_Scope* Toy_private_pushDummyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope); //doesn't delcare a table for storage
 
-TOY_API Toy_Scope* Toy_deepCopyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope);
+TOY_API Toy_Scope* Toy_private_deepCopyScope(Toy_Bucket** scopeBucketHandle, Toy_Bucket** literalBucketHandle, Toy_Scope* scope);
 
 //manage the contents
 TOY_API void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value);

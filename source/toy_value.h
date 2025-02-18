@@ -51,7 +51,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_IS_STRING(value)				((value).type == TOY_VALUE_STRING)
 #define TOY_VALUE_IS_ARRAY(value)				((value).type == TOY_VALUE_ARRAY || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_ARRAY))
 #define TOY_VALUE_IS_TABLE(value)				((value).type == TOY_VALUE_TABLE || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_TABLE))
-#define TOY_VALUE_IS_FUNCTION(value)			((value).type == TOY_VALUE_FUNCTION)
+#define TOY_VALUE_IS_FUNCTION(value)			((value).type == TOY_VALUE_FUNCTION || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_FUNCTION))
 #define TOY_VALUE_IS_OPAQUE(value)				((value).type == TOY_VALUE_OPAQUE)
 #define TOY_VALUE_IS_TYPE(value)				((value).type == TOY_VALUE_TYPE)
 #define TOY_VALUE_IS_REFERENCE(value)			((value).type == TOY_VALUE_REFERENCE)
@@ -62,7 +62,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_AS_STRING(value)				((value).as.string)
 #define TOY_VALUE_AS_ARRAY(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.array)
 #define TOY_VALUE_AS_TABLE(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.table)
-#define TOY_VALUE_AS_FUNCTION(value)			((value).as.function)
+#define TOY_VALUE_AS_FUNCTION(value)			((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.function)
 //TODO: more
 
 #define TOY_VALUE_FROM_NULL()					((Toy_Value){{ .integer = 0 }, TOY_VALUE_NULL})
@@ -82,7 +82,7 @@ TOY_API Toy_Value Toy_unwrapValue(Toy_Value value);
 TOY_API unsigned int Toy_hashValue(Toy_Value value);
 
 TOY_API Toy_Value Toy_copyValue(Toy_Value value);
-TOY_API Toy_Value Toy_deepCopyValue(struct Toy_Bucket** bucketHandle, Toy_Value value); //don't use refcounting
+TOY_API Toy_Value Toy_private_deepCopyValue(struct Toy_Bucket** scopeBucketHandle, struct Toy_Bucket** literalBucketHandle, Toy_Value value); //don't use refcounting
 TOY_API void Toy_freeValue(Toy_Value value);
 
 TOY_API bool Toy_checkValueIsTruthy(Toy_Value value);
