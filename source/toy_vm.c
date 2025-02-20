@@ -73,12 +73,12 @@ static void processRead(Toy_VM* vm) {
 
 			//build a string from the data section
 			if (stringType == TOY_STRING_LEAF) {
-				value = TOY_VALUE_FROM_STRING(Toy_createString(&vm->literalBucket, cstring));
+				value = TOY_VALUE_FROM_STRING(Toy_createString(&vm->memoryBucket, cstring));
 			}
 			else if (stringType == TOY_STRING_NAME) {
 				Toy_ValueType valueType = TOY_VALUE_UNKNOWN;
 
-				value = TOY_VALUE_FROM_STRING(Toy_createNameStringLength(&vm->literalBucket, cstring, len, valueType, false));
+				value = TOY_VALUE_FROM_STRING(Toy_createNameStringLength(&vm->memoryBucket, cstring, len, valueType, false));
 			}
 			else {
 				Toy_error("Invalid string type found in opcode read");
@@ -162,10 +162,10 @@ static void processRead(Toy_VM* vm) {
 			unsigned int addr = (unsigned int)READ_INT(vm);
 
 			Toy_Module module = Toy_parseModule(vm->code + vm->subsAddr + addr);
-			module.parentScope = Toy_private_pushDummyScope(&vm->scopeBucket, vm->scope);
+			module.parentScope = Toy_private_pushDummyScope(&vm->memoryBucket, vm->scope);
 
 			//create and push the function value
-			Toy_Function* function = Toy_createModuleFunction(&vm->literalBucket, module);
+			Toy_Function* function = Toy_createModuleFunction(&vm->memoryBucket, module);
 			value = TOY_VALUE_FROM_FUNCTION(function);
 
 			break;
@@ -210,7 +210,7 @@ static void processDeclare(Toy_VM* vm) {
 	char* cstring = (char*)(vm->code + vm->dataAddr + jump);
 
 	//build the name string
-	Toy_String* name = Toy_createNameStringLength(&vm->literalBucket, cstring, len, type, constant);
+	Toy_String* name = Toy_createNameStringLength(&vm->memoryBucket, cstring, len, type, constant);
 
 	//get the value
 	Toy_Value value = Toy_popStack(&vm->stack);
@@ -430,7 +430,7 @@ static void processInvoke(Toy_VM* vm) {
 				const char* cstr = ((char*)(module.code + module.dataAddr)) + paramAddr;
 
 				//as a name string
-				Toy_String* name = Toy_createNameStringLength(&subVM.literalBucket, cstr, strlen(cstr), paramType, true);
+				Toy_String* name = Toy_createNameStringLength(&subVM.memoryBucket, cstr, strlen(cstr), paramType, true);
 
 				Toy_declareScope(subVM.scope, name, argValue);
 			}
@@ -440,7 +440,7 @@ static void processInvoke(Toy_VM* vm) {
 
 			//extract and store any results
 			if (resultCount > 0) {
-				Toy_Array* results = Toy_extractResultsFromVM(&vm->scopeBucket, &vm->literalBucket, &subVM, resultCount);
+				Toy_Array* results = Toy_extractResultsFromVM(&subVM, resultCount);
 
 				for (unsigned int i = 0; i < results->count; i++) {
 					//NOTE: since the results array is being immediately freed, just push each element without a call to copy
@@ -723,7 +723,7 @@ static void processAssert(Toy_VM* vm) {
 
 	//determine the args
 	if (count == 1) {
-		message = TOY_VALUE_FROM_STRING(Toy_createString(&vm->literalBucket, "assertion failed")); //TODO: needs a better default message
+		message = TOY_VALUE_FROM_STRING(Toy_createString(&vm->memoryBucket, "assertion failed")); //TODO: needs a better default message
 		value = Toy_popStack(&vm->stack);
 	}
 	else if (count == 2) {
@@ -738,7 +738,7 @@ static void processAssert(Toy_VM* vm) {
 	//do the check
 	if (TOY_VALUE_IS_NULL(value) || Toy_checkValueIsTruthy(value) != true) {
 		//on a failure, print the message
-		Toy_String* string = Toy_stringifyValue(&vm->literalBucket, message);
+		Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, message);
 		char* buffer = Toy_getStringRawBuffer(string);
 
 		Toy_assertFailure(buffer);
@@ -756,7 +756,7 @@ static void processAssert(Toy_VM* vm) {
 static void processPrint(Toy_VM* vm) {
 	//print the value on top of the stack, popping it
 	Toy_Value value = Toy_popStack(&vm->stack);
-	Toy_String* string = Toy_stringifyValue(&vm->literalBucket, value);
+	Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, value);
 	char* buffer = Toy_getStringRawBuffer(string); //TODO: check string type to skip this call
 
 	Toy_print(buffer);
@@ -779,7 +779,7 @@ static void processConcat(Toy_VM* vm) {
 	}
 
 	//all good
-	Toy_String* result = Toy_concatStrings(&vm->literalBucket, TOY_VALUE_AS_STRING(left), TOY_VALUE_AS_STRING(right));
+	Toy_String* result = Toy_concatStrings(&vm->memoryBucket, TOY_VALUE_AS_STRING(left), TOY_VALUE_AS_STRING(right));
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_STRING(result));
 }
 
@@ -847,11 +847,11 @@ static void processIndex(Toy_VM* vm) {
 		//extract cstring, based on type
 		if (str->info.type == TOY_STRING_LEAF) {
 			const char* cstr = str->leaf.data;
-			result = Toy_createStringLength(&vm->literalBucket, cstr + i, l);
+			result = Toy_createStringLength(&vm->memoryBucket, cstr + i, l);
 		}
 		else if (str->info.type == TOY_STRING_NODE) {
 			char* cstr = Toy_getStringRawBuffer(str);
-			result = Toy_createStringLength(&vm->literalBucket, cstr + i, l);
+			result = Toy_createStringLength(&vm->memoryBucket, cstr + i, l);
 			free(cstr);
 		}
 		else {
@@ -1031,7 +1031,7 @@ static unsigned int process(Toy_VM* vm) {
 				break;
 
 			case TOY_OPCODE_SCOPE_PUSH:
-				vm->scope = Toy_pushScope(&vm->scopeBucket, vm->scope);
+				vm->scope = Toy_pushScope(&vm->memoryBucket, vm->scope);
 				break;
 
 			case TOY_OPCODE_SCOPE_POP:
@@ -1095,10 +1095,9 @@ void Toy_initVM(Toy_VM* vm) {
 	//create persistent memory
 	vm->scope = NULL;
 	vm->stack = Toy_allocateStack();
-	vm->literalBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-	vm->scopeBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+	vm->memoryBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
-	vm->scopeBucketHandle = NULL; //not used
+	vm->parentBucketHandle = NULL;
 
 	Toy_resetVM(vm, true);
 }
@@ -1107,10 +1106,9 @@ void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
 	//inherent persistent memory
 	vm->scope = NULL;
 	vm->stack = Toy_allocateStack();
-	vm->literalBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-	vm->scopeBucket = parent->scopeBucket;
+	vm->memoryBucket = parent->memoryBucket;
 
-	vm->scopeBucketHandle = &parent->scopeBucket; //track this to update it later
+	vm->parentBucketHandle = &parent->memoryBucket; //track this to update it later
 
 	Toy_resetVM(vm, true);
 }
@@ -1130,7 +1128,7 @@ void Toy_bindVM(Toy_VM* vm, Toy_Module* module, bool preserveScope) {
 	vm->subsAddr = module->subsAddr;
 
 	if (preserveScope == false) {
-		vm->scope = Toy_pushScope(&vm->scopeBucket, module->parentScope);
+		vm->scope = Toy_pushScope(&vm->memoryBucket, module->parentScope);
 	}
 }
 
@@ -1152,17 +1150,16 @@ void Toy_freeVM(Toy_VM* vm) {
 
 	//clear the persistent memory
 	Toy_freeStack(vm->stack);
-	Toy_freeBucket(&vm->literalBucket);
 
-	if (vm->scopeBucketHandle != NULL) {
-		*(vm->scopeBucketHandle) = vm->scopeBucket; //re-adjust the parent's scopeBucket pointer, in case it was expanded
+	if (vm->parentBucketHandle != NULL) {
+		*(vm->parentBucketHandle) = vm->memoryBucket; //update the outter VM, if there is one
 	}
 	else {
-		Toy_freeBucket(&vm->scopeBucket);
+		Toy_freeBucket(&vm->memoryBucket);
 	}
 }
 
-Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** scopeBucketHandle, Toy_Bucket** literalBucketHandle, Toy_VM* subVM, unsigned int resultCount) {
+Toy_Array* Toy_extractResultsFromVM(Toy_VM* subVM, unsigned int resultCount) {
 	if (subVM->stack->count < resultCount) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Too many results requested from VM, exiting\n" TOY_CC_RESET);
 		exit(-1);
@@ -1173,7 +1170,7 @@ Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** scopeBucketHandle, Toy_Bucket**
 	const unsigned int offset = subVM->stack->count - resultCount; //first element to extract
 
 	for (/* EMPTY */; results->count < resultCount; results->count++) {
-		results->data[results->count] = Toy_private_deepCopyValue(scopeBucketHandle, literalBucketHandle, subVM->stack->data[offset + results->count]);
+		results->data[results->count] = Toy_copyValue(subVM->stack->data[offset + results->count]);
 	}
 
 	return results;

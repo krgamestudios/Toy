@@ -1,9 +1,9 @@
-//TODO: Not yet functional
+//TODO: functions are untested
 fn makeCounter() {
 	var counter: int = 0;
 
 	fn increment() {
-		return counter++;
+		return ++counter;
 	}
 
 	return increment;
@@ -11,6 +11,10 @@ fn makeCounter() {
 
 var tally = makeCounter();
 
-print tally();
-print tally();
-print tally();
+while (true) {
+	var result = tally();
+
+	if (result >= 10_000_000) {
+		break;
+	}
+}

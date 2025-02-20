@@ -244,56 +244,6 @@ int test_scope_allocation(void) {
 		Toy_freeBucket(&bucket);
 	}
 
-	//deep copy
-	{
-		//setup
-		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-
-		//run
-		Toy_Scope* scopeA = Toy_pushScope(&bucket, NULL);
-		Toy_Scope* scopeB = Toy_pushScope(&bucket, scopeA);
-		Toy_Scope* scopeCopy = Toy_deepCopyScope(&bucket, scopeB);
-
-		//check
-		if (
-			scopeA == NULL ||
-			scopeA->next != NULL ||
-			scopeA->table == NULL ||
-			scopeA->table->capacity != 8 ||
-			scopeA->refCount != 3 ||
-
-			scopeB == NULL ||
-			scopeB->next != scopeA ||
-			scopeB->table == NULL ||
-			scopeB->table->capacity != 8 ||
-			scopeB->refCount != 1 ||
-
-			scopeB == NULL ||
-			scopeB->next != scopeA ||
-			scopeB->table == NULL ||
-			scopeB->table->capacity != 8 ||
-			scopeB->refCount != 1 ||
-
-			scopeB == scopeCopy ||
-
-			false)
-		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to deep copy a scope\n" TOY_CC_RESET);
-			Toy_popScope(scopeCopy);
-			Toy_popScope(scopeB);
-			Toy_popScope(scopeA);
-			Toy_freeBucket(&bucket);
-			return -1;
-		}
-
-		//cleanup
-		Toy_popScope(scopeCopy);
-		Toy_popScope(scopeB);
-		Toy_popScope(scopeA);
-
-		Toy_freeBucket(&bucket);
-	}
-
 	return 0;
 }
 

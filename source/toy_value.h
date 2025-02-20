@@ -82,7 +82,6 @@ TOY_API Toy_Value Toy_unwrapValue(Toy_Value value);
 TOY_API unsigned int Toy_hashValue(Toy_Value value);
 
 TOY_API Toy_Value Toy_copyValue(Toy_Value value);
-TOY_API Toy_Value Toy_private_deepCopyValue(struct Toy_Bucket** scopeBucketHandle, struct Toy_Bucket** literalBucketHandle, Toy_Value value); //don't use refcounting
 TOY_API void Toy_freeValue(Toy_Value value);
 
 TOY_API bool Toy_checkValueIsTruthy(Toy_Value value);

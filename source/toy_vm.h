@@ -39,9 +39,8 @@ typedef struct Toy_VM {
 	Toy_Stack* stack;
 
 	//easy access to memory
-	Toy_Bucket* literalBucket; //stores the value literals (strings, functions, etc.)
-	Toy_Bucket* scopeBucket; //stores the scope instances
-	Toy_Bucket** scopeBucketHandle; //for reusing the scope bucket to save on alloc/free
+	Toy_Bucket* memoryBucket;
+	Toy_Bucket** parentBucketHandle;
 } Toy_VM;
 
 TOY_API void Toy_resetVM(Toy_VM* vm, bool preserveScope);
@@ -53,6 +52,6 @@ TOY_API void Toy_bindVM(Toy_VM* vm, Toy_Module* module, bool preserveScope);
 TOY_API unsigned int Toy_runVM(Toy_VM* vm);
 TOY_API void Toy_freeVM(Toy_VM* vm);
 
-TOY_API Toy_Array* Toy_extractResultsFromVM(Toy_Bucket** scopeBucketHandle, Toy_Bucket** literalBucketHandle, Toy_VM* subVM, unsigned int resultCount);
+TOY_API Toy_Array* Toy_extractResultsFromVM(Toy_VM* subVM, unsigned int resultCount);
 
 //TODO: inject extra data (hook system for external libraries)
