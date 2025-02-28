@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Unshallow the actions repo
+        run: git fetch --unshallow origin ${{ github.ref_name }}
       - name: Making secret key file
         run: touch ~/mirror_secret
       - name: Protecting secret key file
