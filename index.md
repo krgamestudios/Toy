@@ -2,7 +2,7 @@
   <image src="toylogo.png" />
 </div>
 
-[![Continuous Integration v1.x](https://github.com/Ratstail91/Toy/actions/workflows/continuous-integration-v1.yml/badge.svg)](https://github.com/Ratstail91/Toy/actions/workflows/continuous-integration-v1.yml)  
+[![Continuous Integration v1.x](https://github.com/krgamestudios/Toy/actions/workflows/continuous-integration-v1.yml/badge.svg)](https://github.com/krgamestudios/Toy/actions/workflows/continuous-integration-v1.yml)  
 
 ***Notice**: These docs are valid for version 1.x only - the version 2 docs can be found at [https://toylang.com/](https://toylang.com/).*
 
@@ -12,7 +12,7 @@ The Toy programming language is an imperative bytecode-intermediate embedded scr
 
 The host will provide all of the extensions needed on a case-by-case basis. Script files have the `.toy` file extension, while binary files have the `.tb` file extension.
 
-The Toy reference implementation can be found on [github](https://github.com/Ratstail91/Toy/tree/v1).
+The Toy reference implementation can be found on [github](https://github.com/krgamestudios/Toy/tree/v1).
 
 ```
 fn makeCounter() { //declare a function like this
