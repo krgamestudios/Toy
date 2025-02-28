@@ -16,11 +16,11 @@ This repository holds the reference implementation for Toy version 2.x, written 
 * First-class functions and closures
 * Extensible with importable native code
 * Can re-direct output, error and assert failure messages
-* Open-Source under the Zlib license
+* Open-Source under the zlib license
 
 # Syntax
 
-The following examples aren't fully functional yet, see [Timetable](#timetable).
+The following examples aren't fully functional yet - see the ['features' label in the issue tracker](https://github.com/Ratstail91/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Afeature) for more information.
 
 ```toy
 //fizzbuzz example
@@ -75,22 +75,6 @@ print tally(); //2
 print tally(); //3
 ```
 
-# Timetable
-
-Here's a flexible outline for the upcoming feature milestones. On each review date, I'll adjust my projections as needed.
-
-| Feature | Time Span | Review Date |
-| --- | :---: | :---: |
-| [Arrays & Tables](https://github.com/Ratstail91/Toy/issues/155) | -  | 1st Jan ✅ |
-| [Control Flow](https://github.com/Ratstail91/Toy/issues/152) | 2 weeks | 15th Jan ✅ |
-| [Functions](https://github.com/Ratstail91/Toy/issues/163) | 6 weeks* | 26th Feb |
-| [Dot Operator & Slices](https://github.com/Ratstail91/Toy/issues/156) | 2 weeks | 12th Mar |
-| [Native Libraries](https://github.com/Ratstail91/Toy/issues/165) | 2 weeks | 26th Mar |
-| [Standard Libraries](https://github.com/Ratstail91/Toy/issues/164) | 2 weeks | 9th Apr |
-| [Documentation](https://github.com/Ratstail91/Toy/issues/169) | - | - |
-
-*Info about and strategies for missed milestones can be found on [my blog here](https://krgamestudios.com/posts/2025-01-29-missed-by-a-mile).  
-
 # Building
 
 Supported platforms are: `linux-latest`, `windows-latest`, `macos-latest`, using [GitHub's standard runners](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories).
@@ -103,11 +87,13 @@ To build and run the test suites, run `make tests` (`make tests-gdb` and `make t
 
 # Tools
 
-*Coming Soon - I want the main features mostly working first.*
+Information about the tools can be found in the [issue tracker](https://github.com/Ratstail91/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Atooling).
 
 # Documentation
 
-The WIP documentation can be found here: https://v2.toylang.com/
+Information about the documentation can be found in the [issue tracker](https://github.com/Ratstail91/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Adocumentation).
+
+For the time being, the WIP documentation can be found here: https://v2.toylang.com/
 
 # License
 
