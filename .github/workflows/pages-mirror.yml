@@ -1,0 +1,26 @@
+name: Send to the pages mirror
+
+on:
+  push:
+    branches: ["v1-docs"]
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Making secret key file
+        run: touch ~/mirror_secret
+      - name: Protecting secret key file
+        run: chmod 600 ~/mirror_secret
+      - name: Writing key to secret key file
+        run: echo '${{ secrets.MIRROR_SECRET }}' >> ~/mirror_secret
+      - name: Tweaking git to use the secret key file
+        run: git config --add --local core.sshCommand 'ssh -i ~/mirror_secret'
+      - name: Adding git remote
+        run: git remote add mirror ${{ secrets.MIRROR_ADDRESS }}
+      - name: Renaming git branch
+        run: git branch -m mirror
+      - name: Pushing to git remote
+        run: git push -f mirror
