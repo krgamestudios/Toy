@@ -1,8 +1,8 @@
-name: Build and deploy the pages mirror
+name: Build and deploy the documentation
 
 on:
   push:
-    branches: ["mirror"]
+    branches: ["v2-docs"]
   workflow_dispatch:
 
 permissions:
