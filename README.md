@@ -20,7 +20,7 @@ This repository holds the reference implementation for Toy version 2.x, written 
 
 # Syntax
 
-The following examples aren't fully functional yet - see the ['features' label in the issue tracker](https://github.com/Ratstail91/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Afeature) for more information.
+The following examples aren't fully functional yet - see the ['features' label in the issue tracker](https://github.com/krgamestudios/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Afeature) for more information.
 
 ```toy
 //fizzbuzz example
@@ -87,11 +87,11 @@ To build and run the test suites, run `make tests` (`make tests-gdb` and `make t
 
 # Tools
 
-Information about the tools can be found in the [issue tracker](https://github.com/Ratstail91/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Atooling).
+Information about the tools can be found in the [issue tracker](https://github.com/krgamestudios/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Atooling).
 
 # Documentation
 
-Information about the documentation can be found in the [issue tracker](https://github.com/Ratstail91/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Adocumentation).
+Information about the documentation can be found in the [issue tracker](https://github.com/krgamestudios/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Adocumentation).
 
 For the time being, the WIP documentation can be found here: https://v2.toylang.com/
 
