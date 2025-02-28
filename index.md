@@ -3,9 +3,8 @@
 </div>
 
 [![Continuous Integration v1.x](https://github.com/Ratstail91/Toy/actions/workflows/continuous-integration-v1.yml/badge.svg)](https://github.com/Ratstail91/Toy/actions/workflows/continuous-integration-v1.yml)  
-[![Continuous Integration v2.x](https://github.com/Ratstail91/Toy/actions/workflows/continuous-integration-v2.yml/badge.svg)](https://github.com/Ratstail91/Toy/actions/workflows/continuous-integration-v2.yml)  
 
-***Notice**: These docs are valid for version 1.x only - the version 2 docs can be found at [https://v2.toylang.com/](https://v2.toylang.com/).*
+***Notice**: These docs are valid for version 1.x only - the version 2 docs can be found at [https://toylang.com/](https://toylang.com/).*
 
 # Preamble
 
