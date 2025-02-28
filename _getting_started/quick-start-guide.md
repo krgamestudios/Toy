@@ -53,7 +53,7 @@ The types available in Toy are:
 | `bool` | boolean | Either `true` or `false`. |
 | `int` | integer | Any whole number (32-bits). |
 | `float` | float | A decimal number (32-bits), using floating-point arithmetic. |
-| `string` | string | A piece of text, supports UTF-8, [in theory](https://github.com/Ratstail91/Toy/issues/174). |
+| `string` | string | A piece of text, supports UTF-8, [in theory](https://github.com/krgamestudios/Toy/issues/174). |
 | `array` | array | A series of values stored sequentially in memory. |
 | `table` | table | A series key-value pairs stored in such a way that allows for fast lookups. Booleans, functions, opaques and `null` can't be used as keys. |
 | `function` | function | A chunk of reusable code that takes zero or more parameters, and returFunctions are declared with the `fn` keyword. |
