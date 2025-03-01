@@ -56,11 +56,11 @@ The types available in Toy are:
 | `string` | string | A piece of text, supports UTF-8, [in theory](https://github.com/krgamestudios/Toy/issues/174). |
 | `array` | array | A series of values stored sequentially in memory. |
 | `table` | table | A series key-value pairs stored in such a way that allows for fast lookups. Booleans, functions, opaques and `null` can't be used as keys. |
-| `function` | function | A chunk of reusable code that takes zero or more parameters, and returFunctions are declared with the `fn` keyword. |
+| `function` | function | A chunk of reusable code that takes zero or more parameters, and returns zero or more results. Functions are declared with the `fn` keyword. |
 | `opaque` | opaque | This value is unusable in the script, but can be passed from one imported function to another. |
 | `any` | any | The default type when nothing is specified. Theis can hold any value. |
 
-*Note: Functions and opaques are not fully implemented at the time of writing, so details may change.*
+*Note: Arrays, tables, functions and opaques are not fully implemented at the time of writing, so details may change.*
 
 ## Control Flow
 
@@ -114,6 +114,10 @@ while (true) {
 ```
 
 *Note: The `for` loop is coming, eventually, but isn't vital right now.*
+
+## Arrays and Tables
+
+Watch this space.
 
 ## Functions
 

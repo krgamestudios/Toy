@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Development Timetable
+title: Contributions
 order: 4
 ---
 
