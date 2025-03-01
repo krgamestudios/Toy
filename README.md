@@ -91,9 +91,9 @@ Information about the tools can be found in the [issue tracker](https://github.c
 
 # Documentation
 
-Information about the documentation can be found in the [issue tracker](https://github.com/krgamestudios/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Adocumentation).
+See [https://toylang.com/](https://toylang.com/) for Toy's documentation.
 
-For the time being, the WIP documentation can be found here: https://v2.toylang.com/
+Further information about the documentation can be found in the [issue tracker](https://github.com/krgamestudios/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Adocumentation).
 
 # License
 
