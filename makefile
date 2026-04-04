@@ -13,7 +13,7 @@ export TOY_OUTDIR=out
 export TOY_OBJDIR=obj
 
 #targets
-#all:
+all: source repl
 
 .PHONY: source
 source:
