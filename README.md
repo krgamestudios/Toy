@@ -2,6 +2,8 @@
 	<image src="toylogo.png" />
 </p>
 
+<p style="color:red;font-weight: bold;">This is a work in progress, and is not fit for purpose. I hope I can get it to a useable state, but personal issues can often make dedicating myself to a project difficult. Your patience and support is greatly appreciated.</p>
+
 # Toy v2.x
 
 The Toy Programming Language is an imperative, bytecode-interpreted, embeddable scripting language. Rather than functioning independently, it serves as part of another program, the "host". This design allows for straightforward customization by both the host's developers and end users, achieved by exposing program logic through text files.
@@ -14,68 +16,19 @@ This repository holds the reference implementation for Toy version 2.x, written 
 * Intermediate AST representation
 * Strong, but optional type system
 * First-class functions and closures
-* Extensible with importable native code
+* Extensible with imported native code
 * Can re-direct output, error and assert failure messages
 * Open-Source under the zlib license
 
 # Syntax
 
-The following examples aren't fully functional yet - see the ['features' label in the issue tracker](https://github.com/krgamestudios/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Afeature) for more information.
+Watch this space.
 
-```toy
-//fizzbuzz example
-for (var counter: int = 1; counter <= 100; i++) {
-	var result: string = "";
-
-	if (counter % 3 == 0) {
-		result = result .. "fizz";
-	}
-
-	if (counter % 5 == 0) {
-		result = result .. "buzz";
-	}
-
-	if (result != "") {
-		print result;
-	}
-	else {
-		print counter;
-	}
-}
-```
-
-```toy
-//find the nth fibonacci number
-fn fib(n: int) {
-	if (n < 2) return n;
-	return fib(n-1) + fib(n-2);
-}
-
-for (var i = 1; i <= 10; i++) {
-	print i.toString() .. ":" .. fib(i).toString();
-}
-```
-
-```toy
-//closures!
-fn makeCounter() {
-	var count = 0;
-
-	fn next() {
-		return ++count;
-	}
-
-	return next;
-}
-
-var tally = makeCounter();
-
-print tally(); //1
-print tally(); //2
-print tally(); //3
-```
+(The `scripts` or `tests` directory might help.)
 
 # Building
+
+TODO: Look into cmake
 
 Supported platforms are: `linux-latest`, `windows-latest`, `macos-latest`, using [GitHub's standard runners](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories).
 
@@ -87,13 +40,11 @@ To build and run the test suites, run `make tests` (`make tests-gdb` and `make t
 
 # Tools
 
-Information about the tools can be found in the [issue tracker](https://github.com/krgamestudios/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Atooling).
+Watch this space.
 
 # Documentation
 
-See [https://toylang.com/](https://toylang.com/) for Toy's documentation.
-
-Further information about the documentation can be found in the [issue tracker](https://github.com/krgamestudios/Toy/issues?q=is%3Aissue%20state%3Aopen%20label%3Adocumentation).
+Watch this space.
 
 # License
 
@@ -113,6 +64,6 @@ Various Anons - Feedback
 
 # Patreon Supporters
 
-* Seth A. Robinson
+Watch this space.
 
 You can show your support and be listed here by joining my [Patreon](https://patreon.com/krgamestudios).

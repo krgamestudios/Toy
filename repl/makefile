@@ -15,7 +15,14 @@ REPL_OBJDIR=obj
 #file names
 REPL_REPLFILES=$(wildcard $(REPL_REPLDIR)/*.c)
 REPL_OBJFILES=$(addprefix $(REPL_OBJDIR)/,$(notdir $(REPL_REPLFILES:.c=.o)))
-REPL_TARGETNAME=repl.exe
+REPL_TARGETNAME=repl
+
+#file extensions
+ifeq ($(OS),Windows_NT)
+	REPL_TARGETEXT=.exe
+else
+	REPL_TARGETEXT=
+endif
 
 #linker fix
 LDFLAGS+=-L$(realpath $(REPL_OUTDIR))
@@ -28,7 +35,7 @@ all: build link
 build: $(REPL_OBJDIR) $(REPL_OBJFILES)
 
 .PHONY: link
-link: $(REPL_OUTDIR) $(REPL_OUTDIR)/$(REPL_TARGETNAME)
+link: $(REPL_OUTDIR) $(REPL_OUTDIR)/$(REPL_TARGETNAME)$(REPL_TARGETEXT)
 
 #util targets
 $(REPL_OUTDIR):
@@ -41,7 +48,7 @@ $(REPL_OBJDIR):
 $(REPL_OBJDIR)/%.o: $(REPL_REPLDIR)/%.c
 	$(CC) -c -o $@ $< $(addprefix -I,$(REPL_REPLDIR)) $(addprefix -I,$(REPL_SOURCEDIR)) $(CFLAGS)
 
-$(REPL_OUTDIR)/$(REPL_TARGETNAME): $(REPL_OBJFILES)
+$(REPL_OUTDIR)/$(REPL_TARGETNAME)$(REPL_TARGETEXT): $(REPL_OBJFILES)
 	$(CC) -DTOY_IMPORT $(CFLAGS) -o $@ $(REPL_OBJFILES) $(LDFLAGS) $(LIBS)
 ifeq ($(shell uname),Darwin) #dylib fix
 	otool -L $@
