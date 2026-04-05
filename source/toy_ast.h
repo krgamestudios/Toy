@@ -185,6 +185,8 @@ typedef struct Toy_AstPrint {
 typedef struct Toy_AstVarDeclare {
 	Toy_AstType type;
 	Toy_String* name;
+	Toy_ValueType valueType;
+	bool constant;
 	Toy_Ast* expr;
 } Toy_AstVarDeclare;
 
@@ -273,7 +275,7 @@ void Toy_private_emitAstContinue(Toy_Bucket** bucketHandle, Toy_Ast** rootHandle
 void Toy_private_emitAstReturn(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 void Toy_private_emitAstPrint(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 
-void Toy_private_emitAstVariableDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_Ast* expr);
+void Toy_private_emitAstVariableDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_ValueType valueType, bool constant, Toy_Ast* expr);
 void Toy_private_emitAstVariableAssignment(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_AstFlag flag, Toy_Ast* expr);
 void Toy_private_emitAstVariableAccess(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 

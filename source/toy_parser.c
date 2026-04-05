@@ -112,7 +112,7 @@ typedef struct ParsingTuple {
 
 static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle, ParsingPrecedence precRule);
 
-static Toy_AstFlag nameString(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
+static Toy_AstFlag identifier(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag unary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag binary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
@@ -127,7 +127,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_PRIMARY,literal,NULL},// TOY_TOKEN_NULL,
 
 	//variable names (initially handled as a string)
-	{PREC_PRIMARY,nameString,NULL},// TOY_TOKEN_NAME,
+	{PREC_PRIMARY,identifier,NULL},// TOY_TOKEN_NAME,
 
 	//types
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_TYPE_BOOLEAN,
@@ -266,9 +266,9 @@ static Toy_ValueType readType(Toy_Parser* parser) {
 	}
 }
 
-static Toy_AstFlag nameString(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+static Toy_AstFlag identifier(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	//emit the name string
-	Toy_String* name = Toy_createNameStringLength(bucketHandle, parser->previous.lexeme, parser->previous.length, TOY_VALUE_UNKNOWN, false);
+	Toy_String* name = Toy_toStringLength(bucketHandle, parser->previous.lexeme, parser->previous.length);
 	Toy_Value value = TOY_VALUE_FROM_STRING(name);
 	Toy_private_emitAstValue(bucketHandle, rootHandle, value);
 
@@ -388,7 +388,7 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 
 			buffer[i] = '\0';
 			unsigned int len = i - escapeCounter; //NOTE: len is ONLY the string length
-			Toy_private_emitAstValue(bucketHandle, rootHandle, TOY_VALUE_FROM_STRING(Toy_createStringLength(bucketHandle, buffer, len)));
+			Toy_private_emitAstValue(bucketHandle, rootHandle, TOY_VALUE_FROM_STRING(Toy_toStringLength(bucketHandle, buffer, len)));
 
 			return TOY_AST_FLAG_NONE;
 		}
@@ -434,7 +434,7 @@ static Toy_AstFlag unary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 		parsePrecedence(bucketHandle, parser, &primary, PREC_PRIMARY);
 
 		//double check it's a name string within an access NOTE: doing some fiddling with the existing AST here
-		if (primary->type != TOY_AST_VAR_ACCESS || primary->varAccess.child->type != TOY_AST_VALUE || TOY_VALUE_IS_STRING(primary->varAccess.child->value.value) != true || TOY_VALUE_AS_STRING(primary->varAccess.child->value.value)->info.type != TOY_STRING_NAME) {
+		if (primary->type != TOY_AST_VAR_ACCESS || primary->varAccess.child->type != TOY_AST_VALUE || TOY_VALUE_IS_STRING(primary->varAccess.child->value.value) != true) {
 			printError(parser, parser->previous, "Unexpected non-name-string token in unary-prefix operator precedence rule");
 			Toy_private_emitAstError(bucketHandle, rootHandle);
 		}
@@ -685,7 +685,7 @@ static Toy_AstFlag unaryPostfix(Toy_Bucket** bucketHandle, Toy_Parser* parser, T
 	nameRule(bucketHandle, parser, &primary); //this is to skip the call to advance() at the beginning of parsePrecedence()
 
 	//double check it's a name string within an access NOTE: doing some fiddling with the existing AST here
-	if (primary->type != TOY_AST_VAR_ACCESS || primary->varAccess.child->type != TOY_AST_VALUE || TOY_VALUE_IS_STRING(primary->varAccess.child->value.value) != true || TOY_VALUE_AS_STRING(primary->varAccess.child->value.value)->info.type != TOY_STRING_NAME) {
+	if (primary->type != TOY_AST_VAR_ACCESS || primary->varAccess.child->type != TOY_AST_VALUE || TOY_VALUE_IS_STRING(primary->varAccess.child->value.value) != true) {
 		printError(parser, parser->previous, "Unexpected non-name-string token in unary-postfix operator precedence rule");
 		Toy_private_emitAstError(bucketHandle, rootHandle);
 		return TOY_AST_FLAG_NONE;
@@ -924,7 +924,7 @@ static void makeVariableDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 	}
 
 	//build the name string
-	Toy_String* nameStr = Toy_createNameStringLength(bucketHandle, nameToken.lexeme, nameToken.length, varType, constant);
+	Toy_String* nameStr = Toy_toStringLength(bucketHandle, nameToken.lexeme, nameToken.length);
 
 	//if there's an assignment, read it, or default to null
 	Toy_Ast* expr = NULL;
@@ -936,7 +936,7 @@ static void makeVariableDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 	}
 
 	//finally, emit the declaration as an Ast
-	Toy_private_emitAstVariableDeclaration(bucketHandle, rootHandle, nameStr, expr);
+	Toy_private_emitAstVariableDeclaration(bucketHandle, rootHandle, nameStr, varType, constant, expr);
 
 	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of var statement");
 }
@@ -952,7 +952,7 @@ static void makeFunctionDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 
 	//build the name string
 	Toy_Token nameToken = parser->previous;
-	Toy_String* nameStr = Toy_createNameStringLength(bucketHandle, nameToken.lexeme, nameToken.length, TOY_VALUE_FUNCTION, true);
+	Toy_String* nameStr = Toy_toStringLength(bucketHandle, nameToken.lexeme, nameToken.length);
 
 	//read the function parameters (done manually to avoid other syntax issues)
 	Toy_Ast* params = NULL;
@@ -970,23 +970,25 @@ static void makeFunctionDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 		advance(parser);
 		Toy_Token nameToken = parser->previous;
 
+		//TODO: fix this with param type info
 		//read the type specifier if present
-		Toy_ValueType varType = TOY_VALUE_ANY;
-		bool constant = true; //parameters are immutable
+		// Toy_ValueType varType = TOY_VALUE_ANY;
+		// bool constant = true; //parameters are immutable
 
 		if (match(parser, TOY_TOKEN_OPERATOR_COLON)) {
-			varType = readType(parser);
+			// varType = readType(parser);
+			readType(parser);
 
 			if (match(parser, TOY_TOKEN_KEYWORD_CONST)) {
-				constant = true;
+				// constant = true;
 			}
 		}
 
 		//emit the parameter as a name string
-		Toy_String* name = Toy_createNameStringLength(bucketHandle, nameToken.lexeme, nameToken.length, varType, constant);
+		Toy_String* name = Toy_toStringLength(bucketHandle, nameToken.lexeme, nameToken.length);
 		Toy_Value value = TOY_VALUE_FROM_STRING(name);
 		Toy_Ast* ast = NULL;
-		Toy_private_emitAstValue(bucketHandle, &ast, value);
+		Toy_private_emitAstValue(bucketHandle, &ast, value); //TODO: params with type info
 
 		//add to the params aggregate (is added backwards, because weird)
 		Toy_private_emitAstAggregate(bucketHandle, &params, TOY_AST_FLAG_COLLECTION, ast);

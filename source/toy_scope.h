@@ -3,27 +3,50 @@
 #include "toy_common.h"
 
 #include "toy_bucket.h"
-#include "toy_value.h"
 #include "toy_string.h"
-#include "toy_table.h"
+#include "toy_value.h"
 
-//wraps Toy_Table, restricting keys to name strings, and handles scopes as a linked list
+//keys are leaf-only strings
+typedef struct Toy_ScopeEntry {
+	Toy_String key;
+	Toy_Value value;
+	Toy_ValueType type;
+	bool constant;
+	unsigned int psl;
+} Toy_ScopeEntry;
+
+//holds a table-like collection of variables TODO: check bitness
 typedef struct Toy_Scope {
 	struct Toy_Scope* next;
-	Toy_Table* table;
 	unsigned int refCount;
+	unsigned int capacity;
+	unsigned int count;
+	unsigned int maxPsl;
+	Toy_ScopeEntry* data;
 } Toy_Scope;
 
 //handle deep scopes - the scope is stored in the bucket, not the table
 TOY_API Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope);
 TOY_API Toy_Scope* Toy_popScope(Toy_Scope* scope);
-TOY_API Toy_Scope* Toy_private_pushDummyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope); //doesn't delcare a table for storage
 
 //manage the contents
-TOY_API void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value);
+TOY_API void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy_Value value, bool constant);
 TOY_API void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value);
 TOY_API Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key);
 
 TOY_API bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key);
 
-//TODO: delcare with a custom table (game engine entities)
+//some useful sizes, could be swapped out as needed
+#ifndef TOY_SCOPE_INITIAL_CAPACITY
+#define TOY_SCOPE_INITIAL_CAPACITY 8
+#endif
+
+//NOTE: The DOOM hack needs a power of 2
+#ifndef TOY_SCOPE_EXPANSION_RATE
+#define TOY_SCOPE_EXPANSION_RATE 2
+#endif
+
+//expand when the contents passes a certain percentage (80%) of the capacity
+#ifndef TOY_SCOPE_EXPANSION_THRESHOLD
+#define TOY_SCOPE_EXPANSION_THRESHOLD 0.8f
+#endif

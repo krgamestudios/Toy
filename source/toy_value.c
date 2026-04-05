@@ -434,7 +434,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 	switch(value.type) {
 		case TOY_VALUE_NULL:
-			return Toy_createString(bucketHandle, "<null>");
+			return Toy_createString(bucketHandle, "<null>"); //TODO: remake "createString" to to handle params like this
 
 		case TOY_VALUE_BOOLEAN:
 			return Toy_createString(bucketHandle, value.as.boolean ? "<true>" : "<false>");

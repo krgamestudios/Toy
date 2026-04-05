@@ -148,7 +148,7 @@ static unsigned int emitString(Toy_ModuleCompiler** mb, Toy_String* str) {
 
 	//move the string into the data section
 	if (str->info.type == TOY_STRING_NODE) {
-		char* buffer = Toy_getStringRawBuffer(str);
+		char* buffer = Toy_getStringRaw(str);
 
 		dataAddr = emitCStringToData(&(*mb)->data, &(*mb)->dataCapacity, &(*mb)->dataCount, buffer);
 
@@ -156,9 +156,6 @@ static unsigned int emitString(Toy_ModuleCompiler** mb, Toy_String* str) {
 	}
 	else if (str->info.type == TOY_STRING_LEAF) {
 		dataAddr = emitCStringToData(&(*mb)->data, &(*mb)->dataCapacity, &(*mb)->dataCount, str->leaf.data);
-	}
-	else if (str->info.type == TOY_STRING_NAME) {
-		dataAddr = emitCStringToData(&(*mb)->data, &(*mb)->dataCapacity, &(*mb)->dataCount, str->name.data);
 	}
 
 	//mark the position within the jump index, reusing an existing entry if it exists
@@ -193,15 +190,8 @@ static unsigned int emitParameters(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
 		return 0;
 	}
 
-	//check the string type
-	if (TOY_VALUE_IS_STRING(ast->value.value) == false || TOY_VALUE_AS_STRING(ast->value.value)->info.type != TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Function parameters must be name strings\n" TOY_CC_RESET);
-		mb->panic = true;
-		return 0;
-	}
-
 	//the address within the data section
-	unsigned int dataAddr = emitCStringToData(&(mb->data), &(mb->dataCapacity), &(mb->dataCount), TOY_VALUE_AS_STRING(ast->value.value)->name.data);
+	unsigned int dataAddr = emitCStringToData(&(mb->data), &(mb->dataCapacity), &(mb->dataCount), TOY_VALUE_AS_STRING(ast->value.value)->leaf.data);
 
 	//check the param index for that entry i.e. don't reuse parameter names
 	for (unsigned int i = 0; i < mb->paramCount; i++) {
@@ -215,7 +205,7 @@ static unsigned int emitParameters(Toy_ModuleCompiler* mb, Toy_Ast* ast) {
 
 	//emit to the param index
 	EMIT_INT(&mb, param, dataAddr);
-	EMIT_INT(&mb, param, (unsigned int)(TOY_VALUE_AS_STRING(ast->value.value)->name.varType)); //don't forget this bit
+	EMIT_INT(&mb, param, TOY_VALUE_UNKNOWN); //TODO: encode function parameter types properly
 
 	//this returns the number of written parameters
 	return 1;
@@ -293,7 +283,7 @@ static unsigned int writeInstructionUnary(Toy_ModuleCompiler** mb, Toy_AstUnary 
 
 		EMIT_BYTE(mb, code, TOY_OPCODE_READ);
 		EMIT_BYTE(mb, code, TOY_VALUE_STRING);
-		EMIT_BYTE(mb, code, TOY_STRING_NAME);
+		EMIT_BYTE(mb, code, TOY_STRING_LEAF);
 		EMIT_BYTE(mb, code, name->info.length); //store the length (max 255)
 
 		emitString(mb, name);
@@ -328,7 +318,7 @@ static unsigned int writeInstructionUnary(Toy_ModuleCompiler** mb, Toy_AstUnary 
 
 		EMIT_BYTE(mb, code, TOY_OPCODE_READ);
 		EMIT_BYTE(mb, code, TOY_VALUE_STRING);
-		EMIT_BYTE(mb, code, TOY_STRING_NAME);
+		EMIT_BYTE(mb, code, TOY_STRING_LEAF);
 		EMIT_BYTE(mb, code, name->info.length); //store the length (max 255)
 
 		emitString(mb, name);
@@ -344,7 +334,7 @@ static unsigned int writeInstructionUnary(Toy_ModuleCompiler** mb, Toy_AstUnary 
 
 		EMIT_BYTE(mb, code, TOY_OPCODE_READ);
 		EMIT_BYTE(mb, code, TOY_VALUE_STRING);
-		EMIT_BYTE(mb, code, TOY_STRING_NAME);
+		EMIT_BYTE(mb, code, TOY_STRING_LEAF);
 		EMIT_BYTE(mb, code, name->info.length); //store the length (max 255)
 
 		emitString(mb, name);
@@ -793,9 +783,9 @@ static unsigned int writeInstructionVarDeclare(Toy_ModuleCompiler** mb, Toy_AstV
 
 	//delcare with the given name string
 	EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
-	EMIT_BYTE(mb, code, Toy_getNameStringVarType(ast.name));
+	EMIT_BYTE(mb, code, ast.type);
 	EMIT_BYTE(mb, code, ast.name->info.length); //quick optimisation to skip a 'strlen()' call
-	EMIT_BYTE(mb, code, Toy_getNameStringVarConstant(ast.name) ? 1 : 0); //check for constness
+	EMIT_BYTE(mb, code, ast.constant); //check for constness
 
 	emitString(mb, ast.name);
 
@@ -806,14 +796,14 @@ static unsigned int writeInstructionAssign(Toy_ModuleCompiler** mb, Toy_AstVarAs
 	unsigned int result = 0;
 
 	//target is a name string
-	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value) && TOY_VALUE_AS_STRING(ast.target->value.value)->info.type == TOY_STRING_NAME) {
+	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value)) {
 		//name string
 		Toy_String* target = TOY_VALUE_AS_STRING(ast.target->value.value);
 
 		//emit the name string
 		EMIT_BYTE(mb, code, TOY_OPCODE_READ);
 		EMIT_BYTE(mb, code, TOY_VALUE_STRING);
-		EMIT_BYTE(mb, code, TOY_STRING_NAME);
+		EMIT_BYTE(mb, code, TOY_STRING_LEAF);
 		EMIT_BYTE(mb, code, target->info.length); //store the length (max 255)
 
 		emitString(mb, target);
@@ -967,7 +957,7 @@ static unsigned int writeInstructionAssign(Toy_ModuleCompiler** mb, Toy_AstVarAs
 }
 
 static unsigned int writeInstructionAccess(Toy_ModuleCompiler** mb, Toy_AstVarAccess ast) {
-	if (!(ast.child->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.child->value.value) && TOY_VALUE_AS_STRING(ast.child->value.value)->info.type == TOY_STRING_NAME)) {
+	if (!(ast.child->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.child->value.value))) {
 		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Found a non-name-string in a value node when trying to write access\n" TOY_CC_RESET);
 		(*mb)->panic = true;
 		return 0;
@@ -978,7 +968,7 @@ static unsigned int writeInstructionAccess(Toy_ModuleCompiler** mb, Toy_AstVarAc
 	//push the name
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
 	EMIT_BYTE(mb, code, TOY_VALUE_STRING);
-	EMIT_BYTE(mb, code, TOY_STRING_NAME);
+	EMIT_BYTE(mb, code, TOY_STRING_LEAF);
 	EMIT_BYTE(mb, code, name->info.length); //store the length (max 255)
 
 	emitString(mb, name);

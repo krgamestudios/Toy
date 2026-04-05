@@ -181,11 +181,13 @@ void Toy_private_emitAstPrint(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 	(*astHandle) = tmp;
 }
 
-void Toy_private_emitAstVariableDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_Ast* expr) {
+void Toy_private_emitAstVariableDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_ValueType valueType, bool constant, Toy_Ast* expr) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 
 	tmp->type = TOY_AST_VAR_DECLARE;
 	tmp->varDeclare.name = name;
+	tmp->varDeclare.valueType = valueType;
+	tmp->varDeclare.constant = constant;
 	tmp->varDeclare.expr = expr;
 
 	(*astHandle) = tmp;

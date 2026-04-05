@@ -23,41 +23,110 @@ static void incrementRefCount(Toy_Scope* scope) {
 static void decrementRefCount(Toy_Scope* scope) {
 	for (Toy_Scope* iter = scope; iter; iter = iter->next) {	
 		iter->refCount--;
-		if (iter->refCount == 0 && iter->table != NULL) {
-			Toy_freeTable(iter->table);
-			iter->table = NULL;
+		if (iter->refCount == 0 && iter->data != NULL) {
+			//free the scope entries when this scope is no longer needed
+			for (unsigned int i = 0; i < iter->capacity; i++) {
+				Toy_freeString(&(iter->data[i].key));
+				Toy_freeValue(iter->data[i].value);
+			}
+			free(iter->data);
 		}
 	}
 }
 
-static Toy_TableEntry* lookupScope(Toy_Scope* scope, Toy_String* key, unsigned int hash, bool recursive) {
+static Toy_ScopeEntry* lookupScopeEntryPtr(Toy_Scope* scope, Toy_String* key, unsigned int hash, bool recursive) {
 	//terminate
-	if (scope == NULL) {
+	if (scope == NULL || scope->data == NULL) {
 		return NULL;
 	}
 
-	//continue after a dummy
-	if (scope->table == NULL) {
-		return recursive ? lookupScope(scope->next, key, hash, recursive) : NULL;
-	}
-
-	//copy and modify the code from Toy_lookupTable, so it can behave slightly differently
-	unsigned int probe = hash % scope->table->capacity;
+	//probe for the correct location
+	unsigned int probe = hash % scope->capacity;
 
 	while (true) {
 		//found the entry
-		if (TOY_VALUE_IS_STRING(scope->table->data[probe].key) && Toy_compareStrings(TOY_VALUE_AS_STRING(scope->table->data[probe].key), key) == 0) {
-			return &(scope->table->data[probe]);
+		if (Toy_compareStrings(&(scope->data[probe].key), key) == 0) {
+			return &(scope->data[probe]);
 		}
 
 		//if its an empty slot (didn't find it here)
-		if (TOY_VALUE_IS_NULL(scope->table->data[probe].key)) {
-			return recursive ? lookupScope(scope->next, key, hash, recursive) : NULL;
+		if (scope->data[probe].key.info.length == 0) {
+			return recursive ? lookupScopeEntryPtr(scope->next, key, hash, recursive) : NULL;
 		}
 
 		//adjust and continue
-		probe = (probe + 1) % scope->table->capacity;
+		probe = (probe + 1) % scope->capacity;
 	}
+}
+
+void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, Toy_ValueType type, bool constant) {
+	//make the entry
+	unsigned int probe = Toy_hashString(key) % scope->capacity;
+	Toy_ScopeEntry entry = (Toy_ScopeEntry){ .key = *key, .value = value, .type = type, .constant = constant, .psl = 0 };
+
+	//probe
+	while (true) {
+		//if we're overriding an existing value
+		if (Toy_compareStrings(&(scope->data[probe].key), &(entry.key)) == 0) {
+			scope->data[probe] = entry;
+			scope->maxPsl = entry.psl > scope->maxPsl ? entry.psl : scope->maxPsl;
+			return;
+		}
+
+		//if this spot is free, insert and return
+		if (TOY_VALUE_IS_NULL(scope->data[probe].value)) {
+			scope->data[probe] = entry;
+			scope->count++;
+			scope->maxPsl = entry.psl > scope->maxPsl ? entry.psl : scope->maxPsl;
+			return;
+		}
+
+		//if the new entry is "poorer", insert it and shift the old one
+		if (scope->data[probe].psl < entry.psl) {
+			Toy_ScopeEntry tmp = scope->data[probe];
+			scope->data[probe] = entry;
+			entry = tmp;
+		}
+
+		//adjust and continue
+		probe++;
+		probe &= scope->capacity - 1; //DOOM hack
+		entry.psl++;
+	}
+}
+
+Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapacity) {
+	//allocate and zero a new Toy_ScopeEntry array in memory
+	Toy_ScopeEntry* newEntries = malloc(newCapacity * sizeof(Toy_ScopeEntry));
+
+	if (newEntries == NULL) {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate space for 'Toy_Scope' entries\n" TOY_CC_RESET);
+		exit(1);
+	}
+
+	//wipe the memory
+	memset(newEntries, 0, newCapacity * sizeof(Toy_ScopeEntry));
+
+	if (scope == NULL) { //for initial allocations
+		return newEntries;
+	}
+
+	//movethe old data into the new block of memory
+	unsigned int oldCapacity = scope->capacity;
+	Toy_ScopeEntry* oldEntries = scope->data;
+	scope->capacity = newCapacity;
+	scope->data = newEntries;
+
+	//for each existing entry in the old array, copy it into the new array
+	for (unsigned int i = 0; i < oldCapacity; i++) {
+		if (oldEntries[i].key.info.length > 0) {
+			probeAndInsert(scope, &(oldEntries[i].key), oldEntries[i].value, oldEntries[i].type, oldEntries[i].constant);
+		}
+	}
+
+	//clean up and return
+	free(oldEntries);
+	return newEntries;
 }
 
 //exposed functions
@@ -65,19 +134,7 @@ Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
 
 	newScope->next = scope;
-	newScope->table = Toy_allocateTable();
-	newScope->refCount = 0;
-
-	incrementRefCount(newScope);
-
-	return newScope;
-}
-
-Toy_Scope* Toy_private_pushDummyScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
-	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
-
-	newScope->next = scope;
-	newScope->table = NULL;
+	newScope->data = adjustScopeEntries(NULL, TOY_SCOPE_INITIAL_CAPACITY);
 	newScope->refCount = 0;
 
 	incrementRefCount(newScope);
@@ -94,66 +151,49 @@ Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 	return scope->next;
 }
 
-void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
-	if (key->info.type != TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
-		exit(-1);
-	}
-
-	if (scope->table == NULL) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't declare in a dummy scope\n" TOY_CC_RESET);
-		exit(-1);
-	}
-
-	Toy_TableEntry* entryPtr = lookupScope(scope, key, Toy_hashString(key), false);
+void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy_Value value, bool constant) {
+	Toy_ScopeEntry* entryPtr = lookupScopeEntryPtr(scope, key, Toy_hashString(key), false);
 
 	if (entryPtr != NULL) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Can't redefine a variable: %s", key->name.data);
+		sprintf(buffer, "Can't redefine a variable: %s", key->leaf.data);
 		Toy_error(buffer);
 		return;
 	}
 
 	//type check
-	Toy_ValueType kt = Toy_getNameStringVarType(key);
-	if (kt != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && kt != value.type && value.type != TOY_VALUE_REFERENCE) {
+	if (type != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && type != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Incorrect value type in declaration of '%s' (expected %s, got %s)", key->name.data, Toy_private_getValueTypeAsCString(kt), Toy_private_getValueTypeAsCString(value.type));
+		sprintf(buffer, "Incorrect value type in declaration of '%s' (expected %s, got %s)", key->leaf.data, Toy_private_getValueTypeAsCString(type), Toy_private_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}
 
-	Toy_insertTable(&scope->table, TOY_VALUE_FROM_STRING(Toy_copyString(key)), value);
+	probeAndInsert(scope, Toy_copyString(key), value, type, constant);
 }
 
 void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
-	if (key->info.type != TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
-		exit(-1);
-	}
-
-	Toy_TableEntry* entryPtr = lookupScope(scope, key, Toy_hashString(key), true);
+	Toy_ScopeEntry* entryPtr = lookupScopeEntryPtr(scope, key, Toy_hashString(key), true);
 
 	if (entryPtr == NULL) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Undefined variable: %s\n", key->name.data);
+		sprintf(buffer, "Undefined variable: %s\n", key->leaf.data);
 		Toy_error(buffer);
 		return;
 	}
 
 	//type check
-	Toy_ValueType kt = Toy_getNameStringVarType( TOY_VALUE_AS_STRING(entryPtr->key) );
-	if (kt != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && kt != value.type && value.type != TOY_VALUE_REFERENCE) {
+	if (entryPtr->type != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && entryPtr->type != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Incorrect value type in assignment of '%s' (expected %s, got %s)", key->name.data, Toy_private_getValueTypeAsCString(kt), Toy_private_getValueTypeAsCString(value.type));
+		sprintf(buffer, "Incorrect value type in assignment of '%s' (expected %s, got %s)", key->leaf.data, Toy_private_getValueTypeAsCString(entryPtr->type), Toy_private_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}
 
 	//constness check
-	if (Toy_getNameStringVarConstant( TOY_VALUE_AS_STRING(entryPtr->key) )) {
+	if (entryPtr->constant) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Can't reassign to constant variable %s", key->name.data);
+		sprintf(buffer, "Can't assign to a constant variable %s", key->leaf.data);
 		Toy_error(buffer);
 		return;
 	}
@@ -162,16 +202,11 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 }
 
 Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key) {
-	if (key->info.type != TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
-		exit(-1);
-	}
-
-	Toy_TableEntry* entryPtr = lookupScope(scope, key, Toy_hashString(key), true);
+	Toy_ScopeEntry* entryPtr = lookupScopeEntryPtr(scope, key, Toy_hashString(key), true);
 
 	if (entryPtr == NULL) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Undefined variable: %s\n", key->name.data);
+		sprintf(buffer, "Undefined variable: %s\n", key->leaf.data);
 		Toy_error(buffer);
 		return NULL;
 	}
@@ -180,12 +215,6 @@ Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key) {
 }
 
 bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key) {
-	if (key->info.type != TOY_STRING_NAME) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope only allows name strings as keys\n" TOY_CC_RESET);
-		exit(-1);
-	}
-
-	Toy_TableEntry* entryPtr = lookupScope(scope, key, Toy_hashString(key), true);
-
+	Toy_ScopeEntry* entryPtr = lookupScopeEntryPtr(scope, key, Toy_hashString(key), true);
 	return entryPtr != NULL;
 }
