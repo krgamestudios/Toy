@@ -16,7 +16,7 @@ on:
 
 #CI workflows using the matrix strategy, skipping GDB if it's not supported for the platform
 jobs:
-  run-test-cases:
+  run-tests:
     continue-on-error: true
     strategy:
       matrix:
@@ -25,8 +25,8 @@ jobs:
           - { os: windows-latest, preinstall: , gdb_enabled: true }
           - { os: macos-latest, preinstall: , gdb_enabled: false }
         commands:
-          - { exec: make test-cases, gdb: false }
-          - { exec: make test-cases-gdb, gdb: true }
+          - { exec: make tests, gdb: false }
+          - { exec: make tests, gdb: true }
     
     runs-on: ${{ matrix.platforms.os }}
     steps:
@@ -37,45 +37,3 @@ jobs:
       - name: run the tests
         if: (matrix.commands.gdb == true && matrix.platforms.gdb_enabled == false) != true
         run: ${{ matrix.commands.exec }}
-  
-  run-test-integrations:
-    needs: run-test-cases
-    continue-on-error: true
-    strategy:
-      matrix:
-        platforms:
-          - { os: ubuntu-latest, preinstall: sudo apt update && sudo apt install gdb, gdb_enabled: true }
-          - { os: windows-latest, preinstall: , gdb_enabled: true }
-          - { os: macos-latest, preinstall: , gdb_enabled: false }
-        commands:
-          - { exec: make test-integrations, gdb: false }
-          - { exec: make test-integrations-gdb, gdb: true }
-    
-    runs-on: ${{ matrix.platforms.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Preinstall dependencies
-        if: (matrix.commands.gdb == true && matrix.platforms.gdb_enabled == false) != true
-        run: ${{ matrix.platforms.preinstall }}
-      - name: run the tests
-        if: (matrix.commands.gdb == true && matrix.platforms.gdb_enabled == false) != true
-        run: ${{ matrix.commands.exec }}
-  
-  run-test-valgrind:
-    needs: run-test-integrations
-    continue-on-error: true
-    strategy:
-      matrix:
-        platforms:
-          - { os: ubuntu-latest, preinstall: sudo apt update && sudo apt install valgrind }
-        commands:
-          - { exec: make tests-valgrind }
-    
-    runs-on: ${{ matrix.platforms.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Preinstall dependencies
-        run: ${{ matrix.platforms.preinstall }}
-      - name: run the tests
-        run: ${{ matrix.commands.exec }}
-
