@@ -73,12 +73,7 @@ static void processRead(Toy_VM* vm) {
 
 			//build a string from the data section
 			if (stringType == TOY_STRING_LEAF) {
-				value = TOY_VALUE_FROM_STRING(Toy_createString(&vm->memoryBucket, cstring));
-			}
-			else if (stringType == TOY_STRING_NAME) {
-				Toy_ValueType valueType = TOY_VALUE_UNKNOWN;
-
-				value = TOY_VALUE_FROM_STRING(Toy_createNameStringLength(&vm->memoryBucket, cstring, len, valueType, false));
+				value = TOY_VALUE_FROM_STRING(Toy_toStringLength(&vm->memoryBucket, cstring, len));
 			}
 			else {
 				Toy_error("Invalid string type found in opcode read");
@@ -161,11 +156,8 @@ static void processRead(Toy_VM* vm) {
 
 			unsigned int addr = (unsigned int)READ_INT(vm);
 
-			Toy_Module module = Toy_parseModule(vm->code + vm->subsAddr + addr);
-			module.parentScope = Toy_private_pushDummyScope(&vm->memoryBucket, vm->scope);
-
 			//create and push the function value
-			Toy_Function* function = Toy_createModuleFunction(&vm->memoryBucket, module);
+			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr);
 			value = TOY_VALUE_FROM_FUNCTION(function);
 
 			break;
@@ -210,7 +202,7 @@ static void processDeclare(Toy_VM* vm) {
 	char* cstring = (char*)(vm->code + vm->dataAddr + jump);
 
 	//build the name string
-	Toy_String* name = Toy_createNameStringLength(&vm->memoryBucket, cstring, len, type, constant);
+	Toy_String* name = Toy_toStringLength(&vm->memoryBucket, cstring, len);
 
 	//get the value
 	Toy_Value value = Toy_popStack(&vm->stack);
@@ -221,7 +213,7 @@ static void processDeclare(Toy_VM* vm) {
 	}
 
 	//declare it
-	Toy_declareScope(vm->scope, name, value);
+	Toy_declareScope(vm->scope, name, type, value, constant);
 
 	//cleanup
 	Toy_freeString(name);
@@ -232,18 +224,20 @@ static void processAssign(Toy_VM* vm) {
 	Toy_Value value = Toy_popStack(&vm->stack);
 	Toy_Value name = Toy_popStack(&vm->stack);
 
-	//check name string type
-	if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
-		Toy_error("Invalid assignment target");
-		Toy_freeValue(name);
-		Toy_freeValue(value);
-		return;
-	}
+	//TODO: remove 'TOY_STRING_NAME' entirely
+	// //check name string type
+	// if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
+	// 	Toy_error("Invalid assignment target");
+	// 	Toy_freeValue(name);
+	// 	Toy_freeValue(value);
+	// 	return;
+	// }
 
-	//BUGFIX: only allowable type coersion
-	if (TOY_VALUE_AS_STRING(name)->name.varType == TOY_VALUE_FLOAT && value.type == TOY_VALUE_INTEGER) {
-		value = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(value) );
-	}
+	// //FIXME
+	// //BUGFIX: only allowable type coersion
+	// if (TOY_VALUE_AS_STRING(name)->name.varType == TOY_VALUE_FLOAT && value.type == TOY_VALUE_INTEGER) {
+	// 	value = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(value) );
+	// }
 
 	//assign it
 	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value); //scope now owns the value, doesn't need to be freed
@@ -265,7 +259,7 @@ static void processAssignCompound(Toy_VM* vm) {
 	Toy_Value target = Toy_popStack(&vm->stack);
 
 	//shake out variable names
-	if (TOY_VALUE_IS_STRING(target) && TOY_VALUE_AS_STRING(target)->info.type == TOY_STRING_NAME) {
+	if (TOY_VALUE_IS_STRING(target)) {
 		Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(target));
 		Toy_freeValue(target);
 		if (valuePtr == NULL) {
@@ -344,12 +338,12 @@ static void processAssignCompound(Toy_VM* vm) {
 static void processAccess(Toy_VM* vm) {
 	Toy_Value name = Toy_popStack(&vm->stack);
 
-	//check name string type
-	if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
-		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
-		Toy_error("Invalid access target");
-		return;
-	}
+	// //check name string type
+	// if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
+	// 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+	// 	Toy_error("Invalid access target");
+	// 	return;
+	// }
 
 	//find the value
 	Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(name));
@@ -397,13 +391,14 @@ static void processInvoke(Toy_VM* vm) {
 	Toy_Function* fn = TOY_VALUE_AS_FUNCTION(value);
 
 	switch(fn->type) {
-		case TOY_FUNCTION_MODULE: {
-			Toy_Module module = fn->module.module;
-
-			//NOTE: counts within the modules actually specify size in memory, so the argCount is multiplied by 8 for the 8 bytes used in the params table
+		case TOY_FUNCTION_CUSTOM: {
+			//spin up a new sub-vm
+			Toy_VM subVM;
+			Toy_inheritVM(&subVM, vm);
+			Toy_bindVM(&subVM, fn->bytecode.code, false);
 
 			//check args count
-			if (argCount * 8 != module.paramCount) {
+			if (argCount * 8 != subVM.paramCount) {
 				Toy_error("Incorrect number of parameters specified for function call");
 				break;
 			}
@@ -413,26 +408,21 @@ static void processInvoke(Toy_VM* vm) {
 				break;
 			}
 
-			//spin up a new sub-vm
-			Toy_VM subVM;
-			Toy_inheritVM(&subVM, vm);
-			Toy_bindVM(&subVM, &module, false);
-
 			//inject params, backwards from the stack
 			for (unsigned int i = argCount; i > 0; i--) {
 				Toy_Value argValue = Toy_popStack(&vm->stack);
 
 				//paramAddr is relative to the data section, and is followed by the param type
-				unsigned int paramAddr = ((unsigned int*)(module.code + module.paramAddr))[(i-1)*2];
-				Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(module.code + module.paramAddr))[(i-1)*2 + 1]);
+				unsigned int paramAddr = ((unsigned int*)(subVM.code + subVM.paramAddr))[(i-1)*2];
+				Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.code + subVM.paramAddr))[(i-1)*2 + 1]);
 
 				//c-string of the param's name
-				const char* cstr = ((char*)(module.code + module.dataAddr)) + paramAddr;
+				const char* cstr = ((char*)(subVM.code + subVM.dataAddr)) + paramAddr;
 
 				//as a name string
-				Toy_String* name = Toy_createNameStringLength(&subVM.memoryBucket, cstr, strlen(cstr), paramType, true);
+				Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
 
-				Toy_declareScope(subVM.scope, name, argValue);
+				Toy_declareScope(subVM.scope, name, paramType, argValue, true);
 			}
 
 			//run
@@ -723,7 +713,7 @@ static void processAssert(Toy_VM* vm) {
 
 	//determine the args
 	if (count == 1) {
-		message = TOY_VALUE_FROM_STRING(Toy_createString(&vm->memoryBucket, "assertion failed")); //TODO: needs a better default message
+		message = TOY_VALUE_FROM_STRING(Toy_toString(&vm->memoryBucket, "assertion failed")); //TODO: needs a better default message
 		value = Toy_popStack(&vm->stack);
 	}
 	else if (count == 2) {
@@ -739,7 +729,7 @@ static void processAssert(Toy_VM* vm) {
 	if (TOY_VALUE_IS_NULL(value) || Toy_checkValueIsTruthy(value) != true) {
 		//on a failure, print the message
 		Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, message);
-		char* buffer = Toy_getStringRawBuffer(string);
+		char* buffer = Toy_getStringRaw(string);
 
 		Toy_assertFailure(buffer);
 
@@ -757,7 +747,7 @@ static void processPrint(Toy_VM* vm) {
 	//print the value on top of the stack, popping it
 	Toy_Value value = Toy_popStack(&vm->stack);
 	Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, value);
-	char* buffer = Toy_getStringRawBuffer(string); //TODO: check string type to skip this call
+	char* buffer = Toy_getStringRaw(string); //TODO: check string type to skip this call
 
 	Toy_print(buffer);
 
@@ -847,11 +837,11 @@ static void processIndex(Toy_VM* vm) {
 		//extract cstring, based on type
 		if (str->info.type == TOY_STRING_LEAF) {
 			const char* cstr = str->leaf.data;
-			result = Toy_createStringLength(&vm->memoryBucket, cstr + i, l);
+			result = Toy_toStringLength(&vm->memoryBucket, cstr + i, l);
 		}
 		else if (str->info.type == TOY_STRING_NODE) {
-			char* cstr = Toy_getStringRawBuffer(str);
-			result = Toy_createStringLength(&vm->memoryBucket, cstr + i, l);
+			char* cstr = Toy_getStringRaw(str);
+			result = Toy_toStringLength(&vm->memoryBucket, cstr + i, l);
 			free(cstr);
 		}
 		else {
@@ -1113,28 +1103,41 @@ void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
 	Toy_resetVM(vm, true);
 }
 
-void Toy_bindVM(Toy_VM* vm, Toy_Module* module, bool preserveScope) {
-	vm->code = module->code;
+void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, bool preserveScope) {
+	vm->code = bytecode; //set code, so it can be read
 
-	vm->jumpsCount = module->jumpsCount;
-	vm->paramCount = module->paramCount;
-	vm->dataCount = module->dataCount;
-	vm->subsCount = module->subsCount;
+	(void)READ_UNSIGNED_INT(vm); //global header
 
-	vm->codeAddr = module->codeAddr;
-	vm->jumpsAddr = module->jumpsAddr;
-	vm->paramAddr = module->paramAddr;
-	vm->dataAddr = module->dataAddr;
-	vm->subsAddr = module->subsAddr;
+	//section headers
+	vm->jumpsCount = READ_UNSIGNED_INT(vm);
+	vm->paramCount = READ_UNSIGNED_INT(vm);
+	vm->dataCount = READ_UNSIGNED_INT(vm);
+	vm->subsCount = READ_UNSIGNED_INT(vm);
 
+	//section locations
+	vm->codeAddr = READ_UNSIGNED_INT(vm);
+	if (vm->jumpsCount) {
+		vm->jumpsAddr = READ_UNSIGNED_INT(vm);
+	}
+	if (vm->paramCount) {
+		vm->paramAddr = READ_UNSIGNED_INT(vm);
+	}
+	if (vm->dataCount) {
+		vm->dataAddr = READ_UNSIGNED_INT(vm);
+	}
+	if (vm->subsCount) {
+		vm->subsAddr = READ_UNSIGNED_INT(vm);
+	}
+
+	//scopes
 	if (preserveScope == false) {
-		vm->scope = Toy_pushScope(&vm->memoryBucket, module->parentScope);
+		vm->scope = Toy_pushScope(&vm->memoryBucket, NULL);
 	}
 }
 
 unsigned int Toy_runVM(Toy_VM* vm) {
 	if (vm->codeAddr == 0) {
-		//ignore uninitialized VMs or empty modules
+		//ignore uninitialized VMs or empty bytecode
 		return 0;
 	}
 

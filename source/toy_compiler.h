@@ -26,8 +26,8 @@ typedef struct Toy_private_EscapeArray {
 
 TOY_API Toy_private_EscapeArray* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int capacity);
 
-//structure for holding the module as it is built
-typedef struct Toy_ModuleCompiler {
+//structure for holding the bytecode during compilation
+typedef struct Toy_Bytecode {
 	unsigned char* code; //the instruction set
 	unsigned int codeCapacity;
 	unsigned int codeCount;
@@ -44,7 +44,7 @@ typedef struct Toy_ModuleCompiler {
 	unsigned int dataCapacity;
 	unsigned int dataCount;
 
-	unsigned char* subs; //submodules, built recursively
+	unsigned char* subs; //subroutines etc, built recursively
 	unsigned int subsCapacity;
 	unsigned int subsCount;
 
@@ -57,6 +57,6 @@ typedef struct Toy_ModuleCompiler {
 
 	//compilation errors
 	bool panic;
-} Toy_ModuleCompiler;
+} Toy_Bytecode;
 
-TOY_API unsigned char* Toy_compileModule(Toy_Ast* ast);
+TOY_API unsigned char* Toy_compileToBytecode(Toy_Ast* ast);

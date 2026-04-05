@@ -2,7 +2,7 @@
 
 #include "toy_lexer.h"
 #include "toy_parser.h"
-#include "toy_module_compiler.h"
+#include "toy_compiler.h"
 #include "toy_vm.h"
 
 #include <stdio.h>
@@ -332,16 +332,15 @@ int repl(const char* filepath) {
 			continue;
 		}
 
-		unsigned char* buffer = Toy_compileModule(ast);
-		Toy_Module module = Toy_parseModule(buffer);
-		Toy_bindVM(&vm, &module, runCount++ > 0);
+		unsigned char* bytecode = Toy_compileToBytecode(ast);
+		Toy_bindVM(&vm, bytecode, runCount++ > 0);
 
 		//run
 		Toy_runVM(&vm);
 
 		//free the memory, and leave the VM ready for the next loop
 		Toy_resetVM(&vm, true);
-		free(buffer);
+		free(bytecode);
 
 		printf("%s> ", prompt); //shows the terminal prompt
 	}
@@ -368,7 +367,7 @@ static void debugStackPrint(Toy_Stack* stack) {
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
-			char* buffer = Toy_getStringRawBuffer(string);
+			char* buffer = Toy_getStringRaw(string);
 			printf("%s", buffer);
 			free(buffer);
 			Toy_freeString(string);
@@ -382,23 +381,23 @@ static void debugStackPrint(Toy_Stack* stack) {
 
 static void debugScopePrint(Toy_Scope* scope, int depth) {
 	//DEBUG: if there's anything in the scope, print it
-	if (scope->table->count > 0) {
+	if (scope->count > 0) {
 		Toy_Bucket* stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 		printf("Scope %d Dump\n-------------------------\ntype\tname\tvalue\n", depth);
-		for (unsigned int i = 0; i < scope->table->capacity; i++) {
-			if ( (TOY_VALUE_IS_STRING(scope->table->data[i].key) && TOY_VALUE_AS_STRING(scope->table->data[i].key)->info.type == TOY_STRING_NAME) != true) {
+		for (unsigned int i = 0; i < scope->capacity; i++) {
+			if (scope->data[i].key.info.length == 0) {
 				continue;
 			}
 
-			Toy_Value k = scope->table->data[i].key;
-			Toy_Value v = scope->table->data[i].value;
+			Toy_String k = scope->data[i].key;
+			Toy_Value v = scope->data[i].value;
 
-			printf("%s\t%s\t", Toy_private_getValueTypeAsCString(v.type), TOY_VALUE_AS_STRING(k)->name.data);
+			printf("%s\t%s\t", Toy_private_getValueTypeAsCString(v.type), k.leaf.data);
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
-			char* buffer = Toy_getStringRawBuffer(string);
+			char* buffer = Toy_getStringRaw(string);
 			printf("%s", buffer);
 			free(buffer);
 			Toy_freeString(string);
@@ -481,16 +480,14 @@ int main(int argc, const char* argv[]) {
 
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
-		unsigned char* buffer = Toy_compileModule(ast);
+		unsigned char* bytecode = Toy_compileToBytecode(ast);
 		Toy_freeBucket(&bucket);
 		free(source);
 
 		//run the compiled code
 		Toy_VM vm;
 		Toy_initVM(&vm);
-
-		Toy_Module module = Toy_parseModule(buffer);
-		Toy_bindVM(&vm, &module, false);
+		Toy_bindVM(&vm, bytecode, false);
 
 		Toy_runVM(&vm);
 
@@ -502,7 +499,7 @@ int main(int argc, const char* argv[]) {
 
 		//cleanup
 		Toy_freeVM(&vm);
-		free(buffer);
+		free(bytecode);
 	}
 	else {
 		repl(argv[0]);
