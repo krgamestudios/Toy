@@ -8,41 +8,42 @@ a printf()'s first argument, like so:
 
     printf(TOY_CC_NOTICE "Hello world" TOY_CC_RESET);
 
-NOTE: you need both font AND background for these to work
+reference: https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
 
 */
 
 //platform/compiler-specific instructions
-#if defined(TOY_CC_ENABLED) && ( defined(__linux__) || defined(__MINGW32__) || defined(__GNUC__) )
+#if defined(__linux__) || defined(__MINGW32__) || defined(__GNUC__)
 
 //fonts color
-#define TOY_CC_FONT_BLACK      "\033[30;"
-#define TOY_CC_FONT_RED        "\033[31;"
-#define TOY_CC_FONT_GREEN      "\033[32;"
-#define TOY_CC_FONT_YELLOW     "\033[33;"
-#define TOY_CC_FONT_BLUE       "\033[34;"
-#define TOY_CC_FONT_PURPLE     "\033[35;"
-#define TOY_CC_FONT_DGREEN     "\033[6;"
-#define TOY_CC_FONT_WHITE      "\033[7;"
-#define TOY_CC_FONT_CYAN       "\x1b[36m"
+#define TOY_CC_FONT_BLACK      "30"
+#define TOY_CC_FONT_RED        "31"
+#define TOY_CC_FONT_GREEN      "32"
+#define TOY_CC_FONT_YELLOW     "33"
+#define TOY_CC_FONT_BLUE       "34"
+#define TOY_CC_FONT_MAGENTA    "35"
+#define TOY_CC_FONT_CYAN       "36"
+#define TOY_CC_FONT_WHITE      "37"
+#define TOY_CC_FONT_DEFAULT    "39"
 
 //background color
-#define TOY_CC_BACK_BLACK      "40m"
-#define TOY_CC_BACK_RED        "41m"
-#define TOY_CC_BACK_GREEN      "42m"
-#define TOY_CC_BACK_YELLOW     "43m"
-#define TOY_CC_BACK_BLUE       "44m"
-#define TOY_CC_BACK_PURPLE     "45m"
-#define TOY_CC_BACK_DGREEN     "46m"
-#define TOY_CC_BACK_WHITE      "47m"
+#define TOY_CC_BACK_BLACK      "40"
+#define TOY_CC_BACK_RED        "41"
+#define TOY_CC_BACK_GREEN      "42"
+#define TOY_CC_BACK_YELLOW     "43"
+#define TOY_CC_BACK_BLUE       "44"
+#define TOY_CC_BACK_MAGENTA    "45"
+#define TOY_CC_BACK_CYAN       "46"
+#define TOY_CC_BACK_WHITE      "47"
+#define TOY_CC_BACK_DEFAULT    "49"
 
-//useful
-#define TOY_CC_DEBUG TOY_CC_FONT_BLUE TOY_CC_BACK_BLACK
-#define TOY_CC_NOTICE TOY_CC_FONT_GREEN TOY_CC_BACK_BLACK
-#define TOY_CC_WARN TOY_CC_FONT_YELLOW TOY_CC_BACK_BLACK
-#define TOY_CC_ERROR TOY_CC_FONT_RED TOY_CC_BACK_BLACK
-#define TOY_CC_ASSERT TOY_CC_FONT_PURPLE TOY_CC_BACK_BLACK
-#define TOY_CC_RESET "\033[0m"
+//useful macros
+#define TOY_CC_DEBUG    "\033[" TOY_CC_FONT_BLUE     ";" TOY_CC_BACK_DEFAULT "m"
+#define TOY_CC_NOTICE   "\033[" TOY_CC_FONT_GREEN    ";" TOY_CC_BACK_DEFAULT "m"
+#define TOY_CC_WARN     "\033[" TOY_CC_FONT_YELLOW   ";" TOY_CC_BACK_DEFAULT "m"
+#define TOY_CC_ERROR    "\033[" TOY_CC_FONT_RED      ";" TOY_CC_BACK_DEFAULT "m"
+#define TOY_CC_ASSERT   "\033[" TOY_CC_FONT_BLACK    ";" TOY_CC_BACK_MAGENTA "m"
+#define TOY_CC_RESET    "\033[" "0" "m"
 
 //for unsupported platforms, these become no-ops
 #else
@@ -53,10 +54,10 @@ NOTE: you need both font AND background for these to work
 #define TOY_CC_FONT_GREEN
 #define TOY_CC_FONT_YELLOW
 #define TOY_CC_FONT_BLUE
-#define TOY_CC_FONT_PURPLE
-#define TOY_CC_FONT_DGREEN
-#define TOY_CC_FONT_WHITE
+#define TOY_CC_FONT_MAGENTA
 #define TOY_CC_FONT_CYAN
+#define TOY_CC_FONT_WHITE
+#define TOY_CC_FONT_DEFAULT
 
 //background color
 #define TOY_CC_BACK_BLACK
@@ -64,16 +65,17 @@ NOTE: you need both font AND background for these to work
 #define TOY_CC_BACK_GREEN
 #define TOY_CC_BACK_YELLOW
 #define TOY_CC_BACK_BLUE
-#define TOY_CC_BACK_PURPLE
-#define TOY_CC_BACK_DGREEN
+#define TOY_CC_BACK_MAGENTA
+#define TOY_CC_BACK_CYAN
 #define TOY_CC_BACK_WHITE
+#define TOY_CC_BACK_DEFAULT
 
 //useful
-#define TOY_CC_DEBUG TOY_CC_FONT_BLUE TOY_CC_BACK_BLACK
-#define TOY_CC_NOTICE TOY_CC_FONT_GREEN TOY_CC_BACK_BLACK
-#define TOY_CC_WARN TOY_CC_FONT_YELLOW TOY_CC_BACK_BLACK
-#define TOY_CC_ERROR TOY_CC_FONT_RED TOY_CC_BACK_BLACK
-#define TOY_CC_ASSERT TOY_CC_FONT_PURPLE TOY_CC_BACK_BLACK
+#define TOY_CC_DEBUG
+#define TOY_CC_NOTICE
+#define TOY_CC_WARN
+#define TOY_CC_ERROR
+#define TOY_CC_ASSERT
 #define TOY_CC_RESET
 
 #endif

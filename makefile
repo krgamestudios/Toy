@@ -23,6 +23,10 @@ source:
 repl: source
 	$(MAKE) -C repl -k
 
+.PHONY: tests
+tests:
+	$(MAKE) -C tests -k
+
 #util targets
 $(TOY_OUTDIR):
 	mkdir $(TOY_OUTDIR)
@@ -34,38 +38,41 @@ $(TOY_OBJDIR):
 .PHONY: clean
 clean:
 ifeq ($(shell uname),Linux)
-	rm -r out
 	find . -type f -name '*.o' -delete
 	find . -type f -name '*.a' -delete
+	find . -type f -name '*.out' -delete
 	find . -type f -name '*.exe' -delete
 	find . -type f -name '*.dll' -delete
 	find . -type f -name '*.lib' -delete
 	find . -type f -name '*.so' -delete
 	find . -type f -name '*.dylib' -delete
+	find . -type d -name 'out' -delete
 	find . -type d -name 'obj' -delete
 else ifeq ($(shell uname),NetBSD)
-	rm -r out
 	find . -type f -name '*.o' -delete
 	find . -type f -name '*.a' -delete
+	find . -type f -name '*.out' -delete
 	find . -type f -name '*.exe' -delete
 	find . -type f -name '*.dll' -delete
 	find . -type f -name '*.lib' -delete
 	find . -type f -name '*.so' -delete
 	find . -type f -name '*.dylib' -delete
+	find . -type d -name 'out' -delete
 	find . -type d -name 'obj' -delete
 else ifeq ($(OS),Windows_NT)
 	$(RM) *.o *.a *.exe *.dll *.lib *.so *.dylib
 	$(RM) out
 	$(RM) obj
 else ifeq ($(shell uname),Darwin)
-	rm -r out
 	find . -type f -name '*.o' -delete
 	find . -type f -name '*.a' -delete
+	find . -type f -name '*.out' -delete
 	find . -type f -name '*.exe' -delete
 	find . -type f -name '*.dll' -delete
 	find . -type f -name '*.lib' -delete
 	find . -type f -name '*.so' -delete
 	find . -type f -name '*.dylib' -delete
+	find . -type d -name 'out' -delete
 	find . -type d -name 'obj' -delete
 else
 	@echo "Deletion failed - what platform is this?"
