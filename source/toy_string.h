@@ -41,6 +41,8 @@ typedef union Toy_String_t {
 TOY_API Toy_String* Toy_toString(Toy_Bucket** bucketHandle, const char* cstring);
 TOY_API Toy_String* Toy_toStringLength(Toy_Bucket** bucketHandle, const char* cstring, unsigned int length);
 
+TOY_API Toy_String* Toy_createStringLength(Toy_Bucket** bucketHandle, const char* cstring, unsigned int length);
+
 TOY_API Toy_String* Toy_copyString(Toy_String* str);
 TOY_API Toy_String* Toy_concatStrings(Toy_Bucket** bucketHandle, Toy_String* left, Toy_String* right);
 

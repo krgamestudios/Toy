@@ -42,6 +42,21 @@ Toy_String* Toy_toStringLength(Toy_Bucket** bucketHandle, const char* cstring, u
 	return ret;
 }
 
+Toy_String* Toy_createStringLength(Toy_Bucket** bucketHandle, const char* cstring, unsigned int length) {
+	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String));
+	char* data = (char*)Toy_partitionBucket(bucketHandle, length + 1);
+
+	strncpy(data, cstring, length);
+
+	ret->info.type = TOY_STRING_LEAF;
+	ret->info.length = length;
+	ret->info.refCount = 1;
+	ret->info.cachedHash = 0; //don't calc until needed
+	ret->leaf.data = data; //DO make a copy, stored in the bucket
+
+	return ret;
+}
+
 Toy_String* Toy_copyString(Toy_String* str) {
 	assert(str->info.refCount != 0 && "Can't copy a string with refcount of zero");
 	incrementRefCount(str);

@@ -63,7 +63,7 @@ static void processRead(Toy_VM* vm) {
 
 		case TOY_VALUE_STRING: {
 			enum Toy_StringType stringType = READ_BYTE(vm);
-			int len = (int)READ_BYTE(vm); //only needed for name strings
+			//int len = (int)READ_BYTE(vm); //WARN: only used for name strings
 
 			//grab the jump as an integer
 			unsigned int jump = *((int*)(vm->code + vm->jumpsAddr + READ_INT(vm)));
@@ -73,7 +73,7 @@ static void processRead(Toy_VM* vm) {
 
 			//build a string from the data section
 			if (stringType == TOY_STRING_LEAF) {
-				value = TOY_VALUE_FROM_STRING(Toy_toStringLength(&vm->memoryBucket, cstring, len));
+				value = TOY_VALUE_FROM_STRING(Toy_toString(&vm->memoryBucket, cstring));
 			}
 			else {
 				Toy_error("Invalid string type found in opcode read");

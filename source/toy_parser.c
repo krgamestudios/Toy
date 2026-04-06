@@ -388,7 +388,7 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 
 			buffer[i] = '\0';
 			unsigned int len = i - escapeCounter; //NOTE: len is ONLY the string length
-			Toy_private_emitAstValue(bucketHandle, rootHandle, TOY_VALUE_FROM_STRING(Toy_toStringLength(bucketHandle, buffer, len)));
+			Toy_private_emitAstValue(bucketHandle, rootHandle, TOY_VALUE_FROM_STRING(Toy_createStringLength(bucketHandle, buffer, len))); //BUGFIX: create the string to avoid losing local var 'buffer'
 
 			return TOY_AST_FLAG_NONE;
 		}
