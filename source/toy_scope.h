@@ -11,18 +11,18 @@ typedef struct Toy_ScopeEntry {
 	Toy_String key;
 	Toy_Value value;
 	Toy_ValueType type;
+	unsigned int psl; //psl '0' means empty
 	bool constant;
-	unsigned int psl;
 } Toy_ScopeEntry;
 
 //holds a table-like collection of variables TODO: check bitness
 typedef struct Toy_Scope {
 	struct Toy_Scope* next;
 	unsigned int refCount;
+	Toy_ScopeEntry* data;
 	unsigned int capacity;
 	unsigned int count;
 	unsigned int maxPsl;
-	Toy_ScopeEntry* data;
 } Toy_Scope;
 
 //handle deep scopes - the scope is stored in the bucket, not the table

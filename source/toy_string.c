@@ -67,6 +67,7 @@ Toy_String* Toy_concatStrings(Toy_Bucket** bucketHandle, Toy_String* left, Toy_S
 }
 
 void Toy_freeString(Toy_String* str) {
+	assert(str->info.refCount > 0 && "Can't free a string with refcount 0");
 	//memory is freed when the bucket is
 	decrementRefCount(str);
 }

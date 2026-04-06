@@ -26,8 +26,10 @@ static void decrementRefCount(Toy_Scope* scope) {
 		if (iter->refCount == 0 && iter->data != NULL) {
 			//free the scope entries when this scope is no longer needed
 			for (unsigned int i = 0; i < iter->capacity; i++) {
-				Toy_freeString(&(iter->data[i].key));
-				Toy_freeValue(iter->data[i].value);
+				if (iter->data[i].psl > 0) {
+					Toy_freeString(&(iter->data[i].key));
+					Toy_freeValue(iter->data[i].value);
+				}
 			}
 			free(iter->data);
 		}
@@ -62,7 +64,7 @@ static Toy_ScopeEntry* lookupScopeEntryPtr(Toy_Scope* scope, Toy_String* key, un
 void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, Toy_ValueType type, bool constant) {
 	//make the entry
 	unsigned int probe = Toy_hashString(key) % scope->capacity;
-	Toy_ScopeEntry entry = (Toy_ScopeEntry){ .key = *key, .value = value, .type = type, .constant = constant, .psl = 0 };
+	Toy_ScopeEntry entry = (Toy_ScopeEntry){ .key = *key, .value = value, .type = type, .constant = constant, .psl = 1 };
 
 	//probe
 	while (true) {
@@ -134,8 +136,11 @@ Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
 
 	newScope->next = scope;
-	newScope->data = adjustScopeEntries(NULL, TOY_SCOPE_INITIAL_CAPACITY);
 	newScope->refCount = 0;
+	newScope->data = adjustScopeEntries(NULL, TOY_SCOPE_INITIAL_CAPACITY);
+	newScope->capacity = TOY_SCOPE_INITIAL_CAPACITY;
+	newScope->count = 0;
+	newScope->maxPsl = 0;
 
 	incrementRefCount(newScope);
 
