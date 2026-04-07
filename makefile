@@ -24,7 +24,7 @@ repl: source
 	$(MAKE) -C repl -k
 
 .PHONY: tests
-tests:
+tests: clean
 	$(MAKE) -C tests -k
 
 #util targets

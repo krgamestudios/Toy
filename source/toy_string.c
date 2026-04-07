@@ -44,15 +44,21 @@ Toy_String* Toy_toStringLength(Toy_Bucket** bucketHandle, const char* cstring, u
 
 Toy_String* Toy_createStringLength(Toy_Bucket** bucketHandle, const char* cstring, unsigned int length) {
 	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String));
-	char* data = (char*)Toy_partitionBucket(bucketHandle, length + 1);
 
-	strncpy(data, cstring, length);
+	if (length > 0) { //BUGFIX
+		ret->leaf.data = (char*)Toy_partitionBucket(bucketHandle, length + 1);
+		strncpy((char*)(ret->leaf.data), cstring, length);
+		((char*)(ret->leaf.data))[length] = '\0'; //don't forget the null
+		ret->info.length = length;
+	}
+	else {
+		ret->leaf.data = "";
+		ret->info.length = length;
+	}
 
 	ret->info.type = TOY_STRING_LEAF;
-	ret->info.length = length;
 	ret->info.refCount = 1;
 	ret->info.cachedHash = 0; //don't calc until needed
-	ret->leaf.data = data; //DO make a copy, stored in the bucket
 
 	return ret;
 }
