@@ -155,7 +155,11 @@ static unsigned int emitString(Toy_Bytecode** mb, Toy_String* str) {
 		free(buffer);
 	}
 	else if (str->info.type == TOY_STRING_LEAF) {
-		dataAddr = emitCStringToData(&(*mb)->data, &(*mb)->dataCapacity, &(*mb)->dataCount, str->leaf.data);
+		char buffer[str->info.length + 1]; //BUGFIX: make sure its a null-terminated c-string
+		memcpy(buffer, str->leaf.data, str->info.length);
+		buffer[str->info.length] = '\0';
+
+		dataAddr = emitCStringToData(&(*mb)->data, &(*mb)->dataCapacity, &(*mb)->dataCount, buffer);
 	}
 
 	//mark the position within the jump index, reusing an existing entry if it exists
@@ -783,7 +787,7 @@ static unsigned int writeInstructionVarDeclare(Toy_Bytecode** mb, Toy_AstVarDecl
 
 	//delcare with the given name string
 	EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
-	EMIT_BYTE(mb, code, ast.type);
+	EMIT_BYTE(mb, code, ast.valueType);
 	EMIT_BYTE(mb, code, ast.name->info.length); //quick optimisation to skip a 'strlen()' call
 	EMIT_BYTE(mb, code, ast.constant); //check for constness
 
