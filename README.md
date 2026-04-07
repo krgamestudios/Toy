@@ -2,7 +2,7 @@
 	<image src="toylogo.png" />
 </p>
 
-<p style="color:red;font-weight: bold;">This is a work in progress, and is not fit for purpose. I hope I can get it to a useable state, but personal issues can often make dedicating myself to a project difficult. Your patience and support is greatly appreciated.</p>
+**This is a work in progress, and is not yet fit for purpose. I hope I can get it to a useable state, but personal issues can often make dedicating myself to a project difficult. Your patience and support is greatly appreciated.**
 
 # Toy v2.x
 
@@ -13,7 +13,7 @@ This repository holds the reference implementation for Toy version 2.x, written 
 # Nifty Features
 
 * Simple C-like/JS-like syntax
-* Intermediate AST representation
+* Intermediate AST and bytecode representations
 * Strong, but optional type system
 * First-class functions and closures
 * Extensible with imported native code
@@ -28,15 +28,9 @@ Watch this space.
 
 # Building
 
-TODO: Look into cmake
+Watch this space.
 
-Supported platforms are: `linux-latest`, `windows-latest`, `macos-latest`, using [GitHub's standard runners](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners#standard-github-hosted-runners-for-public-repositories).
-
-Support for NetBSD is present, but not guaranteed.
-
-To build the shared library, run `make source`.  
-To build the shared library and repl, run `make repl`.  
-To build and run the test suites, run `make tests` (`make tests-gdb` and `make tests-valgrind` options are also available).  
+(`make` and `make tests` might help.)
 
 # Tools
 
@@ -48,7 +42,7 @@ Watch this space.
 
 # License
 
-This source code is covered by the Zlib license (see [LICENSE.md](LICENSE.md)).
+This source code is covered by the Zlib license (see [LICENSE](LICENSE) for details).
 
 # Contributors and Special Thanks
 
@@ -63,7 +57,5 @@ Various Anons - Feedback
 @munificent - For [writing the book](http://craftinginterpreters.com/) that sparked my interest in langdev  
 
 # Patreon Supporters
-
-Watch this space.
 
 You can show your support and be listed here by joining my [Patreon](https://patreon.com/krgamestudios).
