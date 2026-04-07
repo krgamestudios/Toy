@@ -63,7 +63,8 @@ static void processRead(Toy_VM* vm) {
 
 		case TOY_VALUE_STRING: {
 			enum Toy_StringType stringType = READ_BYTE(vm);
-			//int len = (int)READ_BYTE(vm); //WARN: only used for name strings
+			int len = (int)READ_BYTE(vm); //WARN: only used for name strings
+			(void)len;
 
 			//grab the jump as an integer
 			unsigned int jump = *((int*)(vm->code + vm->jumpsAddr + READ_INT(vm)));
