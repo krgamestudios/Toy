@@ -795,7 +795,7 @@ static unsigned int writeInstructionVarDeclare(Toy_Bytecode** mb, Toy_AstVarDecl
 static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign ast, bool chainedAssignment) {
 	unsigned int result = 0;
 
-	//target is a name string
+	//target is a variable name
 	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value)) {
 		//name string
 		Toy_String* target = TOY_VALUE_AS_STRING(ast.target->value.value);

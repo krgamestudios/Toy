@@ -185,9 +185,9 @@ typedef struct Toy_AstPrint {
 typedef struct Toy_AstVarDeclare {
 	Toy_AstType type;
 	Toy_String* name;
+	Toy_Ast* expr;
 	Toy_ValueType valueType;
 	bool constant;
-	Toy_Ast* expr;
 } Toy_AstVarDeclare;
 
 typedef struct Toy_AstVarAssign {
