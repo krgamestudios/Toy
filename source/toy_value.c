@@ -432,15 +432,20 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 	switch(value.type) {
 		case TOY_VALUE_NULL:
-			return Toy_toString(bucketHandle, "<null>");
+			return Toy_createStringLength(bucketHandle, "<null>", 6);
 
 		case TOY_VALUE_BOOLEAN:
-			return Toy_toString(bucketHandle, value.as.boolean ? "<true>" : "<false>");
+			if (value.as.boolean) {
+				return Toy_createStringLength(bucketHandle, "<true>", 6);
+			}
+			else {
+				return Toy_createStringLength(bucketHandle, "<false>", 7);
+			}
 
 		case TOY_VALUE_INTEGER: {
 			char buffer[16];
 			sprintf(buffer, "%d", value.as.integer);
-			return Toy_toString(bucketHandle, buffer);
+			return Toy_createStringLength(bucketHandle, buffer, strlen(buffer));
 		}
 
 		case TOY_VALUE_FLOAT: {
@@ -461,7 +466,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			//wipe the trailing zeros
 			while(decimal != length && buffer[length-1] == '0') buffer[--length] = '\0';
 
-			return Toy_toStringLength(bucketHandle, buffer, length);
+			return Toy_createStringLength(bucketHandle, buffer, length);
 		}
 
 		case TOY_VALUE_STRING:
@@ -473,14 +478,14 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 			//if array is empty, skip below
 			if (ptr->count == 0) {
-				Toy_String* empty = Toy_toString(bucketHandle, "[]");
+				Toy_String* empty = Toy_createStringLength(bucketHandle, "[]", 2);
 				return empty;
 			}
 
-			Toy_String* open = Toy_toStringLength(bucketHandle, "[", 1);
-			Toy_String* close = Toy_toStringLength(bucketHandle, "]", 1);
-			Toy_String* comma = Toy_toStringLength(bucketHandle, ",", 1); //reusable
-			Toy_String* quote = Toy_toStringLength(bucketHandle, "\"", 1); //reusable
+			Toy_String* open = Toy_createStringLength(bucketHandle, "[", 1);
+			Toy_String* close = Toy_createStringLength(bucketHandle, "]", 1);
+			Toy_String* comma = Toy_createStringLength(bucketHandle, ",", 1); //reusable
+			Toy_String* quote = Toy_createStringLength(bucketHandle, "\"", 1); //reusable
 			bool needsComma = false;
 
 			Toy_String* string = open;
@@ -536,15 +541,15 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 			//if table is empty, skip below
 			if (ptr->count == 0) {
-				Toy_String* empty = Toy_toString(bucketHandle, "[:]");
+				Toy_String* empty = Toy_createStringLength(bucketHandle, "[:]", 3);
 				return empty;
 			}
 
-			Toy_String* open = Toy_toStringLength(bucketHandle, "[", 1);
-			Toy_String* close = Toy_toStringLength(bucketHandle, "]", 1);
-			Toy_String* colon = Toy_toStringLength(bucketHandle, ":", 1); //reusable
-			Toy_String* comma = Toy_toStringLength(bucketHandle, ",", 1); //reusable
-			Toy_String* quote = Toy_toStringLength(bucketHandle, "\"", 1); //reusable
+			Toy_String* open = Toy_createStringLength(bucketHandle, "[", 1);
+			Toy_String* close = Toy_createStringLength(bucketHandle, "]", 1);
+			Toy_String* colon = Toy_createStringLength(bucketHandle, ":", 1); //reusable
+			Toy_String* comma = Toy_createStringLength(bucketHandle, ",", 1); //reusable
+			Toy_String* quote = Toy_createStringLength(bucketHandle, "\"", 1); //reusable
 			bool needsComma = false;
 
 			Toy_String* string = open;
@@ -624,7 +629,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 		case TOY_VALUE_FUNCTION:
 			//dummy
-			return Toy_toString(bucketHandle, "<fn>");
+			return Toy_createStringLength(bucketHandle, "<fn>", 4);
 
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
