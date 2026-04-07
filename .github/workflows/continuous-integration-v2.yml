@@ -14,26 +14,16 @@ on:
       - v2
   workflow_dispatch:
 
-#CI workflows using the matrix strategy, skipping GDB if it's not supported for the platform
+#CI workflows, limited coverage atm
 jobs:
-  run-tests:
+  units:
     continue-on-error: true
-    strategy:
-      matrix:
-        platforms:
-          - { os: ubuntu-latest, preinstall: sudo apt update && sudo apt install gdb, gdb_enabled: true }
-          - { os: windows-latest, preinstall: , gdb_enabled: true }
-          - { os: macos-latest, preinstall: , gdb_enabled: false }
-        commands:
-          - { exec: make tests, gdb: false }
-          - { exec: make tests, gdb: true }
-    
-    runs-on: ${{ matrix.platforms.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Preinstall dependencies
-        if: (matrix.commands.gdb == true && matrix.platforms.gdb_enabled == false) != true
-        run: ${{ matrix.platforms.preinstall }}
-      - name: run the tests
-        if: (matrix.commands.gdb == true && matrix.platforms.gdb_enabled == false) != true
-        run: ${{ matrix.commands.exec }}
+        run: sudo apt update && sudo apt install gdb
+      - name: Run the tests
+        run: make tests
+      - name: Run the tests under gdb
+        run: make tests-gdb

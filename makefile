@@ -23,9 +23,12 @@ source:
 repl: source
 	$(MAKE) -C repl -k
 
-.PHONY: tests
+.PHONY: tests tests-ci
 tests: clean
 	$(MAKE) -C tests -k
+
+tests-gdb: clean
+	$(MAKE) -C tests -k gdb
 
 #util targets
 $(TOY_OUTDIR):
