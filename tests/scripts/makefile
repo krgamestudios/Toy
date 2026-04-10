@@ -41,7 +41,7 @@ copy:
 run: $(TEST_SCRIPTFILES:.toy=.toy-run)
 
 %.toy-run: %.toy
-	find  -name repl* -type f -exec {} -f ../$< --verbose \;
+	find  -name repl* -type f -exec {} -f $< --verbose \;
 
 #using gdb
 gdb: source repl copy run-gdb
@@ -49,4 +49,4 @@ gdb: source repl copy run-gdb
 run-gdb: $(TEST_SCRIPTFILES:.toy=.toy-run-gdb)
 
 %.toy-run-gdb: %.toy
-	gdb $(TEST_OUTDIR)/$(TEST_REPLNAME) -ix gdb_init -ex=run --batch --return-child-result --args "out/repl.out" "-f" "../$<" "--verbose"
+	gdb $(TEST_OUTDIR)/$(TEST_REPLNAME) -ix gdb_init -ex=run --batch --return-child-result --args "out/repl.out" "-f" "$<" "--verbose"

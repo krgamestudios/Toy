@@ -239,8 +239,8 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 
 				i++;
 
-				//total space to reserve - it's actually longer than needed, due to the exe name being removed
-				cmd.infileLength = strlen(argv[0]) + strlen(argv[i]) + 1;
+				//total space to reserve
+				cmd.infileLength = strlen(argv[i]) + 1;
 				cmd.infileLength = (cmd.infileLength + 3) & ~3; //BUGFIX: align to  word size for malloc()
 				cmd.infile = malloc(cmd.infileLength);
 
@@ -249,9 +249,7 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 					exit(-1);
 				}
 
-				getFilePath(cmd.infile, argv[0]);
-				APPEND(cmd.infile, argv[i]);
-				FLIPSLASH(cmd.infile);
+				strncpy(cmd.infile, argv[i], strlen(argv[i]));
 			}
 		}
 
