@@ -1,3 +1,0 @@
-type coercion
-permanent strings?
-concat & free? (strings)

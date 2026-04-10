@@ -10,9 +10,6 @@
 #include <string.h>
 
 //utilities
-#define APPEND(dest, src) \
-	strncpy((dest) + (strlen(dest)), (src), strlen((src)) + 1);
-
 #if defined(_WIN32) || defined(_WIN64)
 	#define FLIPSLASH(str) for (int i = 0; str != NULL && str[i]; i++) str[i] = str[i] == '/' ? '\\' : str[i];
 #else
@@ -58,30 +55,6 @@ unsigned char* readFile(char* path, int* size) {
 	//clean up and return
 	fclose(file);
 	return buffer;
-}
-
-int getFilePath(char* dest, const char* src) {
-	char* p = NULL;
-
-	//find the last slash, regardless of platform
-	p = strrchr(src, '\\');
-	if (p == NULL) {
-		p = strrchr(src, '/');
-	}
-	if (p == NULL) {
-		int len = strlen(src);
-		strncpy(dest, src, len);
-		return len;
-	}
-
-	//determine length of the path
-	int len = p - src + 1;
-
-	//copy to the dest
-	strncpy(dest, src, len);
-	dest[len] = '\0';
-
-	return len;
 }
 
 int getFileName(char* dest, const char* src) {
@@ -489,7 +462,7 @@ int main(int argc, const char* argv[]) {
 		Toy_runVM(&vm);
 
 		//print the debug info
-		if (cmd.verboseDebugPrint) {
+		if (cmd.verboseDebugPrint) { //URGENT: 'verbose' option is mainly for the WIP elements, like decompiler
 			debugStackPrint(vm.stack);
 			debugScopePrint(vm.scope, 0);
 		}

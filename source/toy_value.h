@@ -92,5 +92,5 @@ TOY_API int Toy_compareValues(Toy_Value left, Toy_Value right);
 //convert the value to a string - values that *are* strings are simply copied
 TOY_API union Toy_String_t* Toy_stringifyValue(struct Toy_Bucket** bucketHandle, Toy_Value value);
 
-//for debugging
+//for error messages
 TOY_API const char* Toy_private_getValueTypeAsCString(Toy_ValueType type);
