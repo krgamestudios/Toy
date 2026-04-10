@@ -3,8 +3,6 @@ layout: page
 title: The Toy Programming Language
 ---
 
-{% include elements/chicken.html %}
-
 <div style="justify-self: center;">
 	<image src="assets/toylogo.png" width="250" height="250" />
 </div>
@@ -15,15 +13,5 @@ title: The Toy Programming Language
 
 The Toy Programming Language is an imperative, bytecode-interpreted, embeddable scripting language. Rather than functioning independently, it serves as part of another program, the "host". This design allows for straightforward customization by both the host's developers and end users, achieved by exposing program logic through text files.
 
-This website presents the documentation for Toy version 2.x.
-
-## Nifty Features
-
-* Simple C-like/JS-like syntax
-* Intermediate AST representation
-* Strong, but optional type system
-* First-class functions and closures
-* Extensible with importable native code
-* Can re-direct output, error and assert failure messages
-* Open-Source under the zlib license
+The documdentation on this website is under construction, for further information, see the repository on GitHub: [https://github.com/krgamestudios/Toy](https://github.com/krgamestudios/Toy).
 
