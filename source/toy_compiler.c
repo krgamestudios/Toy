@@ -209,7 +209,7 @@ static unsigned int emitParameters(Toy_Bytecode* mb, Toy_Ast* ast) {
 
 	//emit to the param index
 	EMIT_INT(&mb, param, dataAddr);
-	EMIT_INT(&mb, param, TOY_VALUE_UNKNOWN); //TODO: encode function parameter types properly
+	EMIT_INT(&mb, param, ast->value.value.type);
 
 	//this returns the number of written parameters
 	return 1;

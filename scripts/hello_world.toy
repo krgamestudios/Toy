@@ -1,6 +1,20 @@
-print "Hello world";
 
-var answer = 42;
-var question = 69;
 
-print answer + question;
+/*
+{
+	fn hello() {
+		print "Hello world";
+	}
+	hello();
+}
+*/
+
+{
+	fn hello(arg) {
+		print arg;
+	}
+
+	hello("world");
+}
+
+
