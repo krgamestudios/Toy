@@ -24,3 +24,5 @@ print a;
 var b = [];
 
 print b;
+
+//TODO: utility functions are needed, see toy_array.h

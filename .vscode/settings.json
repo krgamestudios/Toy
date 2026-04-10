@@ -1,0 +1,66 @@
+{
+	"todo-tree.filtering.includeGlobs": [
+		"**/repl/**",
+		"**/scripts/**",
+		"**/source/**",
+		"**/tests/**",
+		"**/tools/**",
+	],
+	"todo-tree.filtering.excludeGlobs": [
+		"**/obj/**",
+		"**/out/**",
+	],
+	"todo-tree.general.tags": [
+		"URGENT",
+		"BUG",
+		"TODO",
+		"WARN",
+		"BUGFIX",
+		"WONTFIX",
+		"NOTE"
+	],
+	"todo-tree.highlights.customHighlight": {
+		"URGENT": {
+			"icon": "alert",
+			"type": "text",
+			"iconColour": "#FF0000",
+			"foreground": "#FF0000"
+		},
+		"BUG": {
+			"icon": "bug",
+			"type": "text",
+			"iconColour": "#FF0000",
+			"foreground": "#FF0000"
+		},
+		"TODO": {
+			"icon": "alert",
+			"type": "text",
+			"iconColour": "#FFFF00",
+			"foreground": "#FFFF00"
+		},
+		"WARN": {
+			"icon": "alert",
+			"type": "text",
+			"iconColour": "#FFA500",
+			"foreground": "#FFA500"
+		},
+		"BUGFIX": {
+			"icon": "bug",
+			"type": "text",
+			"iconColour": "#00A000",
+			"foreground": "#00A000"
+		},
+		"WONTFIX": {
+			"icon": "bug",
+			"type": "text",
+			"iconColour": "#B64949",
+			"foreground": "#B64949"
+		},
+		"NOTE": {
+			"icon": "alert",
+			"type": "text",
+			"iconColour": "#00A000",
+			"foreground": "#00A000"
+		},
+	}
+}
