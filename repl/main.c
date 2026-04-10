@@ -116,21 +116,21 @@ static void printCallback(const char* msg) {
 }
 
 static void errorAndExitCallback(const char* msg) {
-	fprintf(stderr, TOY_CC_ERROR "Error: %s\n" TOY_CC_RESET, msg);
+	fprintf(stderr, TOY_CC_ERROR "Error: %s" TOY_CC_RESET "\n", msg);
 	exit(-1);
 }
 
 static void errorAndContinueCallback(const char* msg) {
-	fprintf(stderr, TOY_CC_ERROR "Error: %s\n" TOY_CC_RESET, msg);
+	fprintf(stderr, TOY_CC_ERROR "Error: %s" TOY_CC_RESET "\n", msg);
 }
 
 static void assertFailureAndExitCallback(const char* msg) {
-	fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s\n" TOY_CC_RESET, msg);
+	fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s" TOY_CC_RESET "\n", msg);
 	exit(-1);
 }
 
 static void assertFailureAndContinueCallback(const char* msg) {
-	fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s\n" TOY_CC_RESET, msg);
+	fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s" TOY_CC_RESET "\n", msg);
 }
 
 static void noOpCallback(const char* msg) {
@@ -325,7 +325,6 @@ int repl(const char* filepath) {
 		Toy_bindLexer(&lexer, inputBuffer);
 		Toy_Parser parser;
 		Toy_bindParser(&parser, &lexer);
-		Toy_configureParser(&parser, false);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser); //Ast is in the bucket, so it doesn't need to be freed
 
 		//parsing error, retry
@@ -477,8 +476,6 @@ int main(int argc, const char* argv[]) {
 
 		Toy_Parser parser;
 		Toy_bindParser(&parser, &lexer);
-
-		Toy_configureParser(&parser, cmd.removeAssert);
 
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);

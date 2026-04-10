@@ -1,0 +1,80 @@
+//booleans
+{
+	var value: bool = true;
+
+	if (value) {
+		print "boolean";
+	}
+	else {
+		assert false, "boolean";
+	}
+}
+
+{
+	var value: bool = false;
+
+	if (value) {
+		assert false, "boolean";
+	}
+	else {
+		print "boolean";
+	}
+}
+
+//integers
+{
+	var value: int = 42;
+
+	if (value) {
+		print "integer";
+	}
+	else {
+		assert false, "integer";
+	}
+}
+
+{
+	var value: int = 0;
+
+	if (value) {
+		assert false, "integer";
+	}
+	else {
+		print "integer";
+	}
+}
+
+//floats
+{
+	var value: float = 42.8891;
+
+	if (value) {
+		print "float";
+	}
+	else {
+		assert false, "float";
+	}
+}
+
+{
+	var value: float = 0;
+
+	if (value) {
+		assert false, "float";
+	}
+	else {
+		print "float";
+	}
+}
+
+//everything else
+{
+	var value: string = "foobar";
+
+	if (value) {
+		print "string";
+	}
+	else {
+		assert false, "string";
+	}
+}

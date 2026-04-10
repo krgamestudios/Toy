@@ -1,0 +1,65 @@
+//literals
+if (true) {
+	print "Success 1";
+}
+else {
+	print "Failure 1";
+}
+
+//false literals
+if (false) {
+	print "Failure 2";
+}
+else {
+	print "Success 2";
+}
+
+//conditionals
+if (1 < 2) {
+	print "Success 3";
+}
+if (1 > 2) {
+	print "Failure 3";
+}
+
+
+//variables
+var a = 42;
+
+if (a) {
+	print "Success 4";
+}
+else {
+	print "Failure 4";
+}
+
+
+if (a == 42) {
+	print "Success 5";
+}
+else {
+	print "Failure 5";
+}
+
+//concatenated strings
+if ("foo" .. "bar" == "foobar") {
+	print "Success 6";
+}
+else {
+	print "Failure 6";
+}
+
+
+if ("foobar" == "foo" .. "bar") {
+	print "Success 7";
+}
+else {
+	print "Failure 7";
+}
+
+if ("fizz" .. "le" == "fi" .. "zzle") {
+	print "Success 8";
+}
+else {
+	print "Failure 8";
+}

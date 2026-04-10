@@ -818,18 +818,12 @@ static void makeAssertStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 	Toy_Ast* ast = NULL; //assert's emit function is a bit different
 	makeExpr(bucketHandle, parser, &ast);
 
-	//if assert is disabled, don't emit the assert
-	if (parser->removeAssert) {
-		Toy_private_emitAstPass(bucketHandle, rootHandle);
+	//NOTE: if it's an aggregate node, then it's got a second arg
+	if (ast->type == TOY_AST_AGGREGATE) {
+		Toy_private_emitAstAssert(bucketHandle, rootHandle, ast->aggregate.left, ast->aggregate.right);
 	}
 	else {
-		//NOTE: if it's an aggregate node, then it's got a second arg
-		if (ast->type == TOY_AST_AGGREGATE) {
-			Toy_private_emitAstAssert(bucketHandle, rootHandle, ast->aggregate.left, ast->aggregate.right);
-		}
-		else {
-			Toy_private_emitAstAssert(bucketHandle, rootHandle, ast, NULL);
-		}
+		Toy_private_emitAstAssert(bucketHandle, rootHandle, ast, NULL);
 	}
 
 	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of assert statement");
@@ -1159,10 +1153,4 @@ void Toy_resetParser(Toy_Parser* parser) {
 
 	parser->error = false;
 	parser->panic = false;
-
-	parser->removeAssert = false;
-}
-
-void Toy_configureParser(Toy_Parser* parser, bool removeAssert) {
-	parser->removeAssert = removeAssert;
 }

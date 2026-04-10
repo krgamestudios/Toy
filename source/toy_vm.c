@@ -838,11 +838,11 @@ static void processIndex(Toy_VM* vm) {
 		//extract cstring, based on type
 		if (str->info.type == TOY_STRING_LEAF) {
 			const char* cstr = str->leaf.data;
-			result = Toy_toStringLength(&vm->memoryBucket, cstr + i, l);
+			result = Toy_createStringLength(&vm->memoryBucket, cstr + i, l);
 		}
 		else if (str->info.type == TOY_STRING_NODE) {
 			char* cstr = Toy_getStringRaw(str);
-			result = Toy_toStringLength(&vm->memoryBucket, cstr + i, l);
+			result = Toy_createStringLength(&vm->memoryBucket, cstr + i, l);
 			free(cstr);
 		}
 		else {

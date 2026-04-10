@@ -14,14 +14,8 @@ typedef struct Toy_Parser {
 
 	bool error;
 	bool panic; //currently processing an error
-
-	//configs
-	bool removeAssert;
 } Toy_Parser;
 
 TOY_API void Toy_bindParser(Toy_Parser* parser, Toy_Lexer* lexer);
 TOY_API Toy_Ast* Toy_scanParser(Toy_Bucket** bucketHandle, Toy_Parser* parser);
 TOY_API void Toy_resetParser(Toy_Parser* parser);
-
-//configure certain options
-TOY_API void Toy_configureParser(Toy_Parser* parser, bool removeAssert);

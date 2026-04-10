@@ -43,7 +43,7 @@ reference: https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape
 #define TOY_CC_WARN     "\033[" TOY_CC_FONT_YELLOW   ";" TOY_CC_BACK_DEFAULT "m"
 #define TOY_CC_ERROR    "\033[" TOY_CC_FONT_RED      ";" TOY_CC_BACK_DEFAULT "m"
 #define TOY_CC_ASSERT   "\033[" TOY_CC_FONT_BLACK    ";" TOY_CC_BACK_MAGENTA "m"
-#define TOY_CC_RESET    "\033[" "0" "m"
+#define TOY_CC_RESET    "\033[" TOY_CC_FONT_DEFAULT  ";" TOY_CC_BACK_DEFAULT "m"
 
 //for unsupported platforms, these become no-ops
 #else
