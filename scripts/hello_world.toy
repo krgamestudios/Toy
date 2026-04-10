@@ -1,1 +1,6 @@
 print "Hello world";
+
+var answer = 42;
+var question = 69;
+
+print answer + question;
