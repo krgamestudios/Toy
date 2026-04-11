@@ -1,5 +1,4 @@
 
 
-print "hello world";
 
-print [];
+print 1;

@@ -83,11 +83,11 @@ void inspect_bytecode(unsigned char* bytecode) {
 
 	printf("\n---\n");
 
-	//read the code instructions one-by-one
 	unsigned int pc = code_addr;
-	while(pc < jumps_addr) {
+	while(bytecode[pc] != TOY_OPCODE_RETURN) {
 		pc += inspect_instruction(bytecode, pc, jumps_addr, data_addr);
 	}
+	pc += inspect_instruction(bytecode, pc, jumps_addr, data_addr); //BUGFIX: one more for return
 
 	(void)jumps_addr;
 	(void)param_addr;
@@ -104,13 +104,90 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 		case TOY_OPCODE_READ:
 			return inspect_read(bytecode, pc, jumps_addr, data_addr);
 
+		// case TOY_OPCODE_DECLARE:
+		// case TOY_OPCODE_ASSIGN:
+		// case TOY_OPCODE_ASSIGN_COMPOUND:
+		// case TOY_OPCODE_ACCESS:
+		// case TOY_OPCODE_INVOKE:
+		// case TOY_OPCODE_DUPLICATE:
+		// case TOY_OPCODE_ELIMINATE:
+
+		case TOY_OPCODE_ADD:
+			printf(MARKER "ADD %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			return 4;
+
+		case TOY_OPCODE_SUBTRACT:
+			printf(MARKER "SUBTRACT %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			return 4;
+
+		case TOY_OPCODE_MULTIPLY:
+			printf(MARKER "MULTIPLY %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			return 4;
+
+		case TOY_OPCODE_DIVIDE:
+			printf(MARKER "DIVIDE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			return 4;
+
+		case TOY_OPCODE_MODULO:
+			printf(MARKER "MODULO %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			return 4;
+
+		case TOY_OPCODE_COMPARE_EQUAL:
+			printf(MARKER "COMPARE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] != TOY_OPCODE_NEGATE ? "==" : "!=");
+			return 4;
+
+		case TOY_OPCODE_COMPARE_LESS:
+			printf(MARKER "COMPARE '<'\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_COMPARE_LESS_EQUAL:
+			printf(MARKER "COMPARE '<='\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_COMPARE_GREATER:
+			printf(MARKER "COMPARE '>'\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_COMPARE_GREATER_EQUAL:
+			printf(MARKER "COMPARE '>='\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_AND:
+			printf(MARKER "LOGICAL '&&'\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_OR:
+			printf(MARKER "LOGICAL '||'\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_TRUTHY:
+			printf(MARKER "LOGICAL TRUTHY\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_NEGATE:
+			printf(MARKER "LOGICAL NEGATE\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
 		case TOY_OPCODE_RETURN:
 			printf(MARKER "Keyword RETURN (%u)\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1]);
 			return 4;
 
+		// case TOY_OPCODE_JUMP:
+		// case TOY_OPCODE_ESCAPE:
+		// case TOY_OPCODE_SCOPE_PUSH:
+		// case TOY_OPCODE_SCOPE_POP:
+		// case TOY_OPCODE_ASSERT:
+
 		case TOY_OPCODE_PRINT:
 			printf(MARKER "Keyword PRINT\n", MARKER_VALUE(pc, unsigned char));
 			return 4;
+
+		// case TOY_OPCODE_CONCAT:
+		// case TOY_OPCODE_INDEX:
+		// case TOY_OPCODE_UNUSED:
+		// case TOY_OPCODE_PASS:
+		// case TOY_OPCODE_ERROR:
+		// case TOY_OPCODE_EOF:
 
 		default:
 			printf(MARKER TOY_CC_WARN "Unknown Word: [%u, %u, %u, %u]" TOY_CC_RESET "\n", MARKER_VALUE(pc, unsigned char), bytecode[pc], bytecode[pc+1], bytecode[pc+2], bytecode[pc+3]);
@@ -171,7 +248,7 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_UNKNOWN:
 		default: {
-			printf(MARKER "READ ???\n", MARKER_VALUE(pc, unsigned char));
+			printf(MARKER "READ %s (unhandled by inspector)\n", MARKER_VALUE(pc, unsigned char), Toy_private_getValueTypeAsCString(type));
 			return 4;
 		}
 	}

@@ -748,7 +748,7 @@ static void processPrint(Toy_VM* vm) {
 	//print the value on top of the stack, popping it
 	Toy_Value value = Toy_popStack(&vm->stack);
 	Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, value);
-	char* buffer = Toy_getStringRaw(string); //TODO: check string type to skip this call
+	char* buffer = Toy_getStringRaw(string); //URGENT: check string type to skip this call
 
 	Toy_print(buffer);
 
