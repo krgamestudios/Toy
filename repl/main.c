@@ -1,3 +1,5 @@
+#include "bytecode_inspector.h"
+
 #include "toy_console_colors.h"
 
 #include "toy_lexer.h"
@@ -127,7 +129,7 @@ typedef struct CmdLine {
 	bool silentPrint;
 	bool silentAssert;
 	bool removeAssert;
-	bool verboseDebugPrint;
+	bool verbose;
 } CmdLine;
 
 void usageCmdLine(int argc, const char* argv[]) {
@@ -189,7 +191,7 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 		.silentPrint = false,
 		.silentAssert = false,
 		.removeAssert = false,
-		.verboseDebugPrint = false,
+		.verbose = false,
 	};
 
 	for (int i = 1; i < argc; i++) {
@@ -239,7 +241,7 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 		}
 
 		else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--verbose")) {
-			cmd.verboseDebugPrint = true;
+			cmd.verbose = true;
 		}
 
 		else {
@@ -248,80 +250,6 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 	}
 
 	return cmd;
-}
-
-//repl function
-int repl(const char* filepath) {
-	//output options
-	Toy_setPrintCallback(printCallback);
-	Toy_setErrorCallback(errorAndContinueCallback);
-	Toy_setAssertFailureCallback(assertFailureAndContinueCallback);
-
-	//vars to use
-	char prompt[256];
-	getFileName(prompt, filepath);
-	unsigned int INPUT_BUFFER_SIZE = 4096;
-	char inputBuffer[INPUT_BUFFER_SIZE];
-	memset(inputBuffer, 0, INPUT_BUFFER_SIZE);
-
-	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-
-	Toy_VM vm;
-	Toy_initVM(&vm);
-
-	printf("%s> ", prompt); //shows the terminal prompt and begin
-
-	unsigned int runCount = 0; //used for initial preserveScope
-
-	//read from the terminal
-	while(fgets(inputBuffer, INPUT_BUFFER_SIZE, stdin)) {
-		//work around fgets() adding a newline
-		unsigned int length = strlen(inputBuffer);
-		if (inputBuffer[length - 1] == '\n') {
-			inputBuffer[--length] = '\0';
-		}
-
-		if (length == 0 || !inputBuffer[ strspn(inputBuffer, " \r\n\t") ]) {
-			printf("%s> ", prompt); //shows the terminal prompt and restart
-			continue;
-		}
-
-		//end
-		if (strlen(inputBuffer) == 4 && (strncmp(inputBuffer, "exit", 4) == 0 || strncmp(inputBuffer, "quit", 4) == 0)) {
-			break;
-		}
-
-		//parse the input, prep the VM for execution
-		Toy_Lexer lexer;
-		Toy_bindLexer(&lexer, inputBuffer);
-		Toy_Parser parser;
-		Toy_bindParser(&parser, &lexer);
-		Toy_Ast* ast = Toy_scanParser(&bucket, &parser); //Ast is in the bucket, so it doesn't need to be freed
-
-		//parsing error, retry
-		if (parser.error) {
-			printf("%s> ", prompt); //shows the terminal prompt
-			continue;
-		}
-
-		unsigned char* bytecode = Toy_compileToBytecode(ast);
-		Toy_bindVM(&vm, bytecode, runCount++ > 0);
-
-		//run
-		Toy_runVM(&vm);
-
-		//free the memory, and leave the VM ready for the next loop
-		Toy_resetVM(&vm, true);
-		free(bytecode);
-
-		printf("%s> ", prompt); //shows the terminal prompt
-	}
-
-	//cleanup all memory
-	Toy_freeVM(&vm);
-	Toy_freeBucket(&bucket);
-
-	return 0;
 }
 
 //debugging
@@ -383,6 +311,87 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 	if (scope->next != NULL) {
 		debugScopePrint(scope->next, depth + 1);
 	}
+}
+
+//repl function
+int repl(const char* filepath, bool verbose) {
+	//output options
+	Toy_setPrintCallback(printCallback);
+	Toy_setErrorCallback(errorAndContinueCallback);
+	Toy_setAssertFailureCallback(assertFailureAndContinueCallback);
+
+	//vars to use
+	char prompt[256];
+	getFileName(prompt, filepath);
+	unsigned int INPUT_BUFFER_SIZE = 4096;
+	char inputBuffer[INPUT_BUFFER_SIZE];
+	memset(inputBuffer, 0, INPUT_BUFFER_SIZE);
+
+	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+
+	Toy_VM vm;
+	Toy_initVM(&vm);
+
+	printf("%s> ", prompt); //shows the terminal prompt and begin
+
+	unsigned int runCount = 0; //used for initial preserveScope
+
+	//read from the terminal
+	while(fgets(inputBuffer, INPUT_BUFFER_SIZE, stdin)) {
+		//work around fgets() adding a newline
+		unsigned int length = strlen(inputBuffer);
+		if (inputBuffer[length - 1] == '\n') {
+			inputBuffer[--length] = '\0';
+		}
+
+		if (length == 0 || !inputBuffer[ strspn(inputBuffer, " \r\n\t") ]) {
+			printf("%s> ", prompt); //shows the terminal prompt and restart
+			continue;
+		}
+
+		//end
+		if (strlen(inputBuffer) == 4 && (strncmp(inputBuffer, "exit", 4) == 0 || strncmp(inputBuffer, "quit", 4) == 0)) {
+			break;
+		}
+
+		//parse the input, prep the VM for execution
+		Toy_Lexer lexer;
+		Toy_bindLexer(&lexer, inputBuffer);
+		Toy_Parser parser;
+		Toy_bindParser(&parser, &lexer);
+		Toy_Ast* ast = Toy_scanParser(&bucket, &parser); //Ast is in the bucket, so it doesn't need to be freed
+
+		//parsing error, retry
+		if (parser.error) {
+			printf("%s> ", prompt); //shows the terminal prompt
+			continue;
+		}
+
+		unsigned char* bytecode = Toy_compileToBytecode(ast);
+		Toy_bindVM(&vm, bytecode, runCount++ > 0);
+
+		//run
+		Toy_runVM(&vm);
+
+		//print the debug info
+		if (verbose) {
+			debugStackPrint(vm.stack);
+			debugScopePrint(vm.scope, 0);
+			inspect_bytecode(bytecode);
+		}
+
+		//free the memory, and leave the VM ready for the next loop
+		Toy_resetVM(&vm, true);
+		free(bytecode);
+
+		printf("%s> ", prompt); //shows the terminal prompt
+	}
+
+	//cleanup all memory
+	Toy_freeVM(&vm);
+	Toy_freeBucket(&bucket);
+
+	return 0;
 }
 
 //main file
@@ -462,9 +471,10 @@ int main(int argc, const char* argv[]) {
 		Toy_runVM(&vm);
 
 		//print the debug info
-		if (cmd.verboseDebugPrint) { //URGENT: 'verbose' option is mainly for the WIP elements, like decompiler
+		if (cmd.verbose) {
 			debugStackPrint(vm.stack);
 			debugScopePrint(vm.scope, 0);
+			inspect_bytecode(bytecode);
 		}
 
 		//cleanup
@@ -472,7 +482,7 @@ int main(int argc, const char* argv[]) {
 		free(bytecode);
 	}
 	else {
-		repl(argv[0]);
+		repl(argv[0], cmd.verbose);
 	}
 
 	return 0;

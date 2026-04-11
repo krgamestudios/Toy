@@ -1,20 +1,5 @@
 
 
-/*
-{
-	fn hello() {
-		print "Hello world";
-	}
-	hello();
-}
-*/
+print "hello world";
 
-{
-	fn hello(arg) {
-		print arg;
-	}
-
-	hello("world");
-}
-
-
+print [];

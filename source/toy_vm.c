@@ -62,7 +62,7 @@ static void processRead(Toy_VM* vm) {
 		}
 
 		case TOY_VALUE_STRING: {
-			enum Toy_StringType stringType = READ_BYTE(vm);
+			Toy_StringType stringType = READ_BYTE(vm);
 			int len = (int)READ_BYTE(vm); //WARN: only used for name strings
 			(void)len;
 
