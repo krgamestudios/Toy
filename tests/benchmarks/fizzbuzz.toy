@@ -1,0 +1,23 @@
+//standard example, using 'while' instead of 'for', because it's not ready yet
+
+var counter: int = 0;
+
+while (++counter <= 10_000) {
+	var result: string = "";
+
+	if (counter % 3 == 0) {
+		result = result .. "fizz";
+	}
+
+	if (counter % 5 == 0) {
+		result = result .. "buzz";
+	}
+
+	//finally
+	if (result != "") {
+		print result;
+	}
+	else {
+		print counter;
+	}
+}
