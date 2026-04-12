@@ -41,7 +41,7 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//check the bytecode was loaded correctly
 		if (
@@ -86,7 +86,7 @@ int test_simple_execution(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -132,7 +132,7 @@ int test_opcode_not_equal(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -188,7 +188,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -232,7 +232,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -277,7 +277,7 @@ int test_keyword_assert(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -326,7 +326,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -371,7 +371,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -416,7 +416,7 @@ int test_keyword_print(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -465,7 +465,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -510,7 +510,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -554,7 +554,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -599,7 +599,7 @@ int test_keyword_ifThenElse(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -647,7 +647,7 @@ int test_scope(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -695,7 +695,7 @@ int test_scope(Toy_Bucket** bucketHandle) {
 		//run the setup
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -737,7 +737,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 
 		//run 1
 		unsigned char* bytecode1 = makeCodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, bytecode1, false);
+		Toy_bindVM(&vm, bytecode1, NULL);
 
 		Toy_runVM(&vm);
 		Toy_resetVM(&vm, true);
@@ -757,7 +757,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 
 		//run 2
 		unsigned char* bytecode2 = makeCodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, bytecode2, true); //preserve during repeated calls
+		Toy_bindVM(&vm, bytecode2, NULL); //preserve during repeated calls
 
 		Toy_runVM(&vm);
 		Toy_resetVM(&vm, true);
@@ -777,7 +777,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 
 		//run 3
 		unsigned char* bytecode3 = makeCodeFromSource(bucketHandle, "print \"Hello world!\";");
-		Toy_bindVM(&vm, bytecode3, true); //preserve during repeated calls
+		Toy_bindVM(&vm, bytecode3, NULL); //preserve during repeated calls
 
 		Toy_runVM(&vm);
 		Toy_resetVM(&vm, true);

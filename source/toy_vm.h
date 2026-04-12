@@ -47,7 +47,7 @@ TOY_API void Toy_resetVM(Toy_VM* vm, bool preserveScope);
 TOY_API void Toy_initVM(Toy_VM* vm); //creates memory
 TOY_API void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent); //inherits scope bucket
 
-void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, bool preserveScope);
+void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope);
 TOY_API unsigned int Toy_runVM(Toy_VM* vm);
 TOY_API void Toy_freeVM(Toy_VM* vm);
 

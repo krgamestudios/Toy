@@ -36,6 +36,10 @@ TOY_API Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key);
 
 TOY_API bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key);
 
+//manage refcounting
+TOY_API void Toy_private_incrementScopeRefCount(Toy_Scope* scope);
+TOY_API void Toy_private_decrementScopeRefCount(Toy_Scope* scope);
+
 //some useful sizes, could be swapped out as needed
 #ifndef TOY_SCOPE_INITIAL_CAPACITY
 #define TOY_SCOPE_INITIAL_CAPACITY 8

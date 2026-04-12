@@ -1,0 +1,21 @@
+fn makeCounter() {
+	var counter: int = 0;
+
+	fn increment() {
+		return ++counter;
+	}
+
+	return increment;
+}
+
+var tally = makeCounter();
+
+while (true) {
+	var result = tally();
+
+	print result;
+
+	if (result >= 10) {
+		break;
+	}
+}

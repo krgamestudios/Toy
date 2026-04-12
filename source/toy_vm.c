@@ -151,14 +151,15 @@ static void processRead(Toy_VM* vm) {
 		}
 
 		case TOY_VALUE_FUNCTION: {
-			// unsigned int paramCount = (unsigned int)READ_BYTE(vm); //unused
+			unsigned int paramCount = (unsigned int)READ_BYTE(vm); //unused
+			(void)paramCount;
 
 			fixAlignment(vm);
 
 			unsigned int addr = (unsigned int)READ_INT(vm);
 
 			//create and push the function value
-			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr);
+			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr, vm->scope);
 			value = TOY_VALUE_FROM_FUNCTION(function);
 
 			break;
@@ -396,7 +397,7 @@ static void processInvoke(Toy_VM* vm) {
 			//spin up a new sub-vm
 			Toy_VM subVM;
 			Toy_inheritVM(&subVM, vm);
-			Toy_bindVM(&subVM, fn->bytecode.code, false);
+			Toy_bindVM(&subVM, fn->bytecode.code, fn->bytecode.parentScope);
 
 			//check args count
 			if (argCount * 8 != subVM.paramCount) {
@@ -1104,7 +1105,7 @@ void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
 	Toy_resetVM(vm, true);
 }
 
-void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, bool preserveScope) {
+void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope) {
 	vm->code = bytecode; //set code, so it can be read
 
 	(void)READ_UNSIGNED_INT(vm); //global header
@@ -1131,8 +1132,8 @@ void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, bool preserveScope) {
 	}
 
 	//scopes
-	if (preserveScope == false) {
-		vm->scope = Toy_pushScope(&vm->memoryBucket, NULL);
+	if (vm->scope == NULL) {
+		vm->scope = Toy_pushScope(&vm->memoryBucket, parentScope);
 	}
 }
 

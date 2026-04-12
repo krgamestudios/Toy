@@ -731,7 +731,7 @@ static Toy_AstFlag invoke(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 	//finally, emit the call as an Ast
 	Toy_private_emitAstFunctionInvokation(bucketHandle, rootHandle, args);
 
-	return TOY_AST_FLAG_NONE;
+	return TOY_AST_FLAG_INVOKATION;
 }
 
 //grammar rules
@@ -964,25 +964,23 @@ static void makeFunctionDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 		advance(parser);
 		Toy_Token nameToken = parser->previous;
 
-		//TODO: fix this with param type info
+		//URGENT: fix this with param type info
 		//read the type specifier if present
-		// Toy_ValueType varType = TOY_VALUE_ANY;
-		// bool constant = true; //parameters are immutable
+		Toy_ValueType varType = TOY_VALUE_ANY;
+		bool constant = true; //parameters are immutable
 
 		if (match(parser, TOY_TOKEN_OPERATOR_COLON)) {
-			// varType = readType(parser);
-			readType(parser);
+			varType = readType(parser);
 
 			if (match(parser, TOY_TOKEN_KEYWORD_CONST)) {
-				// constant = true;
+				constant = true;
 			}
 		}
 
-		//emit the parameter as a name string
-		Toy_String* name = Toy_toStringLength(bucketHandle, nameToken.lexeme, nameToken.length);
-		Toy_Value value = TOY_VALUE_FROM_STRING(name);
+		//emit the parameter as a var declaration
 		Toy_Ast* ast = NULL;
-		Toy_private_emitAstValue(bucketHandle, &ast, value); //TODO: params with type info
+		Toy_String* name = Toy_toStringLength(bucketHandle, nameToken.lexeme, nameToken.length);
+		Toy_private_emitAstVariableDeclaration(bucketHandle, &ast, name, varType, constant, NULL);
 
 		//add to the params aggregate (is added backwards, because weird)
 		Toy_private_emitAstAggregate(bucketHandle, &params, TOY_AST_FLAG_COLLECTION, ast);

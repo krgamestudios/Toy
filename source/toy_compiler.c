@@ -188,14 +188,16 @@ static unsigned int emitParameters(Toy_Bytecode* mb, Toy_Ast* ast) {
 		total += emitParameters(mb, ast->aggregate.right);
 		return total;
 	}
-	else if (ast->type != TOY_AST_VALUE) {
+	else if (ast->type != TOY_AST_VAR_DECLARE) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown AST type passed to 'emitParameters()'\n" TOY_CC_RESET);
 		exit(-1);
 		return 0;
 	}
 
 	//the address within the data section
-	unsigned int dataAddr = emitCStringToData(&(mb->data), &(mb->dataCapacity), &(mb->dataCount), TOY_VALUE_AS_STRING(ast->value.value)->leaf.data);
+	char buffer[128];
+	snprintf(buffer, 128, "%.*s", ast->varDeclare.name->info.length, ast->varDeclare.name->leaf.data);
+	unsigned int dataAddr = emitCStringToData(&(mb->data), &(mb->dataCapacity), &(mb->dataCount), buffer);
 
 	//check the param index for that entry i.e. don't reuse parameter names
 	for (unsigned int i = 0; i < mb->paramCount; i++) {
@@ -209,7 +211,7 @@ static unsigned int emitParameters(Toy_Bytecode* mb, Toy_Ast* ast) {
 
 	//emit to the param index
 	EMIT_INT(&mb, param, dataAddr);
-	EMIT_INT(&mb, param, ast->value.value.type);
+	EMIT_INT(&mb, param, ast->varDeclare.valueType); //'constant' is lost, but that's fine for params
 
 	//this returns the number of written parameters
 	return 1;

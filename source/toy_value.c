@@ -178,7 +178,7 @@ void Toy_freeValue(Toy_Value value) {
 			return;
 
 		case TOY_VALUE_FUNCTION:
-			//not sure this needs to be freed
+			Toy_freeFunction(value.as.function);
 			return;
 
 		case TOY_VALUE_OPAQUE:

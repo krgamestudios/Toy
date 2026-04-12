@@ -8,34 +8,6 @@
 #include "toy_print.h"
 
 //utils
-static void incrementRefCount(Toy_Scope* scope) {
-	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
-		//check for issues
-		if (iter->next != NULL && iter->next->refCount == 0) {
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0'\n" TOY_CC_RESET);
-			exit(-1);
-		}
-
-		iter->refCount++;
-	}
-}
-
-static void decrementRefCount(Toy_Scope* scope) {
-	for (Toy_Scope* iter = scope; iter; iter = iter->next) {	
-		iter->refCount--;
-		if (iter->refCount == 0 && iter->data != NULL) {
-			//free the scope entries when this scope is no longer needed
-			for (unsigned int i = 0; i < iter->capacity; i++) {
-				if (iter->data[i].psl > 0) {
-					Toy_freeString(&(iter->data[i].key));
-					Toy_freeValue(iter->data[i].value);
-				}
-			}
-			free(iter->data);
-		}
-	}
-}
-
 static Toy_ScopeEntry* lookupScopeEntryPtr(Toy_Scope* scope, Toy_String* key, unsigned int hash, bool recursive) {
 	//terminate
 	if (scope == NULL || scope->data == NULL) {
@@ -61,7 +33,7 @@ static Toy_ScopeEntry* lookupScopeEntryPtr(Toy_Scope* scope, Toy_String* key, un
 	}
 }
 
-void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, Toy_ValueType type, bool constant) {
+static void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, Toy_ValueType type, bool constant) {
 	//make the entry
 	unsigned int probe = Toy_hashString(key) % scope->capacity;
 	Toy_ScopeEntry entry = (Toy_ScopeEntry){ .key = *key, .value = value, .type = type, .constant = constant, .psl = 1 };
@@ -97,7 +69,7 @@ void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, Toy_Valu
 	}
 }
 
-Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapacity) {
+static Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapacity) {
 	//allocate and zero a new Toy_ScopeEntry array in memory
 	Toy_ScopeEntry* newEntries = malloc(newCapacity * sizeof(Toy_ScopeEntry));
 
@@ -142,7 +114,7 @@ Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	newScope->count = 0;
 	newScope->maxPsl = 0;
 
-	incrementRefCount(newScope);
+	Toy_private_incrementScopeRefCount(newScope);
 
 	return newScope;
 }
@@ -152,7 +124,7 @@ Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 		return NULL;
 	}
 
-	decrementRefCount(scope);
+	Toy_private_decrementScopeRefCount(scope);
 	return scope->next;
 }
 
@@ -169,7 +141,7 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy
 	//type check
 	if (type != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && type != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Incorrect value type in declaration of '%s' (expected %s, got %s)", key->leaf.data, Toy_private_getValueTypeAsCString(type), Toy_private_getValueTypeAsCString(value.type));
+		sprintf(buffer, "Incorrect value type in declaration of '%.*s' (expected %s, got %s)", key->info.length, key->leaf.data, Toy_private_getValueTypeAsCString(type), Toy_private_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}
@@ -190,7 +162,7 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	//type check
 	if (entryPtr->type != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && entryPtr->type != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Incorrect value type in assignment of '%s' (expected %s, got %s)", key->leaf.data, Toy_private_getValueTypeAsCString(entryPtr->type), Toy_private_getValueTypeAsCString(value.type));
+		sprintf(buffer, "Incorrect value type in assignment of '%.*s' (expected %s, got %s)", key->info.length, key->leaf.data, Toy_private_getValueTypeAsCString(entryPtr->type), Toy_private_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}
@@ -222,4 +194,32 @@ Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key) {
 bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key) {
 	Toy_ScopeEntry* entryPtr = lookupScopeEntryPtr(scope, key, Toy_hashString(key), true);
 	return entryPtr != NULL;
+}
+
+void Toy_private_incrementScopeRefCount(Toy_Scope* scope) {
+	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
+		//check for issues
+		if (iter->next != NULL && iter->next->refCount == 0) {
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0'\n" TOY_CC_RESET);
+			exit(-1);
+		}
+
+		iter->refCount++;
+	}
+}
+
+void Toy_private_decrementScopeRefCount(Toy_Scope* scope) {
+	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
+		iter->refCount--;
+		if (iter->refCount == 0 && iter->data != NULL) {
+			//free the scope entries when this scope is no longer needed
+			for (unsigned int i = 0; i < iter->capacity; i++) {
+				if (iter->data[i].psl > 0) {
+					Toy_freeString(&(iter->data[i].key));
+					Toy_freeValue(iter->data[i].value);
+				}
+			}
+			free(iter->data);
+		}
+	}
 }

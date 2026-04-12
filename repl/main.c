@@ -334,8 +334,6 @@ int repl(const char* filepath, bool verbose) {
 
 	printf("%s> ", prompt); //shows the terminal prompt and begin
 
-	unsigned int runCount = 0; //used for initial preserveScope
-
 	//read from the terminal
 	while(fgets(inputBuffer, INPUT_BUFFER_SIZE, stdin)) {
 		//work around fgets() adding a newline
@@ -366,9 +364,8 @@ int repl(const char* filepath, bool verbose) {
 			printf("%s> ", prompt); //shows the terminal prompt
 			continue;
 		}
-
 		unsigned char* bytecode = Toy_compileToBytecode(ast);
-		Toy_bindVM(&vm, bytecode, runCount++ > 0);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
 		Toy_runVM(&vm);
@@ -466,7 +463,7 @@ int main(int argc, const char* argv[]) {
 		//run the compiled code
 		Toy_VM vm;
 		Toy_initVM(&vm);
-		Toy_bindVM(&vm, bytecode, false);
+		Toy_bindVM(&vm, bytecode, NULL);
 
 		Toy_runVM(&vm);
 

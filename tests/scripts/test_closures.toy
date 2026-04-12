@@ -1,4 +1,4 @@
-//BUG: functions aren't working yet
+//closures
 fn makeCounter() {
 	var counter: int = 0;
 
@@ -14,7 +14,9 @@ var tally = makeCounter();
 while (true) {
 	var result = tally();
 
-	if (result >= 10_000_000) {
+	print result;
+
+	if (result >= 10) {
 		break;
 	}
 }
