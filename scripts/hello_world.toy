@@ -1,4 +1,13 @@
 
 
+fn swap(a, b) {
+	return b, a;
+}
 
-print 1;
+var a = 42;
+var b = 69;
+var c;
+var d;
+
+//TODO: reverse the assignment bytecode order?
+c, d = swap(a, b);

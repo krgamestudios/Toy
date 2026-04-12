@@ -356,8 +356,6 @@ static void processAccess(Toy_VM* vm) {
 		return;
 	}
 
-	//URGENT: should I loop functions into the reference system?
-
 	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
 	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr) || TOY_VALUE_IS_FUNCTION(*valuePtr)) {
 		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
