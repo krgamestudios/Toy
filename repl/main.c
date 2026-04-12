@@ -365,6 +365,11 @@ int repl(const char* filepath, bool verbose) {
 			continue;
 		}
 		unsigned char* bytecode = Toy_compileToBytecode(ast);
+
+		if (verbose) {
+			inspect_bytecode(bytecode);
+		}
+
 		Toy_bindVM(&vm, bytecode, NULL);
 
 		//run
@@ -374,7 +379,6 @@ int repl(const char* filepath, bool verbose) {
 		if (verbose) {
 			debugStackPrint(vm.stack);
 			debugScopePrint(vm.scope, 0);
-			inspect_bytecode(bytecode);
 		}
 
 		//free the memory, and leave the VM ready for the next loop
@@ -460,6 +464,10 @@ int main(int argc, const char* argv[]) {
 		Toy_freeBucket(&bucket);
 		free(source);
 
+		if (cmd.verbose) {
+			inspect_bytecode(bytecode);
+		}
+
 		//run the compiled code
 		Toy_VM vm;
 		Toy_initVM(&vm);
@@ -471,7 +479,6 @@ int main(int argc, const char* argv[]) {
 		if (cmd.verbose) {
 			debugStackPrint(vm.stack);
 			debugScopePrint(vm.scope, 0);
-			inspect_bytecode(bytecode);
 		}
 
 		//cleanup

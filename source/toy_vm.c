@@ -226,17 +226,7 @@ static void processAssign(Toy_VM* vm) {
 	Toy_Value value = Toy_popStack(&vm->stack);
 	Toy_Value name = Toy_popStack(&vm->stack);
 
-	//TODO: remove 'TOY_STRING_NAME' entirely
-	// //check name string type
-	// if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
-	// 	Toy_error("Invalid assignment target");
-	// 	Toy_freeValue(name);
-	// 	Toy_freeValue(value);
-	// 	return;
-	// }
-
-	// //FIXME
-	// //BUGFIX: only allowable type coersion
+	//URGENT: only allowable type coersion
 	// if (TOY_VALUE_AS_STRING(name)->name.varType == TOY_VALUE_FLOAT && value.type == TOY_VALUE_INTEGER) {
 	// 	value = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(value) );
 	// }
@@ -340,13 +330,6 @@ static void processAssignCompound(Toy_VM* vm) {
 static void processAccess(Toy_VM* vm) {
 	Toy_Value name = Toy_popStack(&vm->stack);
 
-	// //check name string type
-	// if (!TOY_VALUE_IS_STRING(name) || TOY_VALUE_AS_STRING(name)->info.type != TOY_STRING_NAME) {
-	// 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
-	// 	Toy_error("Invalid access target");
-	// 	return;
-	// }
-
 	//find the value
 	Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(name));
 
@@ -370,7 +353,7 @@ static void processAccess(Toy_VM* vm) {
 }
 
 static void processInvoke(Toy_VM* vm) {
-	Toy_ValueType valueType = READ_BYTE(vm); //unused for now
+	Toy_ValueType valueType = READ_BYTE(vm);
 	unsigned int argCount = (unsigned int)READ_BYTE(vm);
 	fixAlignment(vm);
 

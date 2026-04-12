@@ -534,8 +534,7 @@ int test_value_stringify(void) {
 			return -1;
 		}
 
-		//NOTE: Test 'Stringify Dictionary as Value' not implemented, as the order is impossible to know
-		printf(TOY_CC_WARN "Test 'Stringify Dictionary as Value' not implemented\n" TOY_CC_RESET);
+		//NOTE: Test 'Stringify Table as Value' not implemented, as the order is impossible to know
 
 		//cleanup
 		free(buffer);

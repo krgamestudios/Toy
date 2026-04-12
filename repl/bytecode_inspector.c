@@ -104,13 +104,43 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 		case TOY_OPCODE_READ:
 			return inspect_read(bytecode, pc, jumps_addr, data_addr);
 
-		// case TOY_OPCODE_DECLARE:
-		// case TOY_OPCODE_ASSIGN:
-		// case TOY_OPCODE_ASSIGN_COMPOUND:
-		// case TOY_OPCODE_ACCESS:
-		// case TOY_OPCODE_INVOKE:
-		// case TOY_OPCODE_DUPLICATE:
-		// case TOY_OPCODE_ELIMINATE:
+		case TOY_OPCODE_DECLARE: {
+			unsigned int indexValue = *((unsigned int*)(bytecode + pc + 4));
+			unsigned int jumpValue = *((unsigned int*)(bytecode + jumps_addr + indexValue));
+			char* cstr = ((char*)(bytecode + data_addr + jumpValue));
+			printf(MARKER "DECLARE %s: %s%s\n", MARKER_VALUE(pc, unsigned char),
+				cstr,
+				Toy_private_getValueTypeAsCString(bytecode[pc + 1]),
+				bytecode[pc + 3] ? " const" : ""
+			);
+			return 8;
+		}
+
+		case TOY_OPCODE_ASSIGN:
+			printf(MARKER "ASSIGN %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] ? "(chained)" : "");
+			return 4;
+
+		case TOY_OPCODE_ASSIGN_COMPOUND:
+			printf(MARKER "ASSIGN COMPOUND %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] ? "(chained)" : "");
+			return 4;
+
+		case TOY_OPCODE_ACCESS:
+			printf(MARKER "ACCESS\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_INVOKE:
+			printf(MARKER "INVOKE %s (%d args)\n", MARKER_VALUE(pc, unsigned char),
+			Toy_private_getValueTypeAsCString(bytecode[pc + 1]),
+			bytecode[pc + 2]);
+			return 4;
+
+		case TOY_OPCODE_DUPLICATE:
+			printf(MARKER "DUPLICATE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] ? "and ACCESS" : "");
+			return 4;
+
+		case TOY_OPCODE_ELIMINATE:
+			printf(MARKER "ELIMINATE\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
 
 		case TOY_OPCODE_ADD:
 			printf(MARKER "ADD %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
@@ -172,18 +202,50 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			printf(MARKER "Keyword RETURN (%u)\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1]);
 			return 4;
 
-		// case TOY_OPCODE_JUMP:
-		// case TOY_OPCODE_ESCAPE:
-		// case TOY_OPCODE_SCOPE_PUSH:
-		// case TOY_OPCODE_SCOPE_POP:
-		// case TOY_OPCODE_ASSERT:
+		case TOY_OPCODE_JUMP:
+			printf(MARKER  TOY_CC_DEBUG "JUMP %s%s (%s%d) (GOTO %u)\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
+				bytecode[pc + 1] == TOY_OP_PARAM_JUMP_ABSOLUTE ? "absolute" : "relative",
+				bytecode[pc + 2] == TOY_OP_PARAM_JUMP_ALWAYS ? "" :
+					bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_TRUE ? " if true" : " if false",
+				bytecode[pc + 4] > 0 ? "+" : "", //show a + sign when positive
+				bytecode[pc + 4],
+				bytecode[pc + 4] + pc + 8
+				);
+			return 8;
 
-		case TOY_OPCODE_PRINT:
-			printf(MARKER "Keyword PRINT\n", MARKER_VALUE(pc, unsigned char));
+		case TOY_OPCODE_ESCAPE:
+			printf(MARKER  TOY_CC_DEBUG "ESCAPE relative %s%d (GOTO %u) and pop %d\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
+				bytecode[pc + 4] > 0 ? "+" : "", //show a + sign when positive
+				bytecode[pc + 4],
+				bytecode[pc + 4] + pc + 12,
+				bytecode[pc + 8]
+			);
+			return 12;
+
+		case TOY_OPCODE_SCOPE_PUSH:
+			printf(MARKER "SCOPE PUSH\n", MARKER_VALUE(pc, unsigned char));
 			return 4;
 
-		// case TOY_OPCODE_CONCAT:
-		// case TOY_OPCODE_INDEX:
+		case TOY_OPCODE_SCOPE_POP:
+			printf(MARKER "SCOPE POP\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_ASSERT:
+			printf(MARKER TOY_CC_WARN "Keyword ASSERT (cond%s)\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] > 1 ? ",msg" : "");
+			return 4;
+
+		case TOY_OPCODE_PRINT:
+			printf(MARKER TOY_CC_NOTICE "Keyword PRINT\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_CONCAT:
+			printf(MARKER "CONCATENATE strings\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
+		case TOY_OPCODE_INDEX:
+			printf(MARKER "INDEX (%d elements)\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1]);
+			return 4;
+
 		// case TOY_OPCODE_UNUSED:
 		// case TOY_OPCODE_PASS:
 		// case TOY_OPCODE_ERROR:
@@ -241,9 +303,12 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 			return 8;
 		}
 
+		case TOY_VALUE_FUNCTION:
+			printf(MARKER "READ FUNCTION (%d params)\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 2]);
+			return 8;
+
 		case TOY_VALUE_ARRAY:
 		case TOY_VALUE_TABLE: 
-		case TOY_VALUE_FUNCTION:
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_UNKNOWN:
