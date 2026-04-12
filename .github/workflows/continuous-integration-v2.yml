@@ -16,14 +16,23 @@ on:
 
 #CI workflows, limited coverage atm
 jobs:
-  units:
+  standard:
     continue-on-error: true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Preinstall dependencies
-        run: sudo apt update && sudo apt install gdb
-      - name: Run the tests
+      - name: Install Updates
+        run: sudo apt update && sudo apt upgrade -y
+      - name: Run all tests
         run: make tests
-      - name: Run the tests under gdb
+  gdb:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Updates
+        run: sudo apt update && sudo apt upgrade -y
+      - name: Install GDB if not present
+        run: sudo apt install gdb
+      - name: Run all tests under gdb
         run: make tests-gdb
