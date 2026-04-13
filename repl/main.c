@@ -59,7 +59,8 @@ unsigned char* readFile(char* path, int* size) {
 	return buffer;
 }
 
-int getFileName(char* dest, const char* src) {
+int getFileName(char* dest, const char* src, size_t destLength) {
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 	char* p = NULL;
 
 	//find the last slash, regardless of platform
@@ -68,21 +69,23 @@ int getFileName(char* dest, const char* src) {
 		p = strrchr(src, '/');
 	}
 	if (p == NULL) {
-		int len = strlen(src);
+		int len = MIN(strlen(src), destLength-1);
 		strncpy(dest, src, len);
+		dest[len] = '\0';
 		return len;
 	}
 
 	p++; //skip the slash
 
 	//determine length of the file name
-	int len = strlen(p);
+	int len = MIN(strlen(src), destLength-1);
 
 	//copy to the dest
 	strncpy(dest, p, len);
 	dest[len] = '\0';
 
 	return len;
+#undef MIN
 }
 
 //callbacks
@@ -224,7 +227,9 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 					exit(-1);
 				}
 
-				strncpy(cmd.infile, argv[i], strlen(argv[i]));
+				int len = strlen(argv[i]);
+				strncpy(cmd.infile, argv[i], len);
+				cmd.infile[len] = '\0';
 			}
 		}
 
@@ -322,7 +327,7 @@ int repl(const char* filepath, bool verbose) {
 
 	//vars to use
 	char prompt[256];
-	getFileName(prompt, filepath);
+	getFileName(prompt, filepath, 256);
 	unsigned int INPUT_BUFFER_SIZE = 4096;
 	char inputBuffer[INPUT_BUFFER_SIZE];
 	memset(inputBuffer, 0, INPUT_BUFFER_SIZE);
