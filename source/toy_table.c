@@ -93,7 +93,7 @@ void Toy_freeTable(Toy_Table* table) {
 }
 
 void Toy_insertTable(Toy_Table** tableHandle, Toy_Value key, Toy_Value value) {
-	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key)) { //TODO: disallow functions and opaques
+	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key) || TOY_VALUE_IS_FUNCTION(key) || TOY_VALUE_IS_OPAQUE(key)) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
 		exit(1);
 	}
@@ -107,7 +107,7 @@ void Toy_insertTable(Toy_Table** tableHandle, Toy_Value key, Toy_Value value) {
 }
 
 Toy_TableEntry* Toy_private_lookupTableEntryPtr(Toy_Table** tableHandle, Toy_Value key) {
-	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key)) { //TODO: disallow functions and opaques
+	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key) || TOY_VALUE_IS_FUNCTION(key) || TOY_VALUE_IS_OPAQUE(key)) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
 		exit(1);
 	}
@@ -133,7 +133,6 @@ Toy_TableEntry* Toy_private_lookupTableEntryPtr(Toy_Table** tableHandle, Toy_Val
 }
 
 Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key) {
-	//TODO: I hacked this in at a moment's notice, clean it up
 	Toy_TableEntry* entry = Toy_private_lookupTableEntryPtr(tableHandle, key);
 
 	if (entry == NULL) {
@@ -145,7 +144,7 @@ Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key) {
 }
 
 void Toy_removeTable(Toy_Table** tableHandle, Toy_Value key) {
-	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key)) { //TODO: disallow functions and opaques
+	if (TOY_VALUE_IS_NULL(key) || TOY_VALUE_IS_BOOLEAN(key) || TOY_VALUE_IS_FUNCTION(key) || TOY_VALUE_IS_OPAQUE(key)) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Bad table key\n" TOY_CC_RESET);
 		exit(1);
 	}

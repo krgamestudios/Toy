@@ -11,7 +11,6 @@
 
 //misc. utils
 static bool checkForChaining(Toy_Ast* ptr) {
-	//BUGFIX
 	if (ptr == NULL) {
 		return false;
 	}
@@ -155,7 +154,7 @@ static unsigned int emitString(Toy_Bytecode** mb, Toy_String* str) {
 		free(buffer);
 	}
 	else if (str->info.type == TOY_STRING_LEAF) {
-		char buffer[str->info.length + 1]; //BUGFIX: make sure its a null-terminated c-string
+		char buffer[str->info.length + 1]; //make sure its a null-terminated c-string
 		memcpy(buffer, str->leaf.data, str->info.length);
 		buffer[str->info.length] = '\0';
 
@@ -801,7 +800,7 @@ static unsigned int writeInstructionVarDeclare(Toy_Bytecode** mb, Toy_AstVarDecl
 static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign ast, bool chainedAssignment) {
 	unsigned int result = 0;
 
-	//TODO: flip the order of target & value, to allow chained assignment AND multiple return values
+	//URGENT: flip the order of target & value, to allow chained assignment AND multiple return values
 
 	//target is a variable name
 	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value)) {

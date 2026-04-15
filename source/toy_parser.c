@@ -330,7 +330,7 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 				buffer[i] = parser->previous.lexeme[o];
 				if (buffer[i] != '_') i++;
 			} while (parser->previous.lexeme[o++] && i < parser->previous.length);
-			buffer[i] = '\0'; //BUGFIX
+			buffer[i] = '\0';
 
 			int value = 0;
 			sscanf(buffer, "%d", &value);
@@ -347,7 +347,7 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 				buffer[i] = parser->previous.lexeme[o];
 				if (buffer[i] != '_') i++;
 			} while (parser->previous.lexeme[o++] && i < parser->previous.length);
-			buffer[i] = '\0'; //BUGFIX
+			buffer[i] = '\0';
 
 			float value = 0;
 			sscanf(buffer, "%f", &value);
@@ -964,7 +964,6 @@ static void makeFunctionDeclarationStmt(Toy_Bucket** bucketHandle, Toy_Parser* p
 		advance(parser);
 		Toy_Token nameToken = parser->previous;
 
-		//URGENT: fix this with param type info
 		//read the type specifier if present
 		Toy_ValueType varType = TOY_VALUE_ANY;
 		bool constant = true; //parameters are immutable

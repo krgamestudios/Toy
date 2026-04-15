@@ -87,7 +87,7 @@ void inspect_bytecode(unsigned char* bytecode) {
 	while(bytecode[pc] != TOY_OPCODE_RETURN) {
 		pc += inspect_instruction(bytecode, pc, jumps_addr, data_addr);
 	}
-	pc += inspect_instruction(bytecode, pc, jumps_addr, data_addr); //BUGFIX: one more for return
+	pc += inspect_instruction(bytecode, pc, jumps_addr, data_addr); //one more for the final return
 
 	(void)jumps_addr;
 	(void)param_addr;
@@ -289,7 +289,7 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 		}
 
 		case TOY_VALUE_STRING: {
-			Toy_StringType stringType = (Toy_StringType)(*(bytecode + pc + 2)); //TODO: not needed?
+			Toy_StringType stringType = (Toy_StringType)(*(bytecode + pc + 2)); //Probably not needed
 			int len = bytecode[pc + 3]; //only used for names?
 
 			(void)stringType;
@@ -318,3 +318,5 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 		}
 	}
 }
+
+//URGENT: Check if strings are reused in the bytecode

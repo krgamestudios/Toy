@@ -48,8 +48,6 @@ typedef struct Toy_Bytecode {
 	unsigned int subsCapacity;
 	unsigned int subsCount;
 
-	//TODO: duplicate string reuse, see #168
-
 	//tools for handling the build process
 	unsigned int currentScopeDepth;
 	Toy_private_EscapeArray* breakEscapes;

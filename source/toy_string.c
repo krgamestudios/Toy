@@ -45,7 +45,7 @@ Toy_String* Toy_toStringLength(Toy_Bucket** bucketHandle, const char* cstring, u
 Toy_String* Toy_createStringLength(Toy_Bucket** bucketHandle, const char* cstring, unsigned int length) {
 	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String));
 
-	if (length > 0) { //BUGFIX
+	if (length > 0) {
 		ret->leaf.data = (char*)Toy_partitionBucket(bucketHandle, length + 1);
 		strncpy((char*)(ret->leaf.data), cstring, length);
 		((char*)(ret->leaf.data))[length] = '\0'; //don't forget the null
@@ -232,7 +232,6 @@ unsigned int Toy_hashString(Toy_String* str) {
 		return str->info.cachedHash;
 	}
 	else if (str->info.type == TOY_STRING_NODE) {
-		//TODO: I wonder if it would be possible to discretely swap the composite node string with a new leaf string here? Would that speed up other parts of the code by not having to walk the tree in future? - needs to be benchmarked
 		char* buffer = Toy_getStringRaw(str);
 		str->info.cachedHash = hashCString(buffer);
 		free(buffer);

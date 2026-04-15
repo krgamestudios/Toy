@@ -201,7 +201,7 @@ int test_value_hashing(void) {
 			Toy_hashValue(f) != 0 ||
 			Toy_hashValue(i) != 4147366645 ||
 			Toy_hashValue(s) != 994097935 ||
-			TOY_VALUE_AS_STRING(s)->info.cachedHash == 0 || //TODO: check this
+			TOY_VALUE_AS_STRING(s)->info.cachedHash == 0 ||
 			Toy_hashValue(a) != 2544446955
 			)
 		{
@@ -598,6 +598,7 @@ int main(void) {
 	}
 
 	//TODO: references
+	//TODO: type coersions
 
 	return total;
 }

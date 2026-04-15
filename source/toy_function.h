@@ -17,7 +17,7 @@ typedef struct Toy_FunctionBytecode {
 
 typedef struct Toy_FunctionNative {
 	Toy_FunctionType type;
-	void* native; //TODO: replace with the native function pointer
+	void* ptr; //TODO: replace with the native function pointer
 } Toy_FunctionNative;
 
 typedef union Toy_Function_t {

@@ -37,7 +37,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 		struct Toy_Array* array;       //4  | 8
 		struct Toy_Table* table;       //4  | 8
 		union Toy_Function_t* function;//4  | 8
-		//TODO: more types go here
+		//more types go here as needed
 
 	} as;                              //4  | 8
 
@@ -63,7 +63,6 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_AS_ARRAY(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.array)
 #define TOY_VALUE_AS_TABLE(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.table)
 #define TOY_VALUE_AS_FUNCTION(value)			((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.function)
-//TODO: more
 
 #define TOY_VALUE_FROM_NULL()					((Toy_Value){{ .integer = 0 }, TOY_VALUE_NULL})
 #define TOY_VALUE_FROM_BOOLEAN(value)			((Toy_Value){{ .boolean = value }, TOY_VALUE_BOOLEAN})
@@ -73,7 +72,6 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_FROM_ARRAY(value)				((Toy_Value){{ .array = value }, TOY_VALUE_ARRAY})
 #define TOY_VALUE_FROM_TABLE(value)				((Toy_Value){{ .table = value }, TOY_VALUE_TABLE})
 #define TOY_VALUE_FROM_FUNCTION(value)			((Toy_Value){{ .function = value }, TOY_VALUE_FUNCTION})
-//TODO: more
 
 #define TOY_REFERENCE_FROM_POINTER(ptr)			((Toy_Value){{ .reference = ptr }, TOY_VALUE_REFERENCE})
 

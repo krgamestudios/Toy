@@ -103,6 +103,14 @@ static Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapa
 	return newEntries;
 }
 
+Toy_Value coerceValueTypesIfAble(Toy_ValueType type, Toy_Value value) {
+	//integer to float
+	if (type == TOY_VALUE_FLOAT && value.type == TOY_VALUE_INTEGER) {
+		value = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(value) );
+	}
+	return value;
+}
+
 //exposed functions
 Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
@@ -138,6 +146,8 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy
 		return;
 	}
 
+	value = coerceValueTypesIfAble(type, value);
+
 	//type check
 	if (type != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && type != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->info.length + 256];
@@ -158,6 +168,8 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 		Toy_error(buffer);
 		return;
 	}
+
+	value = coerceValueTypesIfAble(entryPtr->type, value);
 
 	//type check
 	if (entryPtr->type != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && entryPtr->type != value.type && value.type != TOY_VALUE_REFERENCE) {

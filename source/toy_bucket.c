@@ -25,7 +25,7 @@ Toy_Bucket* Toy_allocateBucket(unsigned int capacity) {
 }
 
 unsigned char* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount) {
-	//BUGFIX: the endpoint must be aligned to the word size, otherwise you'll get a bus error from moving pointers
+	//the endpoint must be aligned to the word size, otherwise you'll get a bus error from moving pointers
 	amount = (amount + 3) & ~3;
 
 	assert((*bucketHandle) != NULL && "Expected a 'Toy_Bucket', received NULL");

@@ -137,8 +137,9 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_TABLE(result);
 		}
 
-		case TOY_VALUE_FUNCTION:
-			return value; //URGENT: concerning
+		case TOY_VALUE_FUNCTION: //TODO: implement function duplication elsewhere
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy a function (use a reference instead), exiting\n" TOY_CC_RESET);
+			exit(-1);
 
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
@@ -313,7 +314,17 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 		}
 
 		case TOY_VALUE_FUNCTION:
-			return false; //URGENT: test this
+			if (right.type == TOY_VALUE_FUNCTION && left.as.function->type == right.as.function->type) {
+				if (left.as.function->type == TOY_FUNCTION_CUSTOM) {
+					return left.as.function->bytecode.code == right.as.function->bytecode.code;
+				}
+				else {
+					return left.as.function->native.ptr == right.as.function->native.ptr;
+				}
+			}
+			else {
+				return false;
+			}
 
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
@@ -529,14 +540,13 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			//clean up
 			Toy_freeString(open);
 			Toy_freeString(close);
-			Toy_freeString(comma); //TODO: reusable global, or string type "permanent"
-			Toy_freeString(quote); //TODO: reusable global, or string type "permanent"
+			Toy_freeString(comma); //TODO: reusable global, or string type "permanent", needs benchmarking
+			Toy_freeString(quote);
 
 			return string;
 		}
 
 		case TOY_VALUE_TABLE: {
-			//TODO: concat + free is definitely a performance nightmare, could make an append function?
 			Toy_Table* ptr = value.as.table;
 
 			//if table is empty, skip below
@@ -620,9 +630,9 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			//clean up
 			Toy_freeString(open);
 			Toy_freeString(close);
-			Toy_freeString(colon); //TODO: reusable global, or string type "permanent"
-			Toy_freeString(comma); //TODO: reusable global, or string type "permanent"
-			Toy_freeString(quote); //TODO: reusable global, or string type "permanent"
+			Toy_freeString(colon);
+			Toy_freeString(comma);
+			Toy_freeString(quote);
 
 			return string;
 		}

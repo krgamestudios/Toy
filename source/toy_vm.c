@@ -209,11 +209,6 @@ static void processDeclare(Toy_VM* vm) {
 	//get the value
 	Toy_Value value = Toy_popStack(&vm->stack);
 
-	//BUGFIX: only allowable type coersion
-	if (type == TOY_VALUE_FLOAT && value.type == TOY_VALUE_INTEGER) {
-		value = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(value) );
-	}
-
 	//declare it
 	Toy_declareScope(vm->scope, name, type, value, constant);
 
@@ -225,11 +220,6 @@ static void processAssign(Toy_VM* vm) {
 	//get the value & name
 	Toy_Value value = Toy_popStack(&vm->stack);
 	Toy_Value name = Toy_popStack(&vm->stack);
-
-	//URGENT: only allowable type coersion
-	// if (TOY_VALUE_AS_STRING(name)->name.varType == TOY_VALUE_FLOAT && value.type == TOY_VALUE_INTEGER) {
-	// 	value = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(value) );
-	// }
 
 	//assign it
 	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value); //scope now owns the value, doesn't need to be freed
