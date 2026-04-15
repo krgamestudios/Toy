@@ -17,19 +17,21 @@ on:
 #CI workflows, limited coverage atm
 jobs:
   standard:
-    continue-on-error: true
+    strategy:
+      fail-fast: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Updates
         run: sudo apt update && sudo apt upgrade -y
       - name: Run all tests
         run: make tests
   gdb:
-    continue-on-error: true
+    strategy:
+      fail-fast: false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Install Updates
         run: sudo apt update && sudo apt upgrade -y
       - name: Install GDB if not present
