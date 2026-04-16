@@ -319,7 +319,7 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 					return left.as.function->bytecode.code == right.as.function->bytecode.code;
 				}
 				else {
-					return left.as.function->native.ptr == right.as.function->native.ptr;
+					return left.as.function->native.callback == right.as.function->native.callback;
 				}
 			}
 			else {

@@ -11,8 +11,20 @@ Toy_Function* Toy_createFunctionFromBytecode(Toy_Bucket** bucketHandle, unsigned
 	return fn;
 }
 
+Toy_Function* Toy_createFunctionFromCallback(Toy_Bucket** bucketHandle, Toy_nativeCallback callback) {
+	Toy_Function* fn = (Toy_Function*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Function));
+
+	fn->type = TOY_FUNCTION_NATIVE;
+	fn->native.callback = callback;
+
+	return fn;
+}
+
 TOY_API void Toy_freeFunction(Toy_Function* fn) {
 	if (fn->type == TOY_FUNCTION_CUSTOM) {
 		Toy_private_decrementScopeRefCount(fn->bytecode.parentScope);
+	}
+	else if (fn->type == TOY_FUNCTION_NATIVE) {
+		fn->native.callback = NULL;
 	}
 }

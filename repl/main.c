@@ -7,6 +7,8 @@
 #include "toy_compiler.h"
 #include "toy_vm.h"
 
+#include "standard_library.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -336,6 +338,12 @@ int repl(const char* filepath, bool verbose) {
 
 	Toy_VM vm;
 	Toy_initVM(&vm);
+
+	//hacky test
+	if (vm.scope == NULL) {
+		vm.scope = Toy_pushScope(&vm.memoryBucket, NULL);
+		initStandardLibrary(&vm);
+	}
 
 	printf("%s> ", prompt); //shows the terminal prompt and begin
 

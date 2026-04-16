@@ -419,7 +419,12 @@ static void processInvoke(Toy_VM* vm) {
 		}
 		break;
 
-		case TOY_FUNCTION_NATIVE:
+		case TOY_FUNCTION_NATIVE: {
+			//NOTE: arguments are on the stack, leave results on the stack
+			fn->native.callback(vm);
+		}
+		break;
+
 		default:
 			Toy_error("Can't call an unknown function type");
 			break;

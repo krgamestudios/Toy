@@ -3,6 +3,11 @@
 #include "toy_common.h"
 #include "toy_bucket.h"
 #include "toy_scope.h"
+#include "toy_vm.h"
+
+//forward declare
+struct Toy_VM;
+typedef void (*Toy_nativeCallback)(struct Toy_VM*);
 
 typedef enum Toy_FunctionType {
 	TOY_FUNCTION_CUSTOM,
@@ -17,7 +22,7 @@ typedef struct Toy_FunctionBytecode {
 
 typedef struct Toy_FunctionNative {
 	Toy_FunctionType type;
-	void* ptr; //TODO: replace with the native function pointer
+	Toy_nativeCallback callback;
 } Toy_FunctionNative;
 
 typedef union Toy_Function_t {
@@ -27,5 +32,6 @@ typedef union Toy_Function_t {
 } Toy_Function;
 
 TOY_API Toy_Function* Toy_createFunctionFromBytecode(Toy_Bucket** bucketHandle, unsigned char* bytecode, Toy_Scope* parentScope);
+TOY_API Toy_Function* Toy_createFunctionFromCallback(Toy_Bucket** bucketHandle, Toy_nativeCallback callback);
 
 TOY_API void Toy_freeFunction(Toy_Function* fn);
