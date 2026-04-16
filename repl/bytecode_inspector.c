@@ -319,4 +319,4 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 	}
 }
 
-//URGENT: Check if strings are reused in the bytecode
+//TODO: Check if strings are reused in the bytecode

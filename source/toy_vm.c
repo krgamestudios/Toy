@@ -720,11 +720,17 @@ static void processPrint(Toy_VM* vm) {
 	//print the value on top of the stack, popping it
 	Toy_Value value = Toy_popStack(&vm->stack);
 	Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, value);
-	char* buffer = Toy_getStringRaw(string); //URGENT: check string type to skip this call
 
-	Toy_print(buffer);
+	//check string type to skip a potential malloc
+	if (string->info.type == TOY_STRING_LEAF) {
+		Toy_print(string->leaf.data);
+	}
+	else {
+		char* buffer = Toy_getStringRaw(string);
+		Toy_print(buffer);
+		free(buffer);
+	}
 
-	free(buffer);
 	Toy_freeString(string);
 	Toy_freeValue(value);
 }
