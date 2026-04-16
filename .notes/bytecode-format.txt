@@ -2,7 +2,9 @@ The bytecode format
 
 ===
 
-There are four components in the bytecode header:
+NOTE: This datestamp header is currently not implemented
+
+There are four components in the datestamp header:
 
 TOY_VERSION_MAJOR
 TOY_VERSION_MINOR
@@ -27,47 +29,36 @@ Please note that in the final bytecode, if the null terminator of TOY_VERSION_BU
 
 ===
 
-At this time, a 'module' consists of a single 'routine', which acts as its global scope.
-
-Additional information may be added later, or multiple 'modules' listed sequentially may be a possibility.
-
-===
-
-# the routine structure, which is potentially recursive
-
-# symbol shorthand : 'module::identifier'
-# where 'module' can be omitted if it's local to this module ('identifier' within the symbols is calculated at the module level, it's always unique)
+Bytecode Format Structure
 
 .header:
 	N total size       # size of this routine, including all data and subroutines
 	N .jumps count     # the number of entries in the jump table (should be data count + routine count)
-	N .param count     # the number of parameter fields expected
-	N .data count      # the number of data fields expected
-	N .routine count   # the number of routines present
+	N .param count     # the number of parameter fields expected (used for subroutines)
+	N .data count      # the number of data fields present
+	N .subs count      # the number of subroutines present
 	.code start        # absolute address of .code;      mandatory
 	.param start       # absolute addess of .param;      omitted if not needed
 	.datatable start   # absolute address of .datatable; omitted if not needed
 	.data start        # absolute address of .data;      omitted if not needed
-	.routine start     # absolute address of .routine;   omitted if not needed
+	.subs start        # absolute address of .subs;      omitted if not needed
 	# additional metadata fields can be added later
 
 .code:
-	# instructions read and 'executed' by the interpreter
-	READ 0
-	LOAD 0
-	ASSERT
+	# opcode instructions read and 'executed' by the interpreter (aligned to 4-byte widths)
+	[READ, TOY_VALUE_STRING, Toy_StringType, stringLength] [jumpIndex]
 
 .param:
-	# a list of symbols to be used as keys in the environment
+	# a list of names, stored in .data, to be used for any provided function arguments
 
 .jumptable:
-	# a 'symbol -> pointer' jumptable for quickly looking up values in .data and .routines
+	# a layer of indirection for quickly looking up values in .data and .subs
 	0 -> {string, 0x00}
-	1 -> {fn, 0xFF}
+	4 -> {fn, 0xFF}
 
 .data:
-	# data that can't really be embedded into .code
-	<STRING>,"Hello world"
+	# data that can't be cleanly embedded into .code, such as strings
+	"Hello world\0"
 
-.routines:
-	# inner routines, each of which conforms to this spec
+.subs:
+	# an extension of .data, used exclusively for subroutines (they also follow this spec, recursively)
