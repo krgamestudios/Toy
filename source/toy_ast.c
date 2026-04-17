@@ -234,6 +234,15 @@ void Toy_private_emitAstFunctionInvokation(Toy_Bucket** bucketHandle, Toy_Ast** 
 	(*astHandle) = tmp;
 }
 
+void Toy_private_emitAstStackPop(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
+	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
+
+	tmp->type = TOY_AST_STACK_POP;
+	tmp->stackPop.child = (*astHandle);
+
+	(*astHandle) = tmp;
+}
+
 void Toy_private_emitAstPass(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 

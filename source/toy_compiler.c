@@ -1080,6 +1080,19 @@ static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke 
 	return 0;
 }
 
+static unsigned int writeInstructionStackPop(Toy_Bytecode** mb, Toy_AstStackPop ast) {
+	unsigned int result = writeBytecodeFromAst(mb, ast.child);
+
+	//dead simple
+	EMIT_BYTE(mb, code,TOY_OPCODE_ELIMINATE);
+	EMIT_BYTE(mb, code, 0);
+	EMIT_BYTE(mb, code, 0);
+	EMIT_BYTE(mb, code, 0);
+
+	return result - 1;
+}
+
+
 static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 	if (ast == NULL) {
 		return 0;
@@ -1196,6 +1209,10 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 
 		case TOY_AST_FN_INVOKE:
 			result += writeInstructionFnInvoke(mb, ast->fnInvoke);
+			break;
+
+		case TOY_AST_STACK_POP:
+			result += writeInstructionStackPop(mb, ast->stackPop);
 			break;
 
 		case TOY_AST_PASS:

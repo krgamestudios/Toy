@@ -5,7 +5,6 @@ var counter: int = 0;
 var first: int = 1;
 var second: int = 0;
 
-//BUG: This causes a stack overflow
 while (counter < 100_000) {
 	var third: int = first + second;
 	first = second;
