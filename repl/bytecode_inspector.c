@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr);
 int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr);
@@ -15,31 +16,34 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 // void inspect_data(unsigned char* bytecode, unsigned int pc, unsigned int size);
 // void inspect_subs(unsigned char* bytecode, unsigned int pc, unsigned int size);
 
+#define ISPRINT_SANITIZE(x) (isprint((int)x) > 0 ? (x) : '_')
+
 #define MARKER_VALUE(pc, type) \
 	(pc * sizeof(type))
 
-#define MARKER "\033[" TOY_CC_FONT_BLACK "m" " %lu\t" TOY_CC_RESET
+#define MARKER "\t\033[" TOY_CC_FONT_BLACK "m" " %lu\t" TOY_CC_RESET
+#define FONT_BLACK "\033[" TOY_CC_FONT_BLACK "m"
 
 //exposed functions
-void inspect_bytecode(unsigned char* bytecode) {
+int inspect_bytecode(unsigned char* bytecode) {
 	//TODO: handle version info
 
-	unsigned int const header_size = 0;
-	unsigned int const header_jumps = 1;
-	unsigned int const header_param = 2;
-	unsigned int const header_data = 3;
-	unsigned int const header_subs = 4;
+	unsigned int const bytecodeSize = ((unsigned int*)(bytecode))[0];
+	unsigned int const jumpsSize = ((unsigned int*)(bytecode))[1];
+	unsigned int const paramSize = ((unsigned int*)(bytecode))[2];
+	unsigned int const dataSize = ((unsigned int*)(bytecode))[3];
+	unsigned int const subsSize = ((unsigned int*)(bytecode))[4];
 
-	//header size
-	printf(MARKER TOY_CC_NOTICE "Bytecode Size: \t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(header_size, unsigned int), ((unsigned int*)(bytecode))[header_size]);
+	printf(FONT_BLACK ".header:\r" TOY_CC_RESET);
+
+	//bytecode size
+	printf(MARKER TOY_CC_NOTICE "Bytecode Size: \t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(0, unsigned int), bytecodeSize);
 
 	//header counts
-	printf(MARKER TOY_CC_NOTICE "Jumps Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(header_jumps, unsigned int), ((unsigned int*)(bytecode))[header_jumps]);
-	printf(MARKER TOY_CC_NOTICE "Param Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(header_param, unsigned int), ((unsigned int*)(bytecode))[header_param]);
-	printf(MARKER TOY_CC_NOTICE "Data Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(header_data, unsigned int), ((unsigned int*)(bytecode))[header_data]);
-	printf(MARKER TOY_CC_NOTICE "Subs Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(header_subs, unsigned int), ((unsigned int*)(bytecode))[header_subs]);
-
-	printf("\n---\n");
+	printf(MARKER TOY_CC_NOTICE "Jumps Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(1, unsigned int), jumpsSize);
+	printf(MARKER TOY_CC_NOTICE "Param Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(2, unsigned int), paramSize);
+	printf(MARKER TOY_CC_NOTICE "Data Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(3, unsigned int), dataSize);
+	printf(MARKER TOY_CC_NOTICE "Subs Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(4, unsigned int), subsSize);
 
 	//some addresses may be absent
 	unsigned int addr_pc = 4;
@@ -49,6 +53,8 @@ void inspect_bytecode(unsigned char* bytecode) {
 	unsigned int data_addr = 0;
 	unsigned int subs_addr = 0;
 
+	//bugfix
+	unsigned int code_end = 0;
 
 	//header addresses
 	if (true) {
@@ -57,42 +63,93 @@ void inspect_bytecode(unsigned char* bytecode) {
 		code_addr = ((unsigned int*)(bytecode))[addr_pc];
 	}
 
-	if (((unsigned int*)(bytecode))[header_jumps] > 0) {
+	if (jumpsSize > 0) {
 		addr_pc++;
 		printf(MARKER TOY_CC_NOTICE "Jumps Address:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(addr_pc, unsigned int), ((unsigned int*)(bytecode))[addr_pc]);
 		jumps_addr = ((unsigned int*)(bytecode))[addr_pc];
+		if (code_end == 0) code_end = jumps_addr;
 	}
 
-	if (((unsigned int*)(bytecode))[header_param] > 0) {
+	if (paramSize > 0) {
 		addr_pc++;
 		printf(MARKER TOY_CC_NOTICE "Param Address:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(addr_pc, unsigned int), ((unsigned int*)(bytecode))[addr_pc]);
 		param_addr = ((unsigned int*)(bytecode))[addr_pc];
+		if (code_end == 0) code_end = param_addr;
 	}
 
-	if (((unsigned int*)(bytecode))[header_data] > 0) {
+	if (dataSize > 0) {
 		addr_pc++;
 		printf(MARKER TOY_CC_NOTICE "Data Address:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(addr_pc, unsigned int), ((unsigned int*)(bytecode))[addr_pc]);
 		data_addr = ((unsigned int*)(bytecode))[addr_pc];
+		if (code_end == 0) code_end = data_addr;
 	}
 
-	if (((unsigned int*)(bytecode))[header_subs] > 0) {
+	if (subsSize > 0) {
 		addr_pc++;
 		printf(MARKER TOY_CC_NOTICE "Subs Address:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(addr_pc, unsigned int), ((unsigned int*)(bytecode))[addr_pc]);
 		subs_addr = ((unsigned int*)(bytecode))[addr_pc];
+		if (code_end == 0) code_end = subs_addr;
 	}
 
-	printf("\n---\n");
+	if (code_end == 0) code_end = bytecodeSize; //very hacky
+
+	printf(FONT_BLACK ".code:\r" TOY_CC_RESET);
 
 	unsigned int pc = code_addr;
-	while(bytecode[pc] != TOY_OPCODE_RETURN) {
+	while(pc < code_end) {
 		pc += inspect_instruction(bytecode, pc, jumps_addr, data_addr);
 	}
-	pc += inspect_instruction(bytecode, pc, jumps_addr, data_addr); //one more for the final return
 
-	(void)jumps_addr;
-	(void)param_addr;
-	(void)data_addr;
-	(void)subs_addr;
+	//jumps
+	if (jumpsSize > 0) {
+		printf(FONT_BLACK ".jumps:\r" TOY_CC_RESET);
+
+		for (unsigned int i = 0; (i*4) < jumpsSize; i++) {
+			printf(MARKER TOY_CC_NOTICE "%u (data %u)" TOY_CC_RESET "\n", MARKER_VALUE(jumps_addr + i, unsigned int),
+				i,
+				((unsigned int*)(bytecode + jumps_addr))[i] + data_addr
+			);
+		}
+	}
+
+	//param
+	if (paramSize > 0) {
+		printf(FONT_BLACK ".param:\r" TOY_CC_RESET);
+
+		for (unsigned int i = 0; (i*4) < paramSize; i += 2) {
+			printf(MARKER TOY_CC_NOTICE "%u (type %s, data %u)" TOY_CC_RESET "\n", MARKER_VALUE(param_addr + i, unsigned int),
+				i,
+				Toy_private_getValueTypeAsCString(((unsigned int*)(bytecode + param_addr))[i + 1]),
+				((unsigned int*)(bytecode + param_addr))[i] + data_addr
+			);
+		}
+	}
+
+	//data; assume there's only strings for now
+	if (dataSize > 0) {
+		printf(FONT_BLACK ".data:\r" TOY_CC_RESET);
+
+		for (unsigned int i = 0; (i*4) < dataSize; i++) {
+			printf(MARKER TOY_CC_NOTICE "%c %c %c %c" TOY_CC_RESET "\n", MARKER_VALUE(data_addr + i, unsigned int),
+				ISPRINT_SANITIZE(((char*)(bytecode + data_addr + (i*4)))[0]),
+				ISPRINT_SANITIZE(((char*)(bytecode + data_addr + (i*4)))[1]),
+				ISPRINT_SANITIZE(((char*)(bytecode + data_addr + (i*4)))[2]),
+				ISPRINT_SANITIZE(((char*)(bytecode + data_addr + (i*4)))[3])
+			);
+		}
+	}
+
+	//subs
+	if (subsSize > 0) {
+		printf(FONT_BLACK ".subs:\n" TOY_CC_RESET);
+
+		unsigned int i = 0;
+		while (i < subsSize) {
+			i += inspect_bytecode(bytecode + subs_addr + i);
+		}
+	}
+
+	return bytecodeSize;
 }
 
 int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr) {
@@ -129,7 +186,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 4;
 
 		case TOY_OPCODE_INVOKE:
-			printf(MARKER "INVOKE %s (%d args)\n", MARKER_VALUE(pc, unsigned char),
+			printf(MARKER "INVOKE as '%s' (%d parameters)\n", MARKER_VALUE(pc, unsigned char),
 			Toy_private_getValueTypeAsCString(bytecode[pc + 1]),
 			bytecode[pc + 2]);
 			return 4;
@@ -143,23 +200,23 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 4;
 
 		case TOY_OPCODE_ADD:
-			printf(MARKER "ADD %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			printf(MARKER "ADD %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
 			return 4;
 
 		case TOY_OPCODE_SUBTRACT:
-			printf(MARKER "SUBTRACT %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			printf(MARKER "SUBTRACT %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
 			return 4;
 
 		case TOY_OPCODE_MULTIPLY:
-			printf(MARKER "MULTIPLY %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			printf(MARKER "MULTIPLY %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
 			return 4;
 
 		case TOY_OPCODE_DIVIDE:
-			printf(MARKER "DIVIDE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			printf(MARKER "DIVIDE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
 			return 4;
 
 		case TOY_OPCODE_MODULO:
-			printf(MARKER "MODULO %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "ASSIGN" : "");
+			printf(MARKER "MODULO %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
 			return 4;
 
 		case TOY_OPCODE_COMPARE_EQUAL:
@@ -291,6 +348,7 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 		case TOY_VALUE_STRING: {
 			Toy_StringType stringType = (Toy_StringType)(*(bytecode + pc + 2)); //Probably not needed
 			int len = bytecode[pc + 3]; //only used for names?
+			(void)len;
 
 			(void)stringType;
 
@@ -298,13 +356,13 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 			unsigned int jumpValue = *((unsigned int*)(bytecode + jumps_addr + indexValue));
 			char* cstr = ((char*)(bytecode + data_addr + jumpValue));
 
-			printf(MARKER "READ STRING (%d) %s\n", MARKER_VALUE(pc, unsigned char), len, cstr);
+			printf(MARKER "READ STRING %u '%s'\n", MARKER_VALUE(pc, unsigned char), indexValue, cstr);
 
 			return 8;
 		}
 
 		case TOY_VALUE_FUNCTION:
-			printf(MARKER "READ FUNCTION (%d params)\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 2]);
+			printf(MARKER "READ FUNCTION '%u' (%d params)\n", MARKER_VALUE(pc, unsigned char), *((unsigned int*)(bytecode + pc + 4)), bytecode[pc + 2]);
 			return 8;
 
 		case TOY_VALUE_ARRAY:

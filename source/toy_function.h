@@ -34,4 +34,5 @@ typedef union Toy_Function_t {
 TOY_API Toy_Function* Toy_createFunctionFromBytecode(Toy_Bucket** bucketHandle, unsigned char* bytecode, Toy_Scope* parentScope);
 TOY_API Toy_Function* Toy_createFunctionFromCallback(Toy_Bucket** bucketHandle, Toy_nativeCallback callback);
 
+TOY_API Toy_Function* Toy_copyFunction(Toy_Bucket** bucketHandle, Toy_Function* fn);
 TOY_API void Toy_freeFunction(Toy_Function* fn);

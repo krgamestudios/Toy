@@ -102,15 +102,21 @@ int test_value_creation(void) {
 int test_value_copying(void) {
 	//test simple integer copy
 	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+
 		Toy_Value original = TOY_VALUE_FROM_INTEGER(42);
-		Toy_Value result = Toy_copyValue(original);
+		Toy_Value result = Toy_copyValue(&bucket, original);
 
 		if (!TOY_VALUE_IS_INTEGER(result) ||
 			TOY_VALUE_AS_INTEGER(result) != 42
 		) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: copy an integer value failed\n" TOY_CC_RESET);
+			Toy_freeBucket(&bucket);
 			return -1;
 		}
+
+		Toy_freeBucket(&bucket);
 	}
 
 	//test string copy
@@ -119,7 +125,7 @@ int test_value_copying(void) {
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 		Toy_Value original = TOY_VALUE_FROM_STRING(Toy_createStringLength(&bucket, "Hello world!", 12));
-		Toy_Value result = Toy_copyValue(original);
+		Toy_Value result = Toy_copyValue(&bucket, original);
 
 		if (TOY_VALUE_IS_STRING(result) == false ||
 			TOY_VALUE_AS_STRING(result)->info.type != TOY_STRING_LEAF ||
@@ -143,6 +149,8 @@ int test_value_copying(void) {
 	//test copy arrays
 	{
 		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+
 		Toy_Array* array = Toy_resizeArray(NULL, TOY_ARRAY_INITIAL_CAPACITY);
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(42));
 		TOY_ARRAY_PUSHBACK(array, TOY_VALUE_FROM_INTEGER(69));
@@ -150,7 +158,7 @@ int test_value_copying(void) {
 
 		Toy_Value original = TOY_VALUE_FROM_ARRAY(array);
 
-		Toy_Value result = Toy_copyValue(original);
+		Toy_Value result = Toy_copyValue(&bucket, original);
 
 		if (TOY_VALUE_AS_ARRAY(result) == false ||
 			TOY_VALUE_AS_ARRAY(result)->capacity != 8 ||
@@ -163,12 +171,14 @@ int test_value_copying(void) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: copy an array value failed\n" TOY_CC_RESET);
 			Toy_freeValue(original);
 			Toy_freeValue(result);
+			Toy_freeBucket(&bucket);
 			return -1;
 		}
 
 		//cleanup
 		Toy_freeValue(original);
 		Toy_freeValue(result);
+		Toy_freeBucket(&bucket);
 	}
 
 	//arrays can't be compared

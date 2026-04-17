@@ -1222,10 +1222,13 @@ static void writeBytecodeBody(Toy_Bytecode* mb, Toy_Ast* ast) {
 
 	writeBytecodeFromAst(&mb, ast);
 
-	EMIT_BYTE(&mb, code, TOY_OPCODE_RETURN); //end terminator
-	EMIT_BYTE(&mb, code, 0); //4-byte alignment
-	EMIT_BYTE(&mb, code, 0);
-	EMIT_BYTE(&mb, code, 0);
+	//append an extra return if needed
+	if (mb->codeCount <= 4 || mb->code[mb->codeCount - 4] != TOY_OPCODE_RETURN) { //if empty or no return statement
+		EMIT_BYTE(&mb, code, TOY_OPCODE_RETURN); //end terminator
+		EMIT_BYTE(&mb, code, 0); //4-byte alignment
+		EMIT_BYTE(&mb, code, 0);
+		EMIT_BYTE(&mb, code, 0);
+	}
 }
 
 static unsigned char* collateBytecodeBody(Toy_Bytecode* mb) {

@@ -90,7 +90,7 @@ unsigned int Toy_hashValue(Toy_Value value) {
 	return 0;
 }
 
-Toy_Value Toy_copyValue(Toy_Value value) {
+Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 	MAYBE_UNWRAP(value);
 
 	switch(value.type) {
@@ -104,13 +104,13 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_STRING(Toy_copyString(value.as.string));
 		}
 
-		case TOY_VALUE_ARRAY: {
+		case TOY_VALUE_ARRAY: { //TODO: switch to buckets
 			//arrays probably won't get copied much
 			Toy_Array* ptr = value.as.array;
 			Toy_Array* result = Toy_resizeArray(NULL, ptr->capacity);
 
 			for (unsigned int i = 0; i < ptr->count; i++) {
-				result->data[i] = Toy_copyValue(ptr->data[i]);
+				result->data[i] = Toy_copyValue(bucketHandle, ptr->data[i]);
 			}
 
 			result->capacity = ptr->capacity;
@@ -119,15 +119,15 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_ARRAY(result);
 		}
 
-		case TOY_VALUE_TABLE: {
+		case TOY_VALUE_TABLE: { //TODO: switch to buckets
 			//tables probably won't get copied much
 			Toy_Table* ptr = value.as.table;
 			Toy_Table* result = Toy_private_adjustTableCapacity(NULL, ptr->capacity);
 
 			for (unsigned int i = 0; i < ptr->capacity; i++) {
 				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {
-					result->data[i].key = Toy_copyValue(ptr->data[i].key);
-					result->data[i].value = Toy_copyValue(ptr->data[i].value);
+					result->data[i].key = Toy_copyValue(bucketHandle, ptr->data[i].key);
+					result->data[i].value = Toy_copyValue(bucketHandle, ptr->data[i].value);
 				}
 			}
 
@@ -137,9 +137,8 @@ Toy_Value Toy_copyValue(Toy_Value value) {
 			return TOY_VALUE_FROM_TABLE(result);
 		}
 
-		case TOY_VALUE_FUNCTION: //TODO: implement function duplication elsewhere
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy a function (use a reference instead), exiting\n" TOY_CC_RESET);
-			exit(-1);
+		case TOY_VALUE_FUNCTION:
+			return TOY_VALUE_FROM_FUNCTION(Toy_copyFunction(bucketHandle, value.as.function));
 
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:

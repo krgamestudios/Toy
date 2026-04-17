@@ -159,7 +159,7 @@ static void processRead(Toy_VM* vm) {
 			unsigned int addr = (unsigned int)READ_INT(vm);
 
 			//create and push the function value
-			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr, vm->scope);
+			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr, vm->scope); //BUG: functions don't have the jumps indirection?
 			value = TOY_VALUE_FROM_FUNCTION(function);
 
 			break;
@@ -227,7 +227,7 @@ static void processAssign(Toy_VM* vm) {
 	//in case of chaining, leave a copy on the stack
 	bool chainedAssignment = READ_BYTE(vm);
 	if (chainedAssignment) {
-		Toy_pushStack(&vm->stack, Toy_copyValue(value));
+		Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, value));
 	}
 
 	//cleanup
@@ -253,7 +253,7 @@ static void processAssignCompound(Toy_VM* vm) {
 			target = TOY_REFERENCE_FROM_POINTER(valuePtr);
 		}
 		else {
-			target = Toy_copyValue(*valuePtr);
+			target = Toy_copyValue(&vm->memoryBucket, *valuePtr);
 		}
 	}
 
@@ -280,12 +280,12 @@ static void processAssignCompound(Toy_VM* vm) {
 		}
 
 		//set the value
-		array->data[index] = Toy_copyValue(TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value);
+		array->data[index] = Toy_copyValue(&vm->memoryBucket, TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value);
 
 		//in case of chaining, leave a copy on the stack
 		bool chainedAssignment = READ_BYTE(vm);
 		if (chainedAssignment) {
-			Toy_pushStack(&vm->stack, Toy_copyValue(value));
+			Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, value));
 		}
 
 		//cleanup
@@ -296,12 +296,12 @@ static void processAssignCompound(Toy_VM* vm) {
 		Toy_Table* table = TOY_VALUE_AS_TABLE(target);
 
 		//set the value
-		Toy_insertTable(&table, Toy_copyValue(TOY_VALUE_IS_REFERENCE(key) ? Toy_unwrapValue(key) : key), Toy_copyValue(TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value));
+		Toy_insertTable(&table, Toy_copyValue(&vm->memoryBucket, TOY_VALUE_IS_REFERENCE(key) ? Toy_unwrapValue(key) : key), Toy_copyValue(&vm->memoryBucket, TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value));
 
 		//in case of chaining, leave a copy on the stack
 		bool chainedAssignment = READ_BYTE(vm);
 		if (chainedAssignment) {
-			Toy_pushStack(&vm->stack, Toy_copyValue(value));
+			Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, value));
 		}
 
 		//cleanup
@@ -335,7 +335,7 @@ static void processAccess(Toy_VM* vm) {
 		Toy_pushStack(&vm->stack, ref);
 	}
 	else {
-		Toy_pushStack(&vm->stack, Toy_copyValue(*valuePtr));
+		Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, *valuePtr));
 	}
 
 	//cleanup
@@ -403,7 +403,7 @@ static void processInvoke(Toy_VM* vm) {
 
 			//extract and store any results
 			if (resultCount > 0) {
-				Toy_Array* results = Toy_extractResultsFromVM(&subVM, resultCount);
+				Toy_Array* results = Toy_extractResultsFromVM(vm, &subVM, resultCount);
 
 				for (unsigned int i = 0; i < results->count; i++) {
 					//NOTE: since the results array is being immediately freed, just push each element without a call to copy
@@ -432,7 +432,7 @@ static void processInvoke(Toy_VM* vm) {
 }
 
 static void processDuplicate(Toy_VM* vm) {
-	Toy_Value value = Toy_copyValue(Toy_peekStack(&vm->stack));
+	Toy_Value value = Toy_copyValue(&vm->memoryBucket, Toy_peekStack(&vm->stack));
 	Toy_pushStack(&vm->stack, value);
 
 	//check for compound assignments
@@ -878,7 +878,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_pushStack(&vm->stack, ref);
 		}
 		else {
-			Toy_pushStack(&vm->stack, Toy_copyValue(array->data[i]));
+			Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, array->data[i]));
 		}
 	}
 
@@ -911,7 +911,7 @@ static void processIndex(Toy_VM* vm) {
 			Toy_pushStack(&vm->stack, ref);
 		}
 		else {
-			Toy_pushStack(&vm->stack, Toy_copyValue(entry->value));
+			Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, entry->value));
 		}
 	}
 
@@ -1146,7 +1146,7 @@ void Toy_freeVM(Toy_VM* vm) {
 	}
 }
 
-Toy_Array* Toy_extractResultsFromVM(Toy_VM* subVM, unsigned int resultCount) {
+Toy_Array* Toy_extractResultsFromVM(Toy_VM* parentVM, Toy_VM* subVM, unsigned int resultCount) {
 	if (subVM->stack->count < resultCount) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Too many results requested from VM, exiting\n" TOY_CC_RESET);
 		exit(-1);
@@ -1156,8 +1156,8 @@ Toy_Array* Toy_extractResultsFromVM(Toy_VM* subVM, unsigned int resultCount) {
 
 	const unsigned int offset = subVM->stack->count - resultCount; //first element to extract
 
-	for (/* EMPTY */; results->count < resultCount; results->count++) {
-		results->data[results->count] = Toy_copyValue(subVM->stack->data[offset + results->count]);
+	for (/* EMPTY */; results->count < resultCount; results->count++) { //TODO: make sure the parent bucket adopts the child bucket's responsibilities
+		results->data[results->count] = Toy_copyValue(&parentVM->memoryBucket, subVM->stack->data[offset + results->count]);
 	}
 
 	return results;

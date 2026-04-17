@@ -4,6 +4,16 @@ fn isLeapYear(n: int) {
 	if (n % 100 == 0) return false;
 	return n % 4 == 0;
 }
-print isLeapYear(1999);
-print isLeapYear(2000);
-print isLeapYear(2004);
+
+//check for string reuse
+{
+	print isLeapYear(1999);
+}
+
+{
+	print isLeapYear(2000);
+}
+
+{
+	print isLeapYear(2004);
+}

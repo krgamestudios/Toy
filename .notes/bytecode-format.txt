@@ -34,7 +34,7 @@ Bytecode Format Structure
 .header:
 	N total size       # size of this routine, including all data and subroutines
 	N .jumps count     # the number of entries in the jump table (should be data count + routine count)
-	N .param count     # the number of parameter fields expected (used for subroutines)
+	N .param count     # the number of parameter fields expected (a secondary jump table, used for subroutine parameters)
 	N .data count      # the number of data fields present
 	N .subs count      # the number of subroutines present
 	.code start        # absolute address of .code;      mandatory
@@ -48,13 +48,13 @@ Bytecode Format Structure
 	# opcode instructions read and 'executed' by the interpreter (aligned to 4-byte widths)
 	[READ, TOY_VALUE_STRING, Toy_StringType, stringLength] [jumpIndex]
 
-.param:
-	# a list of names, stored in .data, to be used for any provided function arguments
-
-.jumptable:
+.jumps:
 	# a layer of indirection for quickly looking up values in .data and .subs
 	0 -> {string, 0x00}
 	4 -> {fn, 0xFF}
+
+.param:
+	# a list of names, stored in .data, to be used for any provided function arguments
 
 .data:
 	# data that can't be cleanly embedded into .code, such as strings

@@ -2,9 +2,9 @@
 
 #include "toy_common.h"
 #include "toy_print.h"
+#include "toy_bucket.h"
 
 //forward declarations
-struct Toy_Bucket;
 union Toy_String_t;
 struct Toy_Array;
 struct Toy_Table;
@@ -79,7 +79,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 TOY_API Toy_Value Toy_unwrapValue(Toy_Value value);
 TOY_API unsigned int Toy_hashValue(Toy_Value value);
 
-TOY_API Toy_Value Toy_copyValue(Toy_Value value);
+TOY_API Toy_Value Toy_copyValue(struct Toy_Bucket** bucketHandle, Toy_Value value);
 TOY_API void Toy_freeValue(Toy_Value value);
 
 TOY_API bool Toy_checkValueIsTruthy(Toy_Value value);

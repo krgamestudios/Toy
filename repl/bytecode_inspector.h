@@ -1,3 +1,3 @@
 #pragma once
 
-void inspect_bytecode(unsigned char* bytecode);
+int inspect_bytecode(unsigned char* bytecode);
