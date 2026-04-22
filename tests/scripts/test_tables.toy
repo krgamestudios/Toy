@@ -5,7 +5,8 @@ a["beta"] = 6;
 print a;
 assert a == ["alpha": 1, "beta": 6, "gamma": 3], "1-D tables failed";
 
-//BUG: nested tables causes an issue under GDB, idk why the tests pass without it
+//WONTFIX: Nested tables cause an issue under very specific circumstances: run under GDB, in verbose mode, only in github's CI runner. The reason is unclear.
+
 //nested
 var b = [
 	"outer": ["inner": true],

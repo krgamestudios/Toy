@@ -265,17 +265,17 @@ static void debugStackPrint(Toy_Stack* stack) {
 	if (stack->count > 0) {
 		Toy_Bucket* stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
-		printf("Stack Dump\n-------------------------\ntype\tvalue\n");
+		printf("\n" TOY_CC_NOTICE "Stack Dump" TOY_CC_RESET "\n" TOY_CC_NOTICE "%-20s%-20s" TOY_CC_RESET "\n", "type", "value");
 		for (unsigned int i = 0; i < stack->count; i++) {
 			Toy_Value v = ((Toy_Value*)(stack + 1))[i]; //'stack + 1' is a naughty trick
 
 			//print type
-			printf("%s\t", Toy_private_getValueTypeAsCString(v.type));
+			printf("%-20s", Toy_private_getValueTypeAsCString(v.type));
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
 			char* buffer = Toy_getStringRaw(string);
-			printf("%s", buffer);
+			printf("%-20s", buffer);
 			free(buffer);
 			Toy_freeString(string);
 
@@ -291,7 +291,7 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 	if (scope->count > 0) {
 		Toy_Bucket* stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
-		printf("Scope %d Dump\n-------------------------\ntype\tname\tvalue\n", depth);
+		printf("\n" TOY_CC_NOTICE "Scope Dump [%d]" TOY_CC_RESET "\n" TOY_CC_NOTICE "%-20s%-20s%-20s" TOY_CC_RESET "\n", depth, "type", "name", "value");
 		for (unsigned int i = 0; i < scope->capacity; i++) {
 			if (scope->data[i].key.info.length == 0) {
 				continue;
@@ -300,12 +300,12 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 			Toy_String k = scope->data[i].key;
 			Toy_Value v = scope->data[i].value;
 
-			printf("%s\t%s\t", Toy_private_getValueTypeAsCString(v.type), k.leaf.data);
+			printf("%-20s%-20s", Toy_private_getValueTypeAsCString(v.type), k.leaf.data);
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
 			char* buffer = Toy_getStringRaw(string);
-			printf("%s", buffer);
+			printf("%-20s", buffer);
 			free(buffer);
 			Toy_freeString(string);
 

@@ -356,7 +356,7 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 			unsigned int jumpValue = *((unsigned int*)(bytecode + jumps_addr + indexValue));
 			char* cstr = ((char*)(bytecode + data_addr + jumpValue));
 
-			printf(MARKER "READ STRING %u '%s'\n", MARKER_VALUE(pc, unsigned char), indexValue, cstr);
+			printf(MARKER "READ STRING [%u] '%s'\n", MARKER_VALUE(pc, unsigned char), indexValue, cstr);
 
 			return 8;
 		}
@@ -365,13 +365,23 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 			printf(MARKER "READ FUNCTION '%u' (%d params)\n", MARKER_VALUE(pc, unsigned char), *((unsigned int*)(bytecode + pc + 4)), bytecode[pc + 2]);
 			return 8;
 
-		case TOY_VALUE_ARRAY:
-		case TOY_VALUE_TABLE: 
+		case TOY_VALUE_ARRAY: {
+			unsigned int count = *((unsigned int*)(bytecode + pc + 4));
+			printf(MARKER "READ ARRAY %u elements\n", MARKER_VALUE(pc, unsigned char), count);
+			return 8;
+		}
+
+		case TOY_VALUE_TABLE: {
+			unsigned int count = *((unsigned int*)(bytecode + pc + 4));
+			printf(MARKER "READ TABLE %u elements (consuming %u values)\n", MARKER_VALUE(pc, unsigned char), count / 2, count);
+			return 8;
+		}
+
 		case TOY_VALUE_OPAQUE:
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_UNKNOWN:
 		default: {
-			printf(MARKER "READ %s (unhandled by inspector)\n", MARKER_VALUE(pc, unsigned char), Toy_private_getValueTypeAsCString(type));
+			printf(MARKER TOY_CC_WARN "READ %s (unhandled by inspector)" TOY_CC_RESET "\n", MARKER_VALUE(pc, unsigned char), Toy_private_getValueTypeAsCString(type));
 			return 4;
 		}
 	}

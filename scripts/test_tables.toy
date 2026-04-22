@@ -1,0 +1,14 @@
+//snipped out of the tests, this seems fine?
+
+//nested
+var example = [
+	"outer": ["inner": true],
+	"alpha": 1,
+	"beta": 2,
+	"gamma": 3
+];
+
+print example;
+assert example == ["alpha": 1, "beta": 2, "gamma": 3, "outer": ["inner": true]], "nested tables failed";
+
+return example;
