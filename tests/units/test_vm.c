@@ -27,7 +27,7 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 	//basic init & quit
 	{
 		//generate bytecode for testing
-		const char* source = "(1 + 2) * (3 + 4);";
+		const char* source = "return (1 + 2) * (3 + 4);";
 
 		Toy_Lexer lexer;
 		Toy_bindLexer(&lexer, source);
@@ -71,8 +71,8 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 int test_simple_execution(Toy_Bucket** bucketHandle) {
 	//test execution
 	{
-		//generate bytecode for testing
-		const char* source = "(1 + 2) * (3 + 4);";
+		//generate bytecode for testing ('return' leaves expressions on the stack)
+		const char* source = "return (1 + 2) * (3 + 4);";
 
 		Toy_Lexer lexer;
 		Toy_bindLexer(&lexer, source);
@@ -118,7 +118,7 @@ int test_opcode_not_equal(Toy_Bucket** bucketHandle) {
 	//testing a specific opcode; '!=' is compressed into a single word, so lets check it works
 	{
 		//generate bytecode for testing
-		const char* source = "3 != 5;";
+		const char* source = "return 3 != 5;";
 
 		Toy_Lexer lexer;
 		Toy_bindLexer(&lexer, source);
