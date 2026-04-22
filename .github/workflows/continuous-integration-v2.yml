@@ -22,8 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Install Updates
-        run: sudo apt update && sudo apt upgrade -y
       - name: Run all tests
         run: make tests
   gdb:
@@ -32,9 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Install Updates
-        run: sudo apt update && sudo apt upgrade -y
       - name: Install GDB if not present
-        run: sudo apt install gdb
+        run: sudo apt update && sudo apt install gdb
       - name: Run all tests under gdb
         run: make tests-gdb
