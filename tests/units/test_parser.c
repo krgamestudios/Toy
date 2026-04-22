@@ -206,9 +206,11 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_BOOLEAN(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_BOOLEAN(ast->block.child->value.value) != true)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_BOOLEAN(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_BOOLEAN(ast->block.child->stackPop.child->value.value) != true)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with boolean value true\n" TOY_CC_RESET);
 			return -1;
@@ -224,9 +226,11 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_BOOLEAN(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_BOOLEAN(ast->block.child->value.value) != false)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_BOOLEAN(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_BOOLEAN(ast->block.child->stackPop.child->value.value) != false)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with boolean value false\n" TOY_CC_RESET);
 			return -1;
@@ -242,9 +246,11 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->value.value) != 42)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->value.value) != 42)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with integer value 42\n" TOY_CC_RESET);
 			return -1;
@@ -260,9 +266,11 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_FLOAT(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_FLOAT(ast->block.child->value.value) != 3.1415f)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_FLOAT(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_FLOAT(ast->block.child->stackPop.child->value.value) != 3.1415f)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with float value 3.1415\n" TOY_CC_RESET);
 			return -1;
@@ -278,9 +286,11 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->value.value) != 1234567890)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->value.value) != 1234567890)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with integer value 1_234_567_890\n" TOY_CC_RESET);
 			return -1;
@@ -296,9 +306,11 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_FLOAT(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_FLOAT(ast->block.child->value.value) != 3.14159265f)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_FLOAT(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_FLOAT(ast->block.child->stackPop.child->value.value) != 3.14159265f)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with float value 3.141_592_65\n" TOY_CC_RESET);
 			return -1;
@@ -314,10 +326,12 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_STRING(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_STRING(ast->block.child->value.value)->info.type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->value.value)->leaf.data, "Hello world!", TOY_VALUE_AS_STRING(ast->block.child->value.value)->info.length) != 0)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->value.value)->info.type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->value.value)->leaf.data, "Hello world!", TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->value.value) != 0))
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with string value 'Hello world!'\n" TOY_CC_RESET);
 			return -1;
@@ -337,9 +351,11 @@ int test_unary(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->value.value) != -42)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->value.value) != -42)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with integer value -42 (unary negation)\n" TOY_CC_RESET);
 			return -1;
@@ -355,9 +371,11 @@ int test_unary(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_FLOAT(ast->block.child->value.value) == false ||
-			TOY_VALUE_AS_FLOAT(ast->block.child->value.value) != -3.1415f)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_FLOAT(ast->block.child->stackPop.child->value.value) == false ||
+			TOY_VALUE_AS_FLOAT(ast->block.child->stackPop.child->value.value) != -3.1415f)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with float value -3.1415 (unary negation)\n" TOY_CC_RESET);
 			return -1;
@@ -373,7 +391,9 @@ int test_unary(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type == TOY_AST_VALUE)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type == TOY_AST_VALUE)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: unexpected successful unary negation in parser with grouped value -(42)\n" TOY_CC_RESET);
 			return -1;
@@ -389,7 +409,9 @@ int test_unary(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type == TOY_AST_VALUE)
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type == TOY_AST_VALUE)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: unexpected successful unary negation in parser with space character '- 42'\n" TOY_CC_RESET);
 			return -1;
@@ -409,18 +431,20 @@ int test_binary(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_BINARY ||
-			ast->block.child->binary.flag != TOY_AST_FLAG_ADD ||
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.flag != TOY_AST_FLAG_ADD ||
 
-			ast->block.child->binary.left == NULL ||
-			ast->block.child->binary.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->value.value) != 1 ||
+			ast->block.child->stackPop.child->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->value.value) != 1 ||
 
-			ast->block.child->binary.right == NULL ||
-			ast->block.child->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.right->value.value) != 2)
+			ast->block.child->stackPop.child->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.right->value.value) != 2)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with binary add '1 + 2' (term)\n" TOY_CC_RESET);
 			return -1;
@@ -436,18 +460,20 @@ int test_binary(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_BINARY ||
-			ast->block.child->binary.flag != TOY_AST_FLAG_MULTIPLY ||
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+			ast->block.child->stackPop.child->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.flag != TOY_AST_FLAG_MULTIPLY ||
 
-			ast->block.child->binary.left == NULL ||
-			ast->block.child->binary.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->value.value) != 3 ||
+			ast->block.child->stackPop.child->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->value.value) != 3 ||
 
-			ast->block.child->binary.right == NULL ||
-			ast->block.child->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.right->value.value) != 5)
+			ast->block.child->stackPop.child->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.right->value.value) != 5)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with binary multiply '3 * 5' (factor)\n" TOY_CC_RESET);
 			return -1;
@@ -468,28 +494,30 @@ int test_aggregate(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
 
-			ast->block.child->type != TOY_AST_AGGREGATE ||
-			ast->block.child->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
+			ast->block.child->stackPop.child->type != TOY_AST_AGGREGATE ||
+			ast->block.child->stackPop.child->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
 
-			ast->block.child->aggregate.left == NULL ||
-			ast->block.child->aggregate.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.left->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.left->value.value) != 1 ||
+			ast->block.child->stackPop.child->aggregate.left == NULL ||
+			ast->block.child->stackPop.child->aggregate.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->aggregate.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->aggregate.left->value.value) != 1 ||
 
-			ast->block.child->aggregate.right == NULL ||
-			ast->block.child->aggregate.right->type != TOY_AST_AGGREGATE ||
-			ast->block.child->aggregate.right->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
+			ast->block.child->stackPop.child->aggregate.right == NULL ||
+			ast->block.child->stackPop.child->aggregate.right->type != TOY_AST_AGGREGATE ||
+			ast->block.child->stackPop.child->aggregate.right->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
 
-			ast->block.child->aggregate.right->aggregate.left == NULL ||
-			ast->block.child->aggregate.right->aggregate.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->aggregate.left->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->aggregate.left->value.value) != 2 ||
+			ast->block.child->stackPop.child->aggregate.right->aggregate.left == NULL ||
+			ast->block.child->stackPop.child->aggregate.right->aggregate.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->aggregate.right->aggregate.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->aggregate.right->aggregate.left->value.value) != 2 ||
 
-			ast->block.child->aggregate.right->aggregate.right == NULL ||
-			ast->block.child->aggregate.right->aggregate.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->aggregate.right->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->aggregate.right->value.value) != 3 ||
+			ast->block.child->stackPop.child->aggregate.right->aggregate.right == NULL ||
+			ast->block.child->stackPop.child->aggregate.right->aggregate.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->aggregate.right->aggregate.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->aggregate.right->aggregate.right->value.value) != 3 ||
 
 			false)
 		{
@@ -508,21 +536,23 @@ int test_aggregate(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
 
-			ast->block.child->type != TOY_AST_AGGREGATE ||
-			ast->block.child->aggregate.flag != TOY_AST_FLAG_INDEX ||
+			ast->block.child->stackPop.child->type != TOY_AST_AGGREGATE ||
+			ast->block.child->stackPop.child->aggregate.flag != TOY_AST_FLAG_INDEX ||
 
-			ast->block.child->aggregate.left == NULL ||
-			ast->block.child->aggregate.left->type != TOY_AST_VAR_ACCESS ||
-			ast->block.child->aggregate.left->varAccess.child == NULL ||
-			ast->block.child->aggregate.left->varAccess.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value) != true ||
-			TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->info.type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->leaf.data, "name", TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->info.length) != 0 ||
+			ast->block.child->stackPop.child->aggregate.left == NULL ||
+			ast->block.child->stackPop.child->aggregate.left->type != TOY_AST_VAR_ACCESS ||
+			ast->block.child->stackPop.child->aggregate.left->varAccess.child == NULL ||
+			ast->block.child->stackPop.child->aggregate.left->varAccess.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->stackPop.child->aggregate.left->varAccess.child->value.value) != true ||
+			TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->aggregate.left->varAccess.child->value.value)->info.type != TOY_STRING_LEAF ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->aggregate.left->varAccess.child->value.value)->leaf.data, "name", TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->aggregate.left->varAccess.child->value.value)->info.length) != 0 ||
 
-			ast->block.child->aggregate.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->value.value) != 0 ||
+			ast->block.child->stackPop.child->aggregate.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->aggregate.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->aggregate.right->value.value) != 0 ||
 
 			false)
 		{
@@ -541,29 +571,31 @@ int test_aggregate(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
 
-			ast->block.child->type != TOY_AST_AGGREGATE ||
-			ast->block.child->aggregate.flag != TOY_AST_FLAG_INDEX ||
+			ast->block.child->stackPop.child->type != TOY_AST_AGGREGATE ||
+			ast->block.child->stackPop.child->aggregate.flag != TOY_AST_FLAG_INDEX ||
 
-			ast->block.child->aggregate.left == NULL ||
-			ast->block.child->aggregate.left->type != TOY_AST_VAR_ACCESS ||
+			ast->block.child->stackPop.child->aggregate.left == NULL ||
+			ast->block.child->stackPop.child->aggregate.left->type != TOY_AST_VAR_ACCESS ||
 
-			ast->block.child->aggregate.left->varAccess.child == NULL ||
-			ast->block.child->aggregate.left->varAccess.child->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value) != true ||
-			TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->info.type != TOY_STRING_LEAF ||
+			ast->block.child->stackPop.child->aggregate.left->varAccess.child == NULL ||
+			ast->block.child->stackPop.child->aggregate.left->varAccess.child->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_STRING(ast->block.child->stackPop.child->aggregate.left->varAccess.child->value.value) != true ||
+			TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->aggregate.left->varAccess.child->value.value)->info.type != TOY_STRING_LEAF ||
 
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->leaf.data, "name", TOY_VALUE_AS_STRING(ast->block.child->aggregate.left->varAccess.child->value.value)->info.length) != 0 ||
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->aggregate.left->varAccess.child->value.value)->leaf.data, "name", TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->aggregate.left->varAccess.child->value.value)->info.length) != 0 ||
 
-			ast->block.child->aggregate.right->type != TOY_AST_AGGREGATE ||
-			ast->block.child->aggregate.right->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
-			ast->block.child->aggregate.right->aggregate.left->type != TOY_AST_VALUE ||
+			ast->block.child->stackPop.child->aggregate.right->type != TOY_AST_AGGREGATE ||
+			ast->block.child->stackPop.child->aggregate.right->aggregate.flag != TOY_AST_FLAG_COLLECTION ||
+			ast->block.child->stackPop.child->aggregate.right->aggregate.left->type != TOY_AST_VALUE ||
 
-			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->aggregate.left->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->aggregate.left->value.value) != 0 ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->aggregate.right->aggregate.left->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->aggregate.right->aggregate.left->value.value) != 0 ||
 
-			TOY_VALUE_IS_INTEGER(ast->block.child->aggregate.right->aggregate.right->value.value) != true ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->aggregate.right->aggregate.right->value.value) != 1 ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->aggregate.right->aggregate.right->value.value) != true ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->aggregate.right->aggregate.right->value.value) != 1 ||
 
 			false)
 		{
@@ -746,32 +778,35 @@ int test_precedence(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_BINARY ||
-			ast->block.child->binary.flag != TOY_AST_FLAG_ADD ||
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
 
-			ast->block.child->binary.left == NULL ||
-			ast->block.child->binary.left->type != TOY_AST_BINARY ||
-			ast->block.child->binary.left->binary.flag != TOY_AST_FLAG_MULTIPLY ||
-			ast->block.child->binary.left->binary.left == NULL ||
-			ast->block.child->binary.left->binary.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->binary.left->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->binary.left->value.value) != 1 ||
-			ast->block.child->binary.left->binary.right == NULL ||
-			ast->block.child->binary.left->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->binary.right->value.value) != 2 ||
+			ast->block.child->stackPop.child->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.flag != TOY_AST_FLAG_ADD ||
 
-			ast->block.child->binary.right == NULL ||
-			ast->block.child->binary.right->type != TOY_AST_BINARY ||
-			ast->block.child->binary.right->binary.flag != TOY_AST_FLAG_MULTIPLY ||
-			ast->block.child->binary.right->binary.left == NULL ||
-			ast->block.child->binary.right->binary.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.right->binary.left->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.right->binary.left->value.value) != 3 ||
-			ast->block.child->binary.right->binary.right == NULL ||
-			ast->block.child->binary.right->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.right->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.right->binary.right->value.value) != 4)
+			ast->block.child->stackPop.child->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.left->binary.flag != TOY_AST_FLAG_MULTIPLY ||
+			ast->block.child->stackPop.child->binary.left->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->value.value) != 1 ||
+			ast->block.child->stackPop.child->binary.left->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.right->value.value) != 2 ||
+
+			ast->block.child->stackPop.child->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.right->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.right->binary.flag != TOY_AST_FLAG_MULTIPLY ||
+			ast->block.child->stackPop.child->binary.right->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.right->binary.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.right->binary.left->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.right->binary.left->value.value) != 3 ||
+			ast->block.child->stackPop.child->binary.right->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.right->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.right->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.right->binary.right->value.value) != 4)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser precedence '1 * 2 + 3 * 4' (term-factor)\n" TOY_CC_RESET);
 			return -1;
@@ -787,47 +822,50 @@ int test_precedence(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_BINARY ||
-			ast->block.child->binary.flag != TOY_AST_FLAG_ADD ||
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
+
+			ast->block.child->stackPop.child->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.flag != TOY_AST_FLAG_ADD ||
 
 			// start from the right and work backwards
-			ast->block.child->binary.right == NULL ||
-			ast->block.child->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.right->value.value) != 6 ||
+			ast->block.child->stackPop.child->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.right->value.value) != 6 ||
 
-			ast->block.child->binary.left == NULL ||
-			ast->block.child->binary.left->type != TOY_AST_BINARY ||
-			ast->block.child->binary.left->binary.right == NULL ||
-			ast->block.child->binary.left->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->binary.right->value.value) != 5 ||
+			ast->block.child->stackPop.child->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.left->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.right->value.value) != 5 ||
 
-			ast->block.child->binary.left->binary.left == NULL ||
-			ast->block.child->binary.left->binary.left->type != TOY_AST_BINARY ||
-			ast->block.child->binary.left->binary.left->binary.right == NULL ||
-			ast->block.child->binary.left->binary.left->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->binary.left->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->binary.left->binary.right->value.value) != 4 ||
+			ast->block.child->stackPop.child->binary.left->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.left->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->binary.right->value.value) != 4 ||
 
-			ast->block.child->binary.left->binary.left->binary.left == NULL ||
-			ast->block.child->binary.left->binary.left->binary.left->type != TOY_AST_BINARY ||
-			ast->block.child->binary.left->binary.left->binary.left->binary.right == NULL ||
-			ast->block.child->binary.left->binary.left->binary.left->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->binary.left->binary.left->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->binary.left->binary.left->binary.right->value.value) != 3 ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.right->value.value) != 3 ||
 
-			ast->block.child->binary.left->binary.left->binary.left->binary.left == NULL ||
-			ast->block.child->binary.left->binary.left->binary.left->binary.left->type != TOY_AST_BINARY ||
-			ast->block.child->binary.left->binary.left->binary.left->binary.left->binary.right == NULL ||
-			ast->block.child->binary.left->binary.left->binary.left->binary.left->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->binary.left->binary.left->binary.left->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->binary.left->binary.left->binary.left->binary.right->value.value) != 2 ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->binary.right->value.value) != 2 ||
 
-			ast->block.child->binary.left->binary.left->binary.left->binary.left->binary.left == NULL ||
-			ast->block.child->binary.left->binary.left->binary.left->binary.left->binary.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->binary.left->binary.left->binary.left->binary.left->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->binary.left->binary.left->binary.left->binary.left->value.value) != 1)
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->binary.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->binary.left->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->binary.left->binary.left->binary.left->binary.left->value.value) != 1)
 
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser precedence '1 + 2 + 3 + 4 + 5 + 6' (left-recursive)\n" TOY_CC_RESET);
@@ -844,34 +882,37 @@ int test_precedence(Toy_Bucket** bucketHandle) {
 			ast == NULL ||
 			ast->type != TOY_AST_BLOCK ||
 			ast->block.child == NULL ||
-			ast->block.child->type != TOY_AST_BINARY ||
-			ast->block.child->binary.flag != TOY_AST_FLAG_MULTIPLY ||
+			ast->block.child->type != TOY_AST_STACK_POP ||
+			ast->block.child->stackPop.child == NULL ||
 
-			ast->block.child->binary.left == NULL ||
-			ast->block.child->binary.left->type != TOY_AST_GROUP ||
-			ast->block.child->binary.left->group.child->type != TOY_AST_BINARY ||
-			ast->block.child->binary.left->group.child->binary.flag != TOY_AST_FLAG_ADD ||
-			ast->block.child->binary.left->group.child->binary.left == NULL ||
-			ast->block.child->binary.left->group.child->binary.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->group.child->binary.left->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->group.child->binary.left->value.value) != 1 ||
-			ast->block.child->binary.left->group.child->binary.right == NULL ||
-			ast->block.child->binary.left->group.child->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.left->group.child->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.left->group.child->binary.right->value.value) != 2 ||
+			ast->block.child->stackPop.child->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.flag != TOY_AST_FLAG_MULTIPLY ||
 
-			ast->block.child->binary.right == NULL ||
-			ast->block.child->binary.right->type != TOY_AST_GROUP ||
-			ast->block.child->binary.right->group.child->type != TOY_AST_BINARY ||
-			ast->block.child->binary.right->group.child->binary.flag != TOY_AST_FLAG_ADD ||
-			ast->block.child->binary.right->group.child->binary.left == NULL ||
-			ast->block.child->binary.right->group.child->binary.left->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.right->group.child->binary.left->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.right->group.child->binary.left->value.value) != 3 ||
-			ast->block.child->binary.right->group.child->binary.right == NULL ||
-			ast->block.child->binary.right->group.child->binary.right->type != TOY_AST_VALUE ||
-			TOY_VALUE_IS_INTEGER(ast->block.child->binary.right->group.child->binary.right->value.value) == false ||
-			TOY_VALUE_AS_INTEGER(ast->block.child->binary.right->group.child->binary.right->value.value) != 4)
+			ast->block.child->stackPop.child->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->type != TOY_AST_GROUP ||
+			ast->block.child->stackPop.child->binary.left->group.child->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.left->group.child->binary.flag != TOY_AST_FLAG_ADD ||
+			ast->block.child->stackPop.child->binary.left->group.child->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.left->group.child->binary.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->group.child->binary.left->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->group.child->binary.left->value.value) != 1 ||
+			ast->block.child->stackPop.child->binary.left->group.child->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.left->group.child->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.left->group.child->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.left->group.child->binary.right->value.value) != 2 ||
+
+			ast->block.child->stackPop.child->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.right->type != TOY_AST_GROUP ||
+			ast->block.child->stackPop.child->binary.right->group.child->type != TOY_AST_BINARY ||
+			ast->block.child->stackPop.child->binary.right->group.child->binary.flag != TOY_AST_FLAG_ADD ||
+			ast->block.child->stackPop.child->binary.right->group.child->binary.left == NULL ||
+			ast->block.child->stackPop.child->binary.right->group.child->binary.left->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.right->group.child->binary.left->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.right->group.child->binary.left->value.value) != 3 ||
+			ast->block.child->stackPop.child->binary.right->group.child->binary.right == NULL ||
+			ast->block.child->stackPop.child->binary.right->group.child->binary.right->type != TOY_AST_VALUE ||
+			TOY_VALUE_IS_INTEGER(ast->block.child->stackPop.child->binary.right->group.child->binary.right->value.value) == false ||
+			TOY_VALUE_AS_INTEGER(ast->block.child->stackPop.child->binary.right->group.child->binary.right->value.value) != 4)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser precedence '(1 + 2) * (3 + 4)' (group)\n" TOY_CC_RESET);
 			return -1;

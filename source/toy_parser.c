@@ -892,7 +892,16 @@ static void makePrintStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 static void makeExprStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	makeExpr(bucketHandle, parser, rootHandle);
 	//BUGFIX: don't leave anything on the stack after a unary statement
-	if ((*rootHandle)->type == TOY_AST_VALUE || (*rootHandle)->type == TOY_AST_UNARY || (*rootHandle)->type == TOY_AST_COMPARE || (*rootHandle)->type == TOY_AST_GROUP || (*rootHandle)->type == TOY_AST_COMPOUND || (*rootHandle)->type == TOY_AST_AGGREGATE) {
+	if (
+		(*rootHandle)->type == TOY_AST_VALUE ||
+		(*rootHandle)->type == TOY_AST_UNARY ||
+		(*rootHandle)->type == TOY_AST_BINARY ||
+		(*rootHandle)->type == TOY_AST_BINARY_SHORT_CIRCUIT ||
+		(*rootHandle)->type == TOY_AST_COMPARE ||
+		(*rootHandle)->type == TOY_AST_GROUP ||
+		(*rootHandle)->type == TOY_AST_COMPOUND ||
+		(*rootHandle)->type == TOY_AST_AGGREGATE)
+	{
 		Toy_private_emitAstStackPop(bucketHandle, rootHandle);
 	}
 
