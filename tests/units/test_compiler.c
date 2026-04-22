@@ -119,7 +119,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		//check header
 		int* ptr = (int*)buffer;
 
-		if ((ptr++)[0] != 32 || //total size
+		if ((ptr++)[0] != 36 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -137,10 +137,16 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 25)) != TOY_VALUE_NULL ||
 			*((unsigned char*)(buffer + 26)) != 0 ||
 			*((unsigned char*)(buffer + 27)) != 0 ||
-			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_RETURN ||
+
+			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(buffer + 29)) != 0 ||
 			*((unsigned char*)(buffer + 30)) != 0 ||
-			*((unsigned char*)(buffer + 31)) != 0
+			*((unsigned char*)(buffer + 31)) != 0 ||
+
+			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 33)) != 0 ||
+			*((unsigned char*)(buffer + 34)) != 0 ||
+			*((unsigned char*)(buffer + 35)) != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
@@ -171,7 +177,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		//check header
 		int* ptr = (int*)buffer;
 
-		if ((ptr++)[0] != 32 || //total size
+		if ((ptr++)[0] != 36 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -189,10 +195,16 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 25)) != TOY_VALUE_BOOLEAN ||
 			*((unsigned char*)(buffer + 26)) != 1 ||
 			*((unsigned char*)(buffer + 27)) != 0 ||
-			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_RETURN ||
+
+			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(buffer + 29)) != 0 ||
 			*((unsigned char*)(buffer + 30)) != 0 ||
-			*((unsigned char*)(buffer + 31)) != 0
+			*((unsigned char*)(buffer + 31)) != 0 ||
+
+			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 33)) != 0 ||
+			*((unsigned char*)(buffer + 34)) != 0 ||
+			*((unsigned char*)(buffer + 35)) != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
@@ -223,7 +235,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		//check header
 		int* ptr = (int*)buffer;
 
-		if ((ptr++)[0] != 36 || //total size
+		if ((ptr++)[0] != 40 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -241,11 +253,18 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 25)) != TOY_VALUE_INTEGER ||
 			*((unsigned char*)(buffer + 26)) != 0 ||
 			*((unsigned char*)(buffer + 27)) != 0 ||
+
 			*(int*)(buffer + 28) != 42 ||
-			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_RETURN ||
+
+			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(buffer + 33)) != 0 ||
 			*((unsigned char*)(buffer + 34)) != 0 ||
-			*((unsigned char*)(buffer + 35)) != 0
+			*((unsigned char*)(buffer + 35)) != 0 ||
+
+			*((unsigned char*)(buffer + 36)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 37)) != 0 ||
+			*((unsigned char*)(buffer + 38)) != 0 ||
+			*((unsigned char*)(buffer + 39)) != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
@@ -276,7 +295,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		//check header
 		int* ptr = (int*)buffer;
 
-		if ((ptr++)[0] != 36 || //total size
+		if ((ptr++)[0] != 40 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -294,11 +313,18 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 25)) != TOY_VALUE_FLOAT ||
 			*((unsigned char*)(buffer + 26)) != 0 ||
 			*((unsigned char*)(buffer + 27)) != 0 ||
+
 			*(float*)(buffer + 28) != 3.1415f ||
-			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_RETURN ||
+
+			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(buffer + 33)) != 0 ||
 			*((unsigned char*)(buffer + 34)) != 0 ||
-			*((unsigned char*)(buffer + 35)) != 0
+			*((unsigned char*)(buffer + 35)) != 0 ||
+
+			*((unsigned char*)(buffer + 36)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 37)) != 0 ||
+			*((unsigned char*)(buffer + 38)) != 0 ||
+			*((unsigned char*)(buffer + 39)) != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
@@ -329,7 +355,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		//check header
 		int* header = (int*)buffer;
 
-		if (header[0] != 64 || //total size
+		if (header[0] != 68 || //total size
 			header[1] != 4 || //jump size
 			header[2] != 0 || //param size
 			header[3] != 16 || //data size
@@ -337,8 +363,8 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 
 			// header[??] != ?? || //params address
 			header[5] != 32 || //code address
-			header[6] != 44 || //jump address
-			header[7] != 48 || //data address
+			header[6] != 48 || //jump address
+			header[7] != 52 || //data address
 			// header[??] != ?? || //subs address
 
 			false)
@@ -359,13 +385,19 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(code + 1)) != TOY_VALUE_STRING ||
 			*((unsigned char*)(code + 2)) != TOY_STRING_LEAF ||
 			*((unsigned char*)(code + 3)) != 0 ||
+
 			*(unsigned int*)(code + 4) != 0 || //the jump index
-			*((unsigned char*)(code + 8)) != TOY_OPCODE_RETURN ||
+
+			*((unsigned char*)(code + 8)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(code + 9)) != 0 ||
 			*((unsigned char*)(code + 10)) != 0 ||
 			*((unsigned char*)(code + 11)) != 0 ||
 
-			false)
+			*((unsigned char*)(code + 12)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(code + 13)) != 0 ||
+			*((unsigned char*)(code + 14)) != 0 ||
+			*((unsigned char*)(code + 15)) != 0
+			)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
 
@@ -374,7 +406,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		unsigned char* jumps = code + 12;
+		unsigned char* jumps = code + 16;
 
 		//check jumps
 		if (
@@ -435,7 +467,7 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 		//check header
 		int* ptr = (int*)buffer;
 
-		if ((ptr++)[0] != 48 || //total size
+		if ((ptr++)[0] != 52 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -466,10 +498,15 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 42)) != 0 ||
 			*((unsigned char*)(buffer + 43)) != 0 ||
 
-			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(buffer + 45)) != 0 ||
 			*((unsigned char*)(buffer + 46)) != 0 ||
-			*((unsigned char*)(buffer + 47)) != 0
+			*((unsigned char*)(buffer + 47)) != 0 ||
+
+			*((unsigned char*)(buffer + 48)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 49)) != 0 ||
+			*((unsigned char*)(buffer + 50)) != 0 ||
+			*((unsigned char*)(buffer + 51)) != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
@@ -500,7 +537,7 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 		//check header
 		int* ptr = (int*)buffer;
 
-		if ((ptr++)[0] != 48 || //total size
+		if ((ptr++)[0] != 52 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -531,10 +568,15 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 42)) != 0 ||
 			*((unsigned char*)(buffer + 43)) != 0 ||
 
-			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(buffer + 45)) != 0 ||
 			*((unsigned char*)(buffer + 46)) != 0 ||
-			*((unsigned char*)(buffer + 47)) != 0
+			*((unsigned char*)(buffer + 47)) != 0 ||
+
+			*((unsigned char*)(buffer + 48)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 49)) != 0 ||
+			*((unsigned char*)(buffer + 50)) != 0 ||
+			*((unsigned char*)(buffer + 51)) != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
@@ -565,7 +607,7 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 		//check header
 		int* ptr = (int*)buffer;
 
-		if ((ptr++)[0] != 48 || //total size
+		if ((ptr++)[0] != 52 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -596,10 +638,15 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 42)) != 0 ||
 			*((unsigned char*)(buffer + 43)) != 0 ||
 
-			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(buffer + 45)) != 0 ||
 			*((unsigned char*)(buffer + 46)) != 0 ||
-			*((unsigned char*)(buffer + 47)) != 0
+			*((unsigned char*)(buffer + 47)) != 0 ||
+
+			*((unsigned char*)(buffer + 48)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 49)) != 0 ||
+			*((unsigned char*)(buffer + 50)) != 0 ||
+			*((unsigned char*)(buffer + 51)) != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
@@ -630,7 +677,7 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 		//check header
 		int* ptr = (int*)buffer;
 
-		if ((ptr++)[0] != 72 || //total size
+		if ((ptr++)[0] != 76 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -687,10 +734,15 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 66)) != 0 ||
 			*((unsigned char*)(buffer + 67)) != 0 ||
 
-			*((unsigned char*)(buffer + 68)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 68)) != TOY_OPCODE_ELIMINATE ||
 			*((unsigned char*)(buffer + 69)) != 0 ||
 			*((unsigned char*)(buffer + 70)) != 0 ||
-			*((unsigned char*)(buffer + 71)) != 0
+			*((unsigned char*)(buffer + 71)) != 0 ||
+
+			*((unsigned char*)(buffer + 72)) != TOY_OPCODE_RETURN ||
+			*((unsigned char*)(buffer + 73)) != 0 ||
+			*((unsigned char*)(buffer + 74)) != 0 ||
+			*((unsigned char*)(buffer + 75)) != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
@@ -1108,7 +1160,7 @@ int test_compiler_keywords(Toy_Bucket** bucketHandle) {
 		int* header = (int*)buffer;
 
 		if (header[0] != 64 || //total size
-			header[1] != 4 || //jump size
+			header[1] != 4 || //jumps size
 			header[2] != 0 || //param size
 			header[3] != 8 || //data size
 			header[4] != 0 || //subs size
