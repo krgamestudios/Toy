@@ -1,3 +1,4 @@
+#include "ast_inspector.h"
 #include "bytecode_inspector.h"
 
 #include "toy_console_colors.h"
@@ -377,6 +378,11 @@ int repl(const char* filepath, bool verbose) {
 			printf("%s> ", prompt); //shows the terminal prompt
 			continue;
 		}
+
+		if (verbose) {
+			inspect_ast(ast);
+		}
+
 		unsigned char* bytecode = Toy_compileToBytecode(ast);
 
 		if (verbose) {
@@ -473,6 +479,11 @@ int main(int argc, const char* argv[]) {
 
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
+
+		if (cmd.verbose) {
+			inspect_ast(ast);
+		}
+
 		unsigned char* bytecode = Toy_compileToBytecode(ast);
 		Toy_freeBucket(&bucket);
 		free(source);

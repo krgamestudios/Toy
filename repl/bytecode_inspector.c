@@ -11,11 +11,6 @@
 int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr);
 int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr);
 
-// void inspect_jumps(unsigned char* bytecode, unsigned int pc, unsigned int size);
-// void inspect_param(unsigned char* bytecode, unsigned int pc, unsigned int size);
-// void inspect_data(unsigned char* bytecode, unsigned int pc, unsigned int size);
-// void inspect_subs(unsigned char* bytecode, unsigned int pc, unsigned int size);
-
 #define ISPRINT_SANITIZE(x) (isprint((int)x) > 0 ? (x) : '_')
 
 #define MARKER_VALUE(pc, type) \

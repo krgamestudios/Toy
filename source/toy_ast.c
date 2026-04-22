@@ -266,3 +266,41 @@ void Toy_private_emitAstEnd(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 
 	(*astHandle) = tmp;
 }
+
+const char* Toy_private_getAstTypeAsCString(Toy_AstType type) {
+	switch(type) {
+		case TOY_AST_BLOCK: return "BLOCK";
+
+		case TOY_AST_VALUE: return "VALUE";
+		case TOY_AST_UNARY: return "UNARY";
+		case TOY_AST_BINARY: return "BINARY";
+		case TOY_AST_BINARY_SHORT_CIRCUIT: return "BINARY_SHORT_CIRCUIT";
+		case TOY_AST_COMPARE: return "COMPARE";
+		case TOY_AST_GROUP: return "GROUP";
+		case TOY_AST_COMPOUND: return "COMPOUND";
+		case TOY_AST_AGGREGATE: return "AGGREGATE";
+
+		case TOY_AST_ASSERT: return "ASSERT";
+		case TOY_AST_IF_THEN_ELSE: return "IF_THEN_ELSE";
+		case TOY_AST_WHILE_THEN: return "WHILE_THEN";
+		case TOY_AST_BREAK: return "BREAK";
+		case TOY_AST_CONTINUE: return "CONTINUE";
+		case TOY_AST_RETURN: return "RETURN";
+		case TOY_AST_PRINT: return "PRINT";
+
+		case TOY_AST_VAR_DECLARE: return "DECLARE";
+		case TOY_AST_VAR_ASSIGN: return "ASSIGN";
+		case TOY_AST_VAR_ACCESS: return "ACCESS";
+
+		case TOY_AST_FN_DECLARE: return "FN_DECLARE";
+		case TOY_AST_FN_INVOKE: return "FN_INVOKE";
+
+		case TOY_AST_STACK_POP: return "STACK_POP";
+
+		case TOY_AST_PASS: return "PASS";
+		case TOY_AST_ERROR: return "ERROR";
+		case TOY_AST_END: return "END";
+	}
+
+	return NULL;
+}

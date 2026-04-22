@@ -297,3 +297,5 @@ void Toy_private_emitAstStackPop(Toy_Bucket** bucketHandle, Toy_Ast** astHandle)
 void Toy_private_emitAstPass(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 void Toy_private_emitAstError(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 void Toy_private_emitAstEnd(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
+
+const char* Toy_private_getAstTypeAsCString(Toy_AstType type);
