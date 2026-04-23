@@ -14,16 +14,22 @@ on:
       - v2
   workflow_dispatch:
 
-#CI workflows, limited coverage atm
 jobs:
+  #CI workflows across all supported platforms
   standard:
     strategy:
       fail-fast: false
-    runs-on: ubuntu-latest
+      matrix:
+        platforms:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    runs-on: ${{ matrix.platforms }}
     steps:
       - uses: actions/checkout@v6
       - name: Run all tests
         run: make tests
+
   gdb:
     strategy:
       fail-fast: false
