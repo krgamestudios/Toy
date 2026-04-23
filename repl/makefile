@@ -4,6 +4,11 @@ CFLAGS+=-std=c17 -g -Wall -Werror -Wextra -Wpedantic -Wformat=2 -Wno-newline-eof
 LIBS+=-lm -lToy
 LDFLAGS+=-Wl,-rpath,'$$ORIGIN'
 
+ifeq ($(shell uname),Darwin) #make sure there's enough space for the dylib fix
+	LDFLAGS+=-Wl,-headerpad_max_install_names
+endif
+
+
 #directories
 REPL_ROOTDIR=..
 REPL_REPLDIR=.

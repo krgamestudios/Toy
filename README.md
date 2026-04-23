@@ -12,7 +12,7 @@ This repository holds the reference implementation for Toy version 2.x, written 
 
 # Nifty Features
 
-* Simple C-like/JS-like syntax
+* Simple C-style syntax
 * Intermediate AST and bytecode representations
 * Strong, but optional type system
 * First-class functions and closures
@@ -24,17 +24,19 @@ This repository holds the reference implementation for Toy version 2.x, written 
 
 Watch this space.
 
-(The `scripts` or `tests` directory might help.)
+(The `scripts` or `tests` directory might help, the docs website is WIP.)
 
 # Building
 
-Watch this space.
+This project requires `gcc` and `make` by default, but should also work in other environments. Officially supported platforms include `linux`, `windows` and `macOS`, see `source/toy_common.h` for implementation details.
 
-(`make` and `make tests` might help.)
+Run `make` in the root directory to build the shared library named `libToy.so` and a useable REPL named `repl.out`.
 
 # Tools
 
 Watch this space.
+
+(There's some utility functions in `repl/` that are WIP but useful.)
 
 # Documentation
 
