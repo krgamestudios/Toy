@@ -16,7 +16,12 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 #define MARKER_VALUE(pc, type) \
 	(pc * sizeof(type))
 
-#define MARKER "\t\033[" TOY_CC_FONT_BLACK "m" " %lu\t" TOY_CC_RESET
+#if TOY_BITNESS == 64
+	#define MARKER "\t\033[" TOY_CC_FONT_BLACK "m" " %lu\t" TOY_CC_RESET
+#else
+	#define MARKER "\t\033[" TOY_CC_FONT_BLACK "m" " %llu\t" TOY_CC_RESET
+#endif
+
 #define FONT_BLACK "\033[" TOY_CC_FONT_BLACK "m"
 
 //exposed functions

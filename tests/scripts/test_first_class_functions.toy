@@ -1,0 +1,10 @@
+//check functions are first class citizens
+fn hello() {
+	print "Hello world";
+}
+
+fn identity(x) {
+	return x;
+}
+
+assert identity(hello) == hello, "First class function check failed";

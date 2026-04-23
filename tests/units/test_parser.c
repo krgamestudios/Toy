@@ -331,7 +331,12 @@ int test_values(Toy_Bucket** bucketHandle) {
 			ast->block.child->stackPop.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->stackPop.child->value.value) == false ||
 			TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->value.value)->info.type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->value.value)->leaf.data, "Hello world!", TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->value.value) != 0))
+			strncmp(
+				TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->value.value)->leaf.data,
+				"Hello world!",
+				TOY_VALUE_AS_STRING(ast->block.child->stackPop.child->value.value)->info.length) != 0 ||
+
+			false)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser with string value 'Hello world!'\n" TOY_CC_RESET);
 			return -1;
@@ -655,7 +660,8 @@ int test_keywords(Toy_Bucket** bucketHandle) {
 			ast->block.child->assert.message->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->assert.message->value.value) == false ||
 			TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->info.type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->leaf.data, "foo", 3) != 0)
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->assert.message->value.value)->leaf.data, "foo", 3) != 0
+		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
 			return -1;
@@ -678,7 +684,8 @@ int test_keywords(Toy_Bucket** bucketHandle) {
 			ast->block.child->print.child->type != TOY_AST_VALUE ||
 			TOY_VALUE_IS_STRING(ast->block.child->print.child->value.value) == false ||
 			TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->info.type != TOY_STRING_LEAF ||
-			strncmp(TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->leaf.data, "foo", 3) != 0)
+			strncmp(TOY_VALUE_AS_STRING(ast->block.child->print.child->value.value)->leaf.data, "foo", 3) != 0
+		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to run the parser, source: %s\n" TOY_CC_RESET, source);
 			return -1;
