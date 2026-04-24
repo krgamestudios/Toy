@@ -16,15 +16,15 @@ const Toy_KeywordTypeTuple keywordTuples[] = {
 	{TOY_TOKEN_NULL, "null"},
 
 	//types
-	{TOY_TOKEN_TYPE_BOOLEAN, "bool"},
-	{TOY_TOKEN_TYPE_INTEGER, "int"},
-	{TOY_TOKEN_TYPE_FLOAT, "float"},
-	{TOY_TOKEN_TYPE_STRING, "string"},
-	{TOY_TOKEN_TYPE_ARRAY, "array"},
-	{TOY_TOKEN_TYPE_TABLE, "table"},
-	{TOY_TOKEN_TYPE_FUNCTION, "function"},
-	{TOY_TOKEN_TYPE_OPAQUE, "opaque"},
-	{TOY_TOKEN_TYPE_ANY, "any"},
+	{TOY_TOKEN_TYPE_BOOLEAN, "Bool"},
+	{TOY_TOKEN_TYPE_INTEGER, "Int"},
+	{TOY_TOKEN_TYPE_FLOAT, "Float"},
+	{TOY_TOKEN_TYPE_STRING, "String"},
+	{TOY_TOKEN_TYPE_ARRAY, "Array"},
+	{TOY_TOKEN_TYPE_TABLE, "Table"},
+	{TOY_TOKEN_TYPE_FUNCTION, "Function"},
+	{TOY_TOKEN_TYPE_OPAQUE, "Opaque"},
+	{TOY_TOKEN_TYPE_ANY, "Any"},
 
 	//keywords and reserved words
 	{TOY_TOKEN_KEYWORD_AS, "as"},

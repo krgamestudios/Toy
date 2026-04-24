@@ -113,8 +113,8 @@ print !false; //true
 
 //types
 {
-	var a: int;
-	var b: int = 42;
+	var a: Int;
+	var b: Int = 42;
 
 	a = 69;
 	b = 8891;
@@ -125,7 +125,7 @@ print !false; //true
 
 //constants
 {
-	var c: int const = 42;
+	var c: Int const = 42;
 	print c;
 }
 

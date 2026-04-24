@@ -301,7 +301,7 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 			Toy_String k = scope->data[i].key;
 			Toy_Value v = scope->data[i].value;
 
-			printf("%-20s%-20s", Toy_private_getValueTypeAsCString(v.type), k.leaf.data);
+			printf("%-10s%-10s%-20s", Toy_private_getValueTypeAsCString(scope->data[i].type), scope->data[i].constant ? "const" : "", k.leaf.data);
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));

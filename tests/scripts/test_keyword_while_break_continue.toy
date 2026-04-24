@@ -9,7 +9,7 @@ while (true) {
 }
 
 //test continue
-var flag1: bool = true;
+var flag1: Bool = true;
 while (flag1) {
 	flag1 = false;
 	continue;
@@ -25,7 +25,7 @@ while (true) {
 }
 
 //test continue
-var flag2: bool = true;
+var flag2: Bool = true;
 while (flag2) {
 	flag2 = false;
 	continue;
@@ -41,7 +41,7 @@ while (true) {
 }
 
 //test continue
-var flag3: bool = true;
+var flag3: Bool = true;
 while (flag3) {
 	flag3 = false;
 	continue;
@@ -58,7 +58,7 @@ while (flag3) {
 	}
 
 	//test continue
-	var flag4: bool = true;
+	var flag4: Bool = true;
 	while (flag4) {
 		flag4 = false;
 		continue;
@@ -78,7 +78,7 @@ while (flag3) {
 	}
 
 	//test continue
-	var flag5: bool = true;
+	var flag5: Bool = true;
 	while (flag5) {
 		flag5 = false;
 		{

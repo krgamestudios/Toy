@@ -1,6 +1,6 @@
 //booleans
 {
-	var value: bool = true;
+	var value: Bool = true;
 
 	if (value) {
 		print "boolean";
@@ -11,7 +11,7 @@
 }
 
 {
-	var value: bool = false;
+	var value: Bool = false;
 
 	if (value) {
 		assert false, "boolean";
@@ -23,7 +23,7 @@
 
 //integers
 {
-	var value: int = 42;
+	var value: Int = 42;
 
 	if (value) {
 		print "integer";
@@ -34,7 +34,7 @@
 }
 
 {
-	var value: int = 0;
+	var value: Int = 0;
 
 	if (value) {
 		assert false, "integer";
@@ -46,7 +46,7 @@
 
 //floats
 {
-	var value: float = 42.8891;
+	var value: Float = 42.8891;
 
 	if (value) {
 		print "float";
@@ -57,7 +57,7 @@
 }
 
 {
-	var value: float = 0;
+	var value: Float = 0;
 
 	if (value) {
 		assert false, "float";
@@ -69,7 +69,7 @@
 
 //everything else
 {
-	var value: string = "foobar";
+	var value: String = "foobar";
 
 	if (value) {
 		print "string";

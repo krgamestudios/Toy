@@ -1093,6 +1093,8 @@ static unsigned int writeInstructionAttribute(Toy_Bytecode** mb, Toy_AstAttribut
 	EMIT_BYTE(mb, code, 0);
 	EMIT_BYTE(mb, code, 0);
 
+	(void)result;
+
 	return 1;
 }
 

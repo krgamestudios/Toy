@@ -1,0 +1,29 @@
+//typenames are now capitalized, so ensure they don't overlap with variable names
+
+var bool: Bool = true;
+print bool;
+
+var int: Int = 42;
+print int;
+
+var float: Float = 3.1415;
+print float;
+
+var string: String = "Hello world";
+print string;
+
+var array: Array = [1,2,3];
+print array;
+
+var table: Table = ["alpha":1];
+print table;
+
+var function: Function;
+print function;
+
+var opaque: Opaque;
+print opaque;
+
+var any: Any;
+print any;
+

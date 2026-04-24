@@ -1252,7 +1252,7 @@ int test_compiler_keywords(Toy_Bucket** bucketHandle) {
 	//var declare (with type)
 	{
 		//setup
-		const char* source = "var foobar: int = 42;";
+		const char* source = "var foobar: Int = 42;";
 		Toy_Lexer lexer;
 		Toy_Parser parser;
 
@@ -1363,7 +1363,7 @@ int test_compiler_string_reuse(Toy_Bucket** bucketHandle) {
 	//test string literals
 	{
 		//setup
-		const char* source = "var first: string = \"Hello world\"; var second: string = \"Hello world\";";
+		const char* source = "var first: String = \"Hello world\"; var second: String = \"Hello world\";";
 		Toy_Lexer lexer;
 		Toy_Parser parser;
 

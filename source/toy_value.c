@@ -653,18 +653,18 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 const char* Toy_private_getValueTypeAsCString(Toy_ValueType type) {
 	switch (type) {
-		case TOY_VALUE_NULL: return "null";
-		case TOY_VALUE_BOOLEAN: return "bool";
-		case TOY_VALUE_INTEGER: return "int";
-		case TOY_VALUE_FLOAT: return "float";
-		case TOY_VALUE_STRING: return "string";
-		case TOY_VALUE_ARRAY: return "array";
-		case TOY_VALUE_TABLE: return "table";
-		case TOY_VALUE_FUNCTION: return "function";
-		case TOY_VALUE_OPAQUE: return "opaque";
-		case TOY_VALUE_ANY: return "any";
-		case TOY_VALUE_REFERENCE: return "reference";
-		case TOY_VALUE_UNKNOWN: return "unknown";
+		case TOY_VALUE_NULL: return "Null";
+		case TOY_VALUE_BOOLEAN: return "Bool";
+		case TOY_VALUE_INTEGER: return "Int";
+		case TOY_VALUE_FLOAT: return "Float";
+		case TOY_VALUE_STRING: return "String";
+		case TOY_VALUE_ARRAY: return "Array";
+		case TOY_VALUE_TABLE: return "Table";
+		case TOY_VALUE_FUNCTION: return "Function";
+		case TOY_VALUE_OPAQUE: return "Opaque";
+		case TOY_VALUE_ANY: return "Any";
+		case TOY_VALUE_REFERENCE: return "Reference";
+		case TOY_VALUE_UNKNOWN: return "Unknown";
 	}
 
 	return NULL;
