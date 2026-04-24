@@ -121,6 +121,7 @@ static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag unaryPostfix(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag invoke(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
+static Toy_AstFlag attribute(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 
 //precedence definitions
 static ParsingTuple parsingRulesetTable[] = {
@@ -212,7 +213,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_SEMICOLON,
 	{PREC_GROUP,NULL,aggregate},// TOY_TOKEN_OPERATOR_COMMA,
 
-	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_DOT,
+	{PREC_CALL,NULL,attribute},// TOY_TOKEN_OPERATOR_DOT,
 	{PREC_UNARY,NULL,binary},// TOY_TOKEN_OPERATOR_CONCAT,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_OPERATOR_REST,
 
@@ -732,6 +733,31 @@ static Toy_AstFlag invoke(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 	Toy_private_emitAstFunctionInvokation(bucketHandle, rootHandle, args);
 
 	return TOY_AST_FLAG_INVOKATION;
+}
+
+static Toy_AstFlag attribute(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	//infix must advance
+	advance(parser);
+
+	if (parser->previous.type == TOY_TOKEN_OPERATOR_DOT) {
+		Toy_Ast* expr = NULL;
+		parsePrecedence(bucketHandle, parser, &expr, PREC_PRIMARY);
+
+		//hijack access node and take the value (presumably an identifier)
+		if (expr->type != TOY_AST_VAR_ACCESS || expr->varAccess.child == NULL || expr->varAccess.child->type != TOY_AST_VALUE) {
+			printError(parser, parser->previous, "Malformed expression passed to attribute precedence rule");
+			Toy_private_emitAstError(bucketHandle, rootHandle);
+			return TOY_AST_FLAG_NONE;
+		}
+
+		Toy_private_emitAstAttribute(bucketHandle, rootHandle, expr->varAccess.child);
+		return TOY_AST_FLAG_NONE;
+	}
+	else {
+		printError(parser, parser->previous, "Unexpected token passed to attribute precedence rule");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return TOY_AST_FLAG_NONE;
+	}
 }
 
 //grammar rules

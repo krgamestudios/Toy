@@ -431,6 +431,19 @@ static void processInvoke(Toy_VM* vm) {
 	}
 }
 
+static void processAttribute(Toy_VM* vm) {
+	//get the compound & attribute
+	Toy_Value attribute = Toy_popStack(&vm->stack);
+	Toy_Value value = Toy_popStack(&vm->stack);
+
+	//URGENT: type-based attributes
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL()); //tmp
+
+	//cleanup
+	Toy_freeValue(value);
+	Toy_freeValue(attribute);
+}
+
 static void processDuplicate(Toy_VM* vm) {
 	Toy_Value value = Toy_copyValue(&vm->memoryBucket, Toy_peekStack(&vm->stack));
 	Toy_pushStack(&vm->stack, value);
@@ -956,6 +969,10 @@ static unsigned int process(Toy_VM* vm) {
 
 			case TOY_OPCODE_INVOKE:
 				processInvoke(vm);
+				break;
+
+			case TOY_OPCODE_ATTRIBUTE:
+				processAttribute(vm);
 				break;
 
 			case TOY_OPCODE_DUPLICATE:

@@ -234,6 +234,16 @@ void Toy_private_emitAstFunctionInvokation(Toy_Bucket** bucketHandle, Toy_Ast** 
 	(*astHandle) = tmp;
 }
 
+void Toy_private_emitAstAttribute(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* expr) {
+	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
+
+	tmp->type = TOY_AST_ATTRIBUTE;
+	tmp->attribute.left = (*astHandle);
+	tmp->attribute.right = expr;
+
+	(*astHandle) = tmp;
+}
+
 void Toy_private_emitAstStackPop(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 
@@ -294,6 +304,7 @@ const char* Toy_private_getAstTypeAsCString(Toy_AstType type) {
 
 		case TOY_AST_FN_DECLARE: return "FN_DECLARE";
 		case TOY_AST_FN_INVOKE: return "FN_INVOKE";
+		case TOY_AST_ATTRIBUTE: return "ATTRIBUTE";
 
 		case TOY_AST_STACK_POP: return "STACK_POP";
 
