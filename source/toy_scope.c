@@ -85,11 +85,12 @@ static Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapa
 		return newEntries;
 	}
 
-	//movethe old data into the new block of memory
+	//move the old data into the new block of memory
 	unsigned int oldCapacity = scope->capacity;
 	Toy_ScopeEntry* oldEntries = scope->data;
 	scope->capacity = newCapacity;
 	scope->data = newEntries;
+	scope->count = 0;
 
 	//for each existing entry in the old array, copy it into the new array
 	for (unsigned int i = 0; i < oldCapacity; i++) {
@@ -144,6 +145,11 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy
 		sprintf(buffer, "Can't redefine a variable: %s", key->leaf.data);
 		Toy_error(buffer);
 		return;
+	}
+
+	//expand the table capacity if needed
+	if (scope->count >= scope->capacity * 0.8f) {
+		scope->data = adjustScopeEntries(scope, scope->capacity * TOY_SCOPE_EXPANSION_RATE);
 	}
 
 	value = coerceValueTypesIfAble(type, value);

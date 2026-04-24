@@ -586,7 +586,7 @@ int test_table_expansions_under_stress(void) {
 
 		//check the state
 		if (table == NULL ||
-			table->capacity != 512 ||
+			table->capacity != 1024 ||
 			table->count != 400 ||
 
 			TOY_VALUE_IS_INTEGER(result) != true ||

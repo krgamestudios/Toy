@@ -52,5 +52,5 @@ TOY_API void Toy_private_decrementScopeRefCount(Toy_Scope* scope);
 
 //expand when the contents passes a certain percentage (80%) of the capacity
 #ifndef TOY_SCOPE_EXPANSION_THRESHOLD
-#define TOY_SCOPE_EXPANSION_THRESHOLD 0.8f
+#define TOY_SCOPE_EXPANSION_THRESHOLD 0.7f
 #endif
