@@ -20,11 +20,3 @@ TOY_API Toy_Array* Toy_resizeArray(Toy_Array* array, unsigned int capacity);
 #ifndef TOY_ARRAY_EXPANSION_RATE
 #define TOY_ARRAY_EXPANSION_RATE 2
 #endif
-
-//TODO: array.getLength()
-//TODO: array.pushFront(x)
-//TODO: array.pushBack(x)
-//TODO: array.popFront()
-//TODO: array.popBack()
-//TODO: array.toString()
-

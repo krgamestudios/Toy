@@ -439,6 +439,15 @@ static void processAttribute(Toy_VM* vm) {
 	//URGENT: type-based attributes
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL()); //tmp
 
+	//string.length
+	//array.length
+	//array.pushFront(x)
+	//array.pushBack(x)
+	//array.popFront()
+	//array.popBack()
+	//array.toString()
+	//table etc.
+
 	//cleanup
 	Toy_freeValue(value);
 	Toy_freeValue(attribute);

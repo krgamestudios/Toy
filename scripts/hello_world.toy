@@ -9,5 +9,4 @@ var b = 69;
 var c;
 var d;
 
-//URGENT: reverse the assignment bytecode order
 c, d = swap(a, b);
