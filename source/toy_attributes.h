@@ -7,16 +7,16 @@ Toy_Value handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attri
 Toy_Value handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 Toy_Value handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 
-// string.length
-// string.asUpper
-// string.asLower
-// array.length
-// array.pushBack(x)
-// array.popBack()
-// array.forEach(fn) // fn(x) -> void
-// array.sort(fn)    // fn(a,b) -> int
-// table.length
-// table.insert(x)
-// table.hasKey(x)
-// table.remove(x)
-// table.forEach(fn) // fn(x) -> void
+// [x] string.length
+// [x] string.asUpper
+// [x] string.asLower
+// [x] array.length
+// [x] array.pushBack(x)
+// [x] array.popBack()
+// [ ] array.forEach(fn) // fn(x) -> void
+// [ ] array.sort(fn)    // fn(a,b) -> int
+// [x] table.length
+// [x] table.insert(x, y)
+// [x] table.hasKey(x)
+// [x] table.remove(x)
+// [ ] table.forEach(fn) // fn(x) -> void

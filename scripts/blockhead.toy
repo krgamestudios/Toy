@@ -1,6 +1,18 @@
 
-var array = [1,2,3];
 
-array.pushBack(4);
+var table: Table = ["answer":42];
 
-print array.popBack();
+print table.hasKey("answer");
+print table.hasKey("question");
+
+table.insert("question", "roads");
+
+print table.hasKey("answer");
+print table.hasKey("question");
+
+table.remove("answer");
+
+print table.hasKey("answer");
+print table.hasKey("question");
+
+
