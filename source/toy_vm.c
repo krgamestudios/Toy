@@ -3,6 +3,7 @@
 
 #include "toy_print.h"
 #include "toy_opcodes.h"
+#include "toy_attributes.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -434,22 +435,38 @@ static void processInvoke(Toy_VM* vm) {
 static void processAttribute(Toy_VM* vm) {
 	//get the compound & attribute
 	Toy_Value attribute = Toy_popStack(&vm->stack);
-	Toy_Value value = Toy_popStack(&vm->stack);
+	Toy_Value compound = Toy_popStack(&vm->stack);
 
-	//URGENT: type-based attributes
-	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL()); //tmp
+	Toy_Value result = TOY_VALUE_FROM_NULL();
 
-	//string.length
-	//array.length
-	//array.pushFront(x)
-	//array.pushBack(x)
-	//array.popFront()
-	//array.popBack()
-	//array.toString()
-	//table etc.
+	//type-based attributes
+	if (TOY_VALUE_IS_STRING(compound)) {
+		result = handleStringAttributes(vm, compound, attribute);
+	}
+	else if (TOY_VALUE_IS_ARRAY(compound)) {
+		result = handleArrayAttributes(vm, compound, attribute);
+	}
+	else if (TOY_VALUE_IS_TABLE(compound)) {
+		result = handleTableAttributes(vm, compound, attribute);
+	}
+	else {
+		char buffer[256];
+		snprintf(buffer, 256, "Can't access an attribute of type '%s'", Toy_private_getValueTypeAsCString(compound.type));
+		Toy_error(buffer);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	//BUGFIX: check for callable native functions, so they can access the compound too
+	if (TOY_VALUE_IS_FUNCTION(result) && TOY_VALUE_AS_FUNCTION(result)->type == TOY_FUNCTION_NATIVE) {
+		//WONTFIX: `print array.pushBack;' will leave the compound's reference on the stack
+		Toy_pushStack(&vm->stack, compound);
+	}
+
+	//leave the result on the stack
+	Toy_pushStack(&vm->stack, result);
 
 	//cleanup
-	Toy_freeValue(value);
 	Toy_freeValue(attribute);
 }
 

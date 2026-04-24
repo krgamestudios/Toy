@@ -1,10 +1,6 @@
 
-print "hello world";
-print "hello world";
-print "hello world";
-{
-	print "hello world";
-	{
-		print "hello world";
-	}
-}
+var array = [1,2,3];
+
+array.pushBack(4);
+
+print array.popBack();

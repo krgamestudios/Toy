@@ -8,27 +8,11 @@
 #include "toy_compiler.h"
 #include "toy_vm.h"
 
-#include "standard_library.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-//utilities
-#if defined(_WIN32) || defined(_WIN64)
-	#define FLIPSLASH(str) for (int i = 0; str != NULL && str[i]; i++) str[i] = str[i] == '/' ? '\\' : str[i];
-#else
-	#define FLIPSLASH(str) for (int i = 0; str != NULL && str[i]; i++) str[i] = str[i] == '\\' ? '/' : str[i];
-#endif
-
 unsigned char* readFile(char* path, int* size) {
-	//BUGFIX: fix the path based on platform - it might be slower, but it's better than dealing with platform crap
-	int pathLength = strlen(path);
-	char realPath[pathLength + 1];
-	strncpy(realPath, path, pathLength);
-	realPath[pathLength] = '\0';
-	FLIPSLASH(realPath);
-
 	//open the file
 	FILE* file = fopen(path, "rb");
 	if (file == NULL) {
@@ -339,12 +323,6 @@ int repl(const char* filepath, bool verbose) {
 
 	Toy_VM vm;
 	Toy_initVM(&vm);
-
-	//hacky test
-	if (vm.scope == NULL) {
-		vm.scope = Toy_pushScope(&vm.memoryBucket, NULL);
-		initStandardLibrary(&vm);
-	}
 
 	printf("%s> ", prompt); //shows the terminal prompt and begin
 

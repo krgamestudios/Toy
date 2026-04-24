@@ -186,6 +186,10 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			bytecode[pc + 2]);
 			return 4;
 
+		case TOY_OPCODE_ATTRIBUTE:
+			printf(MARKER "ATTRIBUTE (accessed from a compound)\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
 		case TOY_OPCODE_DUPLICATE:
 			printf(MARKER "DUPLICATE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] ? "and ACCESS" : "");
 			return 4;

@@ -751,7 +751,7 @@ static Toy_AstFlag attribute(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 		}
 
 		Toy_private_emitAstAttribute(bucketHandle, rootHandle, expr->varAccess.child);
-		return TOY_AST_FLAG_NONE;
+		return TOY_AST_FLAG_ATTRIBUTE;
 	}
 	else {
 		printError(parser, parser->previous, "Unexpected token passed to attribute precedence rule");
