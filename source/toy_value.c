@@ -122,7 +122,7 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 		case TOY_VALUE_TABLE: { //TODO: switch to buckets
 			//tables probably won't get copied much
 			Toy_Table* ptr = value.as.table;
-			Toy_Table* result = Toy_private_adjustTableCapacity(NULL, ptr->capacity);
+			Toy_Table* result = Toy_allocateTable(ptr->capacity);
 
 			for (unsigned int i = 0; i < ptr->capacity; i++) {
 				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {

@@ -121,21 +121,8 @@ static void processRead(Toy_VM* vm) {
 			//the number of values to read from the stack
 			unsigned int count = (unsigned int)READ_INT(vm);
 
-			//capacity covers keys AND values
-			unsigned int capacity = count / 2;
-			capacity = capacity > TOY_TABLE_INITIAL_CAPACITY ? capacity : TOY_TABLE_INITIAL_CAPACITY;
-
-			//neat trick to find the next power of two, inclusive (restriction of the table system)
-			capacity--;
-			capacity |= capacity >> 1;
-			capacity |= capacity >> 2;
-			capacity |= capacity >> 4;
-			capacity |= capacity >> 8;
-			capacity |= capacity >> 16;
-			capacity++;
-
-			//create the table and read in the key-values
-			Toy_Table* table = Toy_private_adjustTableCapacity(NULL, capacity);
+			//create the table (count covers keys AND values)
+			Toy_Table* table = Toy_allocateTable(count / 2);
 
 			//read in backwards from the stack
 			for (unsigned int i = 0; i < count / 2; i++) {

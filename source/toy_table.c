@@ -46,7 +46,7 @@ static void probeAndInsert(Toy_Table** tableHandle, Toy_Value key, Toy_Value val
 //exposed functions
 Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int newCapacity) {
 	//allocate and zero a new table in memory
-	Toy_Table* newTable = malloc(newCapacity * sizeof(Toy_TableEntry) + sizeof(Toy_Table));
+	Toy_Table* newTable = malloc(newCapacity * sizeof(Toy_TableEntry) + sizeof(Toy_Table)); //URGENT: Swap to a bucket
 
 	if (newTable == NULL) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate a 'Toy_Table'\n" TOY_CC_RESET);
@@ -76,8 +76,19 @@ Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int new
 	return newTable;
 }
 
-Toy_Table* Toy_allocateTable(void) {
-	return Toy_private_adjustTableCapacity(NULL, TOY_TABLE_INITIAL_CAPACITY);
+Toy_Table* Toy_allocateTable(unsigned int minCapacity) {
+	minCapacity = minCapacity > TOY_TABLE_INITIAL_CAPACITY ? minCapacity : TOY_TABLE_INITIAL_CAPACITY;
+
+	//neat trick to find the next power of two, inclusive
+	minCapacity--;
+	minCapacity |= minCapacity >> 1;
+	minCapacity |= minCapacity >> 2;
+	minCapacity |= minCapacity >> 4;
+	minCapacity |= minCapacity >> 8;
+	minCapacity |= minCapacity >> 16;
+	minCapacity++;
+
+	return Toy_private_adjustTableCapacity(NULL, minCapacity);
 }
 
 void Toy_freeTable(Toy_Table* table) {

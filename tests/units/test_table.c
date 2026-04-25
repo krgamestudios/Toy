@@ -7,7 +7,7 @@ int test_table_allocation(void) {
 	//allocate and free a table
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//check
 		if (table == NULL)
@@ -28,7 +28,7 @@ int test_table_simple_insert_lookup_and_remove(void) {
 	//simple insert
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		Toy_Value key = TOY_VALUE_FROM_INTEGER(1);
 		Toy_Value value = TOY_VALUE_FROM_INTEGER(42);
@@ -90,7 +90,7 @@ int test_table_contents_no_expansion(void) {
 	//single insert
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//insert a key and value
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(1), TOY_VALUE_FROM_INTEGER(42));
@@ -115,7 +115,7 @@ int test_table_contents_no_expansion(void) {
 	//multiple inserts, no collisions
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(1), TOY_VALUE_FROM_INTEGER(42)); //hash: 7
@@ -144,7 +144,7 @@ int test_table_contents_no_expansion(void) {
 	//multiple inserts, with collisions
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(5), TOY_VALUE_FROM_INTEGER(42)); //hash: 2
@@ -175,7 +175,7 @@ int test_table_contents_no_expansion(void) {
 	//multiple inserts, with collisions, modulo wrap
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(1), TOY_VALUE_FROM_INTEGER(42)); //hash: 7
@@ -207,7 +207,7 @@ int test_table_contents_no_expansion(void) {
 	//lookup, with collisions, modulo wrap
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(17), TOY_VALUE_FROM_INTEGER(42)); //hash: 7
@@ -238,7 +238,7 @@ int test_table_contents_no_expansion(void) {
 	//multiple inserts, with collisions, modulo wrap, psl overlap
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(17), TOY_VALUE_FROM_INTEGER(42)); //hash: 7
@@ -269,7 +269,7 @@ int test_table_contents_no_expansion(void) {
 	//multiple inserts, with collisions, modulo wrap, psl overlap, psl shift
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(17), TOY_VALUE_FROM_INTEGER(42)); //hash: 7
@@ -306,7 +306,7 @@ int test_table_contents_with_expansions(void) {
 	//simple expansion
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//insert a key and value
 		for (int i = 0; i < 20; i++) {
@@ -331,7 +331,7 @@ int test_table_contents_with_expansions(void) {
 	//expansion, multiple inserts, no collisions
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(0), TOY_VALUE_FROM_INTEGER(42)); //hash: 0
@@ -395,7 +395,7 @@ int test_table_contents_with_expansions(void) {
 	//multiple inserts, with collisions
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(0), TOY_VALUE_FROM_INTEGER(42)); //hash: 0
@@ -464,7 +464,7 @@ int test_table_contents_with_expansions(void) {
 	//multiple inserts, with collisions, modulo wrap
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		Toy_insertTable(&table, TOY_VALUE_FROM_INTEGER(123), TOY_VALUE_FROM_INTEGER(42)); //hash: 20
@@ -533,7 +533,7 @@ int test_table_contents_with_expansions(void) {
 	//lookup, with collisions, modulo wrap
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		//inserts
 		for (int i = 0; i < 20; i++) { //enough to expand
@@ -573,7 +573,7 @@ int test_table_expansions_under_stress(void) {
 	//multiple expansions, find one value
 	{
 		//setup
-		Toy_Table* table = Toy_allocateTable();
+		Toy_Table* table = Toy_allocateTable(0);
 
 		int top = 300;
 

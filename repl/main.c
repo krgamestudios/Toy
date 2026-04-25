@@ -206,7 +206,7 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 
 				//total space to reserve
 				cmd.infileLength = strlen(argv[i]) + 1;
-				cmd.infileLength = (cmd.infileLength + 3) & ~3; //BUGFIX: align to  word size for malloc()
+				cmd.infileLength = (cmd.infileLength + 3) & ~3; //BUGFIX: align to  word size
 				cmd.infile = malloc(cmd.infileLength);
 
 				if (cmd.infile == NULL) {

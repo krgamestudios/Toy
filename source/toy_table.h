@@ -18,7 +18,7 @@ typedef struct Toy_Table { //32 | 64 BITNESS
 	Toy_TableEntry data[]; //-  | -
 } Toy_Table;               //12 | 12
 
-TOY_API Toy_Table* Toy_allocateTable(void);
+TOY_API Toy_Table* Toy_allocateTable(unsigned int minCapacity); //minCapacity of 0 uses the default
 TOY_API void Toy_freeTable(Toy_Table* table);
 TOY_API void Toy_insertTable(Toy_Table** tableHandle, Toy_Value key, Toy_Value value);
 TOY_API Toy_Value Toy_lookupTable(Toy_Table** tableHandle, Toy_Value key);
