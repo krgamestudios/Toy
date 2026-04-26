@@ -80,8 +80,63 @@ static void attr_arrayPopBack(Toy_VM* vm) {
 }
 
 static void attr_arrayForEach(Toy_VM* vm) {
-	(void)vm;
-	//URGENT: attr_arrayForEach
+	Toy_Value compound = Toy_popStack(&vm->stack);
+	Toy_Value callback = Toy_popStack(&vm->stack);
+
+	if (TOY_VALUE_IS_FUNCTION(callback) != true) {
+		char buffer[256];
+		snprintf(buffer, 256, "Expected function, found '%s'", Toy_private_getValueTypeAsCString(callback.type));
+		Toy_error(buffer);
+		return;
+	}
+
+	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
+	Toy_Function* fn = TOY_VALUE_AS_FUNCTION(callback);
+
+	//this emulates 'processInvoke' a bit, but not entirely
+	Toy_VM subVM;
+	Toy_inheritVM(vm, &subVM);
+
+	switch(fn->type) {
+		case TOY_FUNCTION_CUSTOM: {
+			//push and run for each element
+			for (unsigned int iterator = 0; iterator < array->count; iterator++) {
+				//bind to the subVM (more expensive than I'd like)
+				Toy_bindVM(&subVM, fn->bytecode.code, fn->bytecode.parentScope);
+
+				//get parameter name as a string
+				unsigned int paramAddr = ((unsigned int*)(subVM.code + subVM.paramAddr))[0];
+				Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.code + subVM.paramAddr))[1]);
+				const char* cstr = ((char*)(subVM.code + subVM.dataAddr)) + paramAddr;
+				Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
+
+				Toy_declareScope(subVM.scope, Toy_copyString(name), paramType, Toy_copyValue(&subVM.memoryBucket, array->data[iterator]), true);
+				Toy_freeString(name);
+
+				Toy_runVM(&subVM); //TODO: could use a 'map'-style method by storing the results
+
+				Toy_resetVM(&subVM, false, true);
+			}
+		}
+		break;
+
+		case TOY_FUNCTION_NATIVE: {
+			//this uses a subVM for the native function, which is a slight difference than 'processInoke'
+			for (unsigned int iterator = 0; iterator < array->count; iterator++) {
+				Toy_pushStack(&subVM.stack, Toy_copyValue(&subVM.memoryBucket, array->data[iterator]));
+
+				fn->native.callback(&subVM); //NOTE: try not to leave anything on the stack afterwards
+			}
+		}
+		break;
+
+		default:
+			Toy_error("Can't call an unknown function type in 'forEach'");
+			break;
+	}
+
+	//cleanup
+	Toy_freeVM(&subVM);
 }
 
 static void attr_arraySort(Toy_VM* vm) {

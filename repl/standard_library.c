@@ -15,20 +15,35 @@ typedef struct CallbackPairs {
 } CallbackPairs;
 
 //example callbacks
-void hello(Toy_VM* vm) {
-	(void)vm;
-	Toy_print("Hello world!");
-}
-
 void debug(Toy_VM* vm) {
 	(void)vm;
 	Toy_print("This function returns the integer '42' to the calling scope.");
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(42));
 }
 
+void identity(Toy_VM* vm) {
+	//does nothing, but any arguements are left on the stack as results
+	(void)vm;
+}
+
+void echo(Toy_VM* vm) {
+	//pops one argument, and prints it
+	Toy_Value value = Toy_popStack(&vm->stack);
+	Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, value);
+	char* cstr = Toy_getStringRaw(string);
+
+	Toy_print(cstr);
+
+	free(cstr);
+	Toy_freeString(string);
+	Toy_freeValue(value);
+}
+
 CallbackPairs callbackPairs[] = {
-	{"hello", hello},
 	{"debug", debug},
+	{"identity", identity},
+	{"echo", echo},
+
 	{NULL, NULL},
 };
 

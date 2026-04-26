@@ -444,8 +444,8 @@ static void processAttribute(Toy_VM* vm) {
 		return;
 	}
 
-	//BUGFIX: check for callable native functions, so they can access the compound too
-	if (TOY_VALUE_IS_FUNCTION(result) && TOY_VALUE_AS_FUNCTION(result)->type == TOY_FUNCTION_NATIVE) {
+	//BUGFIX: check for callable functions, so they can access the compound too
+	if (TOY_VALUE_IS_FUNCTION(result)) {
 		//WONTFIX: `print array.pushBack;' will leave the compound's reference on the stack
 		Toy_pushStack(&vm->stack, compound);
 	}
@@ -1086,12 +1086,12 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 
 	vm->programCounter = 0;
 
-	if (!preserveStack) {
-		Toy_resetStack(&vm->stack); //NOTE: has a realloc()
-	}
-
 	if (!preserveScope) {
 		vm->scope = Toy_popScope(vm->scope);
+	}
+
+	if (!preserveStack) {
+		Toy_resetStack(&vm->stack); //NOTE: has a realloc()
 	}
 
 	//NOTE: buckets are not altered during resets
@@ -1171,7 +1171,7 @@ void Toy_freeVM(Toy_VM* vm) {
 	Toy_freeStack(vm->stack);
 
 	if (vm->parentBucketHandle != NULL) {
-		*(vm->parentBucketHandle) = vm->memoryBucket; //update the outter VM, if there is one
+		*(vm->parentBucketHandle) = vm->memoryBucket; //update the outer VM, if there is one
 	}
 	else {
 		Toy_freeBucket(&vm->memoryBucket);

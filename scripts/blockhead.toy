@@ -1,18 +1,11 @@
 
+fn output(arg) {
+	print arg;
+}
 
-var table: Table = ["answer":42];
-
-print table.hasKey("answer");
-print table.hasKey("question");
-
-table.insert("question", "roads");
-
-print table.hasKey("answer");
-print table.hasKey("question");
-
-table.remove("answer");
-
-print table.hasKey("answer");
-print table.hasKey("question");
+var array = ["alpha", "bravo", "charlie"];
 
 
+
+array.forEach(echo);
+array.forEach(output);

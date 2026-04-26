@@ -8,6 +8,9 @@
 #include "toy_compiler.h"
 #include "toy_vm.h"
 
+//NOTE: for testing
+#include "standard_library.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -367,7 +370,14 @@ int repl(const char* filepath, bool verbose) {
 			inspect_bytecode(bytecode);
 		}
 
-		Toy_bindVM(&vm, bytecode, NULL);
+		//WARN: Hacky debugging
+		if (vm.scope == NULL) {
+			Toy_bindVM(&vm, bytecode, NULL);
+			initStandardLibrary(&vm);
+		}
+		else {
+			Toy_bindVM(&vm, bytecode, NULL);
+		}
 
 		//run
 		Toy_runVM(&vm);
@@ -474,6 +484,7 @@ int main(int argc, const char* argv[]) {
 		Toy_VM vm;
 		Toy_initVM(&vm);
 		Toy_bindVM(&vm, bytecode, NULL);
+		initStandardLibrary(&vm); //WARN: Hacky debugging
 
 		Toy_runVM(&vm);
 
