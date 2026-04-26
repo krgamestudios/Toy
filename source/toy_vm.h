@@ -42,10 +42,10 @@ typedef struct Toy_VM {
 	Toy_Bucket** parentBucketHandle;
 } Toy_VM;
 
-TOY_API void Toy_resetVM(Toy_VM* vm, bool preserveScope);
+TOY_API void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack);
 
 TOY_API void Toy_initVM(Toy_VM* vm); //creates memory
-TOY_API void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent); //inherits scope bucket
+TOY_API void Toy_inheritVM(Toy_VM* parentVM, Toy_VM* subVM); //inherits scope bucket
 
 void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope);
 TOY_API unsigned int Toy_runVM(Toy_VM* vm);
@@ -53,4 +53,3 @@ TOY_API void Toy_freeVM(Toy_VM* vm);
 
 TOY_API Toy_Array* Toy_extractResultsFromVM(Toy_VM* parentVM, Toy_VM* subVM, unsigned int resultCount);
 
-//TODO: inject extra data (hook system for external libraries)

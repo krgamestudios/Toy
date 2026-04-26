@@ -379,7 +379,7 @@ int repl(const char* filepath, bool verbose) {
 		}
 
 		//free the memory, and leave the VM ready for the next loop
-		Toy_resetVM(&vm, true);
+		Toy_resetVM(&vm, true, true);
 		free(bytecode);
 
 		printf("%s> ", prompt); //shows the terminal prompt

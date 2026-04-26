@@ -355,7 +355,7 @@ static void processInvoke(Toy_VM* vm) {
 		case TOY_FUNCTION_CUSTOM: {
 			//spin up a new sub-vm
 			Toy_VM subVM;
-			Toy_inheritVM(&subVM, vm);
+			Toy_inheritVM(vm, &subVM);
 			Toy_bindVM(&subVM, fn->bytecode.code, fn->bytecode.parentScope);
 
 			//check args count
@@ -1070,7 +1070,7 @@ static unsigned int process(Toy_VM* vm) {
 }
 
 //exposed functions
-void Toy_resetVM(Toy_VM* vm, bool preserveScope) {
+void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 	vm->code = NULL;
 
 	vm->jumpsCount = 0;
@@ -1086,9 +1086,11 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope) {
 
 	vm->programCounter = 0;
 
-	Toy_resetStack(&vm->stack);
+	if (!preserveStack) {
+		Toy_resetStack(&vm->stack); //NOTE: has a realloc()
+	}
 
-	if (preserveScope == false) {
+	if (!preserveScope) {
 		vm->scope = Toy_popScope(vm->scope);
 	}
 
@@ -1103,18 +1105,18 @@ void Toy_initVM(Toy_VM* vm) {
 
 	vm->parentBucketHandle = NULL;
 
-	Toy_resetVM(vm, true);
+	Toy_resetVM(vm, true, true);
 }
 
-void Toy_inheritVM(Toy_VM* vm, Toy_VM* parent) {
+void Toy_inheritVM(Toy_VM* parentVM, Toy_VM* subVM) {
 	//inherent persistent memory
-	vm->scope = NULL;
-	vm->stack = Toy_allocateStack();
-	vm->memoryBucket = parent->memoryBucket;
+	subVM->scope = NULL;
+	subVM->stack = Toy_allocateStack();
+	subVM->memoryBucket = parentVM->memoryBucket;
 
-	vm->parentBucketHandle = &parent->memoryBucket; //track this to update it later
+	subVM->parentBucketHandle = &parentVM->memoryBucket; //track this to update it later
 
-	Toy_resetVM(vm, true);
+	Toy_resetVM(subVM, true, true);
 }
 
 void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope) {
@@ -1163,7 +1165,7 @@ unsigned int Toy_runVM(Toy_VM* vm) {
 }
 
 void Toy_freeVM(Toy_VM* vm) {
-	Toy_resetVM(vm, false);
+	Toy_resetVM(vm, false, true);
 
 	//clear the persistent memory
 	Toy_freeStack(vm->stack);

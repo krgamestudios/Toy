@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-Toy_Stack* Toy_allocateStack(void) {
+Toy_Stack* Toy_allocateStack(void) { //TODO: add initial size as parameter
 	Toy_Stack* stack = malloc(TOY_STACK_INITIAL_CAPACITY * sizeof(Toy_Value) + sizeof(Toy_Stack)); //URGENT: Swap to a bucket (4 instances)
 
 	if (stack == NULL) {
@@ -42,6 +43,7 @@ void Toy_resetStack(Toy_Stack** stackHandle) {
 	//reset to the stack's default state
 	if ((*stackHandle)->capacity > TOY_STACK_INITIAL_CAPACITY) {
 		(*stackHandle) = realloc((*stackHandle), TOY_STACK_INITIAL_CAPACITY * sizeof(Toy_Value) + sizeof(Toy_Stack));
+		memset((*stackHandle), 0, TOY_STACK_INITIAL_CAPACITY * sizeof(Toy_Value) + sizeof(Toy_Stack));
 
 		(*stackHandle)->capacity = TOY_STACK_INITIAL_CAPACITY;
 	}

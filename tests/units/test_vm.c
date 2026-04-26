@@ -740,7 +740,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 		Toy_bindVM(&vm, bytecode1, NULL);
 
 		Toy_runVM(&vm);
-		Toy_resetVM(&vm, true);
+		Toy_resetVM(&vm, true, false);
 
 		if (callbackUtilReceived == NULL || strcmp(callbackUtilReceived, "Hello world!") != 0) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' found in VM reuse run 1\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL");
@@ -760,7 +760,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 		Toy_bindVM(&vm, bytecode2, NULL); //preserve during repeated calls
 
 		Toy_runVM(&vm);
-		Toy_resetVM(&vm, true);
+		Toy_resetVM(&vm, true, false);
 
 		if (callbackUtilReceived == NULL || strcmp(callbackUtilReceived, "Hello world!") != 0) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' found in VM reuse run 2\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL");
@@ -780,7 +780,7 @@ int test_vm_reuse(Toy_Bucket** bucketHandle) {
 		Toy_bindVM(&vm, bytecode3, NULL); //preserve during repeated calls
 
 		Toy_runVM(&vm);
-		Toy_resetVM(&vm, true);
+		Toy_resetVM(&vm, true, false);
 
 		if (callbackUtilReceived == NULL || strcmp(callbackUtilReceived, "Hello world!") != 0) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected value '%s' found in VM reuse run 3\n" TOY_CC_RESET, callbackUtilReceived != NULL ? callbackUtilReceived : "NULL");
