@@ -3,15 +3,15 @@
 #include <stdio.h>
 
 static void outDefault(const char* msg) {
-	fprintf(stdout, "%s", msg);
+	fprintf(stdout, "%s\n", msg);
 }
 
 static void errDefault(const char* msg) {
-	fprintf(stderr, "%s", msg);
+	fprintf(stderr, "%s\n", msg);
 }
 
 static void assertDefault(const char* msg) {
-	fprintf(stderr, "%s", msg);
+	fprintf(stderr, "%s\n", msg);
 }
 
 static Toy_callbackType printCallback = outDefault;

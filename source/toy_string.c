@@ -193,13 +193,13 @@ static int deepCompareUtil(Toy_String* left, Toy_String* right, const char** lef
 			(*rightHead)++;
 		}
 
-		//if both are not null, then it's a real result
-		if ( (**leftHead == '\0' || **rightHead == '\0') == false) {
+		//if there's a difference, and neither is null, than a result has (probably) been found
+		if ((**leftHead != '\0' && **rightHead != '\0' && (**leftHead != **rightHead))) {
 			result = *(const unsigned char*)(*leftHead) - *(const unsigned char*)(*rightHead);
 		}
 	}
 
-	//if either are a null character, return 0 to check the next node
+	//returning 0 means no difference found yet
 	return result;
 }
 
@@ -209,11 +209,25 @@ int Toy_compareStrings(Toy_String* left, Toy_String* right) {
 		return left->info.length - right->info.length;
 	}
 
+	//BUGFIX: If both args are leaves, and one is a substring of the other, then deepCompareUtil() will return a wrong result
+	if (left->info.type == TOY_STRING_LEAF && right->info.type == TOY_STRING_LEAF) {
+		unsigned int maxLength = left->info.length > right->info.length ? left->info.length : right->info.length;
+		return strncmp(left->leaf.data, right->leaf.data, maxLength);
+	}
+
 	//util pointers
 	const char* leftHead = NULL;
 	const char* rightHead = NULL;
 
-	return deepCompareUtil(left, right, &leftHead, &rightHead);
+	int result = deepCompareUtil(left, right, &leftHead, &rightHead);
+
+	//BUGFIX: deepCompareUtil() doesn't handle substrings correctly
+	if (result == 0 && leftHead != NULL && rightHead != NULL) {
+		return (int)(*leftHead - *rightHead);
+	}
+	else {
+		return result;
+	}
 }
 
 static unsigned int hashCString(const char* string) {

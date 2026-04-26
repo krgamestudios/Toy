@@ -13,10 +13,10 @@ Toy_Value handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attrib
 // [x] array.length
 // [x] array.pushBack(x)
 // [x] array.popBack()
-// [ ] array.forEach(fn) // fn(x) -> void
+// [x] array.forEach(fn) // fn(x) -> void
 // [ ] array.sort(fn)    // fn(a,b) -> int
 // [x] table.length
 // [x] table.insert(x, y)
 // [x] table.hasKey(x)
 // [x] table.remove(x)
-// [ ] table.forEach(fn) // fn(x) -> void
+// [ ] table.forEach(fn) // fn(x,y) -> void

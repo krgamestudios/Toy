@@ -3,8 +3,8 @@ fn hello() {
 	print "Hello world";
 }
 
-fn identity(x) {
+fn ident(x) {
 	return x;
 }
 
-assert identity(hello) == hello, "First class function check failed";
+assert ident(hello) == hello, "First class function check failed";

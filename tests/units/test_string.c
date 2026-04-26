@@ -619,6 +619,148 @@ int test_string_equality(void) {
 		Toy_freeBucket(&bucket);
 	}
 
+	//substring non-equality (no concats)
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(1024);
+		Toy_String* left = Toy_createStringLength(&bucket, "identity", 8);
+		Toy_String* right = Toy_createStringLength(&bucket, "ident", 5);
+
+		int result = 0; //for print the errors
+
+		//check mismatch
+		if ((result = Toy_compareStrings(left, right)) == 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(left);
+			char* rightBuffer = Toy_getStringRaw(right);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: String equality '%s' != '%s' is incorrect, found %s\n" TOY_CC_RESET, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//cleanup
+		Toy_freeBucket(&bucket);
+	}
+
+	//substring non-equality (with matching and non-matching concats)
+	{
+		//setup
+		Toy_Bucket* bucket = Toy_allocateBucket(1024);
+		Toy_String* identity = Toy_createStringLength(&bucket, "identity", 8);
+		Toy_String* ident = Toy_createStringLength(&bucket, "ident", 5);
+
+		Toy_String* matchingIdentity = Toy_concatStrings(&bucket,
+				Toy_createStringLength(&bucket, "ident", 5),
+				Toy_createStringLength(&bucket, "ity", 3)
+			);
+
+		Toy_String* stolenIdentity = Toy_concatStrings(&bucket,
+				Toy_createStringLength(&bucket, "id", 2),
+				Toy_createStringLength(&bucket, "entity", 6)
+			);
+
+		int result = 0; //for print the errors
+
+		//ensure the concats match the base
+		if ((result = Toy_compareStrings(identity, matchingIdentity)) != 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(identity);
+			char* rightBuffer = Toy_getStringRaw(matchingIdentity);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Substring concat non-equality failed early on line %d with '%s' and '%s' is incorrect, found %s\n" TOY_CC_RESET, __LINE__, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		if ((result = Toy_compareStrings(identity, stolenIdentity)) != 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(identity);
+			char* rightBuffer = Toy_getStringRaw(stolenIdentity);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Substring concat non-equality failed early on line %d with '%s' and '%s' is incorrect, found %s\n" TOY_CC_RESET, __LINE__, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//ensure both concats are a mismatch for 'ident'
+		if ((result = Toy_compareStrings(ident, matchingIdentity)) == 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(ident);
+			char* rightBuffer = Toy_getStringRaw(matchingIdentity);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Substring concat non-equality failed on line %d with '%s' and '%s' is incorrect, found %s\n" TOY_CC_RESET, __LINE__, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		if ((result = Toy_compareStrings(ident, stolenIdentity)) == 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(ident);
+			char* rightBuffer = Toy_getStringRaw(stolenIdentity);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Substring concat non-equality failed  on line %d with '%s' and '%s' is incorrect, found %s\n" TOY_CC_RESET, __LINE__, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		//repeat these tests with the parameters swapped, just to be safe
+		if ((result = Toy_compareStrings(matchingIdentity, identity)) != 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(matchingIdentity);
+			char* rightBuffer = Toy_getStringRaw(identity);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Substring concat non-equality failed early on line %d with '%s' and '%s' is incorrect, found %s\n" TOY_CC_RESET, __LINE__, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		if ((result = Toy_compareStrings(stolenIdentity, identity)) != 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(stolenIdentity);
+			char* rightBuffer = Toy_getStringRaw(identity);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Substring concat non-equality failed early on line %d with '%s' and '%s' is incorrect, found %s\n" TOY_CC_RESET, __LINE__, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		if ((result = Toy_compareStrings(matchingIdentity, ident)) == 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(matchingIdentity);
+			char* rightBuffer = Toy_getStringRaw(ident);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Substring concat non-equality failed on line %d with '%s' and '%s' is incorrect, found %s\n" TOY_CC_RESET, __LINE__, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+		if ((result = Toy_compareStrings(stolenIdentity, ident)) == 0)
+		{
+			char* leftBuffer = Toy_getStringRaw(stolenIdentity);
+			char* rightBuffer = Toy_getStringRaw(ident);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Substring concat non-equality failed  on line %d with '%s' and '%s' is incorrect, found %s\n" TOY_CC_RESET, __LINE__, leftBuffer, rightBuffer, result < 0 ? "<" : result == 0 ? "==" : ">");
+			free(leftBuffer);
+			free(rightBuffer);
+			Toy_freeBucket(&bucket);
+			return -1;
+		}
+
+
+
+		//cleanup
+		Toy_freeBucket(&bucket);
+	}
+
+
 	return 0;
 }
 
