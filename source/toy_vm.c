@@ -210,7 +210,7 @@ static void processAssign(Toy_VM* vm) {
 	Toy_Value name = Toy_popStack(&vm->stack);
 
 	//assign it
-	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), value); //scope now owns the value, doesn't need to be freed
+	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), Toy_copyValue(&vm->memoryBucket, value)); //scope now owns the value, doesn't need to be freed
 
 	//in case of chaining, leave a copy on the stack
 	bool chainedAssignment = READ_BYTE(vm);
@@ -268,7 +268,7 @@ static void processAssignCompound(Toy_VM* vm) {
 		}
 
 		//set the value
-		array->data[index] = Toy_copyValue(&vm->memoryBucket, TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value);
+		array->data[index] = Toy_copyValue(&vm->memoryBucket, value);
 
 		//in case of chaining, leave a copy on the stack
 		bool chainedAssignment = READ_BYTE(vm);
@@ -284,7 +284,7 @@ static void processAssignCompound(Toy_VM* vm) {
 		Toy_Table* table = TOY_VALUE_AS_TABLE(target);
 
 		//set the value
-		Toy_insertTable(&table, Toy_copyValue(&vm->memoryBucket, TOY_VALUE_IS_REFERENCE(key) ? Toy_unwrapValue(key) : key), Toy_copyValue(&vm->memoryBucket, TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value));
+		Toy_insertTable(&table, Toy_copyValue(&vm->memoryBucket, key), Toy_copyValue(&vm->memoryBucket, value));
 
 		//in case of chaining, leave a copy on the stack
 		bool chainedAssignment = READ_BYTE(vm);
