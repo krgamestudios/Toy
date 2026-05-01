@@ -29,7 +29,6 @@ typedef enum Toy_ValueType {
 //8 bytes in size
 typedef struct Toy_Value {             //32 | 64 BITNESS
 	union {
-		struct Toy_Value* reference;   //4  | 8
 		bool boolean;                  //1  | 1
 		int integer;                   //4  | 4
 		float number;                  //4  | 4
@@ -37,8 +36,8 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 		struct Toy_Array* array;       //4  | 8
 		struct Toy_Table* table;       //4  | 8
 		union Toy_Function_t* function;//4  | 8
-		//more types go here as needed
-
+		struct Toy_Value* reference;   //4  | 8
+		void* opaque;                  //4  | 8
 	} as;                              //4  | 8
 
 	Toy_ValueType type;                //4  | 4
@@ -53,7 +52,6 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_IS_TABLE(value)				((value).type == TOY_VALUE_TABLE || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_TABLE))
 #define TOY_VALUE_IS_FUNCTION(value)			((value).type == TOY_VALUE_FUNCTION || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_FUNCTION))
 #define TOY_VALUE_IS_OPAQUE(value)				((value).type == TOY_VALUE_OPAQUE)
-#define TOY_VALUE_IS_TYPE(value)				((value).type == TOY_VALUE_TYPE)
 #define TOY_VALUE_IS_REFERENCE(value)			((value).type == TOY_VALUE_REFERENCE)
 
 #define TOY_VALUE_AS_BOOLEAN(value)				((value).as.boolean)
@@ -63,6 +61,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_AS_ARRAY(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.array)
 #define TOY_VALUE_AS_TABLE(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.table)
 #define TOY_VALUE_AS_FUNCTION(value)			((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.function)
+#define TOY_VALUE_AS_OPAQUE(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.opaque)
 
 #define TOY_VALUE_FROM_NULL()					((Toy_Value){{ .integer = 0 }, TOY_VALUE_NULL})
 #define TOY_VALUE_FROM_BOOLEAN(value)			((Toy_Value){{ .boolean = value }, TOY_VALUE_BOOLEAN})
@@ -73,6 +72,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_FROM_TABLE(value)				((Toy_Value){{ .table = value }, TOY_VALUE_TABLE})
 #define TOY_VALUE_FROM_FUNCTION(value)			((Toy_Value){{ .function = value }, TOY_VALUE_FUNCTION})
 
+#define TOY_OPAQUE_FROM_POINTER(ptr)			((Toy_Value){{ .opaque = ptr }, TOY_VALUE_OPAQUE})
 #define TOY_REFERENCE_FROM_POINTER(ptr)			((Toy_Value){{ .reference = ptr }, TOY_VALUE_REFERENCE})
 
 //utilities

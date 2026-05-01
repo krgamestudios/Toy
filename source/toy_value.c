@@ -83,7 +83,7 @@ unsigned int Toy_hashValue(Toy_Value value) {
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't hash an unknown value type (%d), exiting\n" TOY_CC_RESET, (int)value.type);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't hash a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
 			exit(-1);
 	}
 
@@ -144,7 +144,7 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy an unknown value type, exiting\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
 			exit(-1);
 	}
 
@@ -182,9 +182,12 @@ void Toy_freeValue(Toy_Value value) {
 			return;
 
 		case TOY_VALUE_OPAQUE:
+			//no-op
+			return;
+
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't free an unknown value type, exiting\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't free a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
 			exit(-1);
 	}
 }
@@ -329,7 +332,7 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown types in value equality, exiting\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't find equality for a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(left.type));
 			exit(-1);
 	}
 
@@ -368,10 +371,13 @@ bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
 			return false;
 
 		case TOY_VALUE_OPAQUE:
+			//nothing compares with an opaque
+			return false;
+
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "Unknown types in value comparison check, exiting\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown types in value comparison check, exiting\n" TOY_CC_RESET);
 			exit(-1);
 	}
 
@@ -425,13 +431,15 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 			break;
 
 		case TOY_VALUE_OPAQUE:
+			break;
+
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
 			break;
 	}
 
-	fprintf(stderr, TOY_CC_ERROR "Unknown types in value comparison, exiting\n" TOY_CC_RESET);
+	fprintf(stderr, TOY_CC_ERROR "ERROR: Can't compare with a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(left.type));
 	exit(-1);
 
 	return ~0;
@@ -641,10 +649,13 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			return Toy_createStringLength(bucketHandle, "<fn>", 4);
 
 		case TOY_VALUE_OPAQUE:
+			//dummy
+			return Toy_createStringLength(bucketHandle, "<opaque>", 6);
+
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "Unknown types in value stringify, exiting\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't stringify a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
 			exit(-1);
 	}
 
