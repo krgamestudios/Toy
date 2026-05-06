@@ -428,13 +428,16 @@ static void processAttribute(Toy_VM* vm) {
 
 	//type-based attributes
 	if (TOY_VALUE_IS_STRING(compound)) {
-		result = handleStringAttributes(vm, compound, attribute);
+		result = Toy_private_handleStringAttributes(vm, compound, attribute);
 	}
 	else if (TOY_VALUE_IS_ARRAY(compound)) {
-		result = handleArrayAttributes(vm, compound, attribute);
+		result = Toy_private_handleArrayAttributes(vm, compound, attribute);
 	}
 	else if (TOY_VALUE_IS_TABLE(compound)) {
-		result = handleTableAttributes(vm, compound, attribute);
+		result = Toy_private_handleTableAttributes(vm, compound, attribute);
+	}
+	else if (TOY_VALUE_IS_OPAQUE(compound)) {
+		result = Toy_private_handleOpaqueAttributes(vm, compound, attribute);
 	}
 	else {
 		char buffer[256];

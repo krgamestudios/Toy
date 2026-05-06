@@ -6,9 +6,12 @@
 #include <string.h>
 #include <ctype.h>
 
+//if set, used for delegating to user-defined code
+static Toy_OpaqueAttributeHandler opaqueAttributeCallback = NULL;
+
 //NOTE: there is no need to call 'Toy_freeValue' on the arguments, as the VM assumes you don't
 
-Toy_Value handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
+Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
 	if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "length", 6)  == 0) {
 		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_STRING(compound)->info.length);
 	}
@@ -144,7 +147,7 @@ static void attr_arraySort(Toy_VM* vm) {
 	//URGENT: attr_arraySort
 }
 
-Toy_Value handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
+Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
 	if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "length", 6)  == 0) {
 		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_ARRAY(compound)->count);
 	}
@@ -220,23 +223,23 @@ static void attr_tableForEach(Toy_VM* vm) {
 	//URGENT: attr_tableForEach
 }
 
-Toy_Value handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
+Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
 	if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "length", 6)  == 0) {
 		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_ARRAY(compound)->count);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "insert", 4)  == 0) {
+	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "insert", 6)  == 0) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableInsert);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "hasKey", 4)  == 0) {
+	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "hasKey", 6)  == 0) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableHasKey);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "remove", 4)  == 0) {
+	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "remove", 6)  == 0) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableRemove);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "forEach", 4)  == 0) {
+	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "forEach", 7)  == 0) { //BUG: compare the contents AND length of these strings
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableForEach);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
@@ -246,4 +249,19 @@ Toy_Value handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attrib
 		Toy_error(buffer);
 		return TOY_VALUE_FROM_NULL();
 	}
+}
+
+Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
+	if (opaqueAttributeCallback == NULL) {
+		char buffer[256];
+		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s' (did you set the opaque callbacks?)", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_private_getValueTypeAsCString(compound.type));
+		Toy_error(buffer);
+		return TOY_VALUE_FROM_NULL();
+	}
+
+	return opaqueAttributeCallback(vm, compound, attribute);
+}
+
+void Toy_private_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb) {
+	opaqueAttributeCallback = cb;
 }

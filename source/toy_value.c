@@ -141,6 +141,9 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			return TOY_VALUE_FROM_FUNCTION(Toy_copyFunction(bucketHandle, value.as.function));
 
 		case TOY_VALUE_OPAQUE:
+			//copy opaques by value
+			return value;
+
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
@@ -650,7 +653,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 		case TOY_VALUE_OPAQUE:
 			//dummy
-			return Toy_createStringLength(bucketHandle, "<opaque>", 6);
+			return Toy_createStringLength(bucketHandle, "<opaque>", 8);
 
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
