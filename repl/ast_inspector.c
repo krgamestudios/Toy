@@ -84,7 +84,7 @@ void inspect_value(Toy_Ast* ast, int depth) {
 	Toy_String* str = Toy_stringifyValue(&bucket, ast->value.value);
 
 	char* buffer = Toy_getStringRaw(str); //SLOW
-	printf("%s '%s'", Toy_private_getValueTypeAsCString(ast->value.value.type), buffer);
+	printf("%s '%s'", Toy_getValueTypeAsCString(ast->value.value.type), buffer);
 	free(buffer);
 
 	Toy_freeString(str);

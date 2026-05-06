@@ -59,8 +59,8 @@
 #define TOY_VERSION_PATCH 0
 
 //defined as a function, for technical reasons
-#define TOY_VERSION_BUILD Toy_private_version_build()
-TOY_API const char* Toy_private_version_build(void);
+#define TOY_VERSION_BUILD Toy_private_versionBuild()
+const char* Toy_private_versionBuild(void);
 
 /*
 

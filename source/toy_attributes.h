@@ -19,11 +19,11 @@
 // [x] table.remove(x)
 // [ ] table.forEach(fn) // fn(x,y) -> void
 
-TOY_API Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
-TOY_API Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
-TOY_API Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
-TOY_API Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 
 //plug-and-play attributes for custom objects
 typedef Toy_Value (*Toy_OpaqueAttributeHandler)(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
-TOY_API void Toy_private_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb);
+TOY_API void Toy_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb);

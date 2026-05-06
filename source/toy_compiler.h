@@ -24,7 +24,7 @@ typedef struct Toy_private_EscapeArray {
 #define TOY_ESCAPE_EXPANSION_RATE 4
 #endif
 
-TOY_API Toy_private_EscapeArray* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int capacity);
+Toy_private_EscapeArray* Toy_private_resizeEscapeArray(Toy_private_EscapeArray* ptr, unsigned int capacity);
 
 //structure for holding the bytecode during compilation
 typedef struct Toy_Bytecode {

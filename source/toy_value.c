@@ -83,7 +83,7 @@ unsigned int Toy_hashValue(Toy_Value value) {
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't hash a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't hash a given value type '%s', exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(value.type));
 			exit(-1);
 	}
 
@@ -147,7 +147,7 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't copy a given value type '%s', exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(value.type));
 			exit(-1);
 	}
 
@@ -190,7 +190,7 @@ void Toy_freeValue(Toy_Value value) {
 
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't free a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't free a given value type '%s', exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(value.type));
 			exit(-1);
 	}
 }
@@ -335,7 +335,7 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't find equality for a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(left.type));
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't find equality for a given value type '%s', exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(left.type));
 			exit(-1);
 	}
 
@@ -442,7 +442,7 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 			break;
 	}
 
-	fprintf(stderr, TOY_CC_ERROR "ERROR: Can't compare with a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(left.type));
+	fprintf(stderr, TOY_CC_ERROR "ERROR: Can't compare with a given value type '%s', exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(left.type));
 	exit(-1);
 
 	return ~0;
@@ -658,14 +658,14 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_REFERENCE:
 		case TOY_VALUE_UNKNOWN:
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't stringify a given value type '%s', exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Can't stringify a given value type '%s', exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(value.type));
 			exit(-1);
 	}
 
 	return NULL;
 }
 
-const char* Toy_private_getValueTypeAsCString(Toy_ValueType type) {
+const char* Toy_getValueTypeAsCString(Toy_ValueType type) {
 	switch (type) {
 		case TOY_VALUE_NULL: return "Null";
 		case TOY_VALUE_BOOLEAN: return "Bool";

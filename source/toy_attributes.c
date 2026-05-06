@@ -35,7 +35,7 @@ Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy
 	}
 	else {
 		char buffer[256];
-		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_private_getValueTypeAsCString(compound.type));
+		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_getValueTypeAsCString(compound.type));
 		Toy_error(buffer);
 		return TOY_VALUE_FROM_NULL();
 	}
@@ -88,7 +88,7 @@ static void attr_arrayForEach(Toy_VM* vm) {
 
 	if (TOY_VALUE_IS_FUNCTION(callback) != true) {
 		char buffer[256];
-		snprintf(buffer, 256, "Expected function, found '%s'", Toy_private_getValueTypeAsCString(callback.type));
+		snprintf(buffer, 256, "Expected function, found '%s'", Toy_getValueTypeAsCString(callback.type));
 		Toy_error(buffer);
 		return;
 	}
@@ -169,7 +169,7 @@ Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 	}
 	else {
 		char buffer[256];
-		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_private_getValueTypeAsCString(compound.type));
+		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_getValueTypeAsCString(compound.type));
 		Toy_error(buffer);
 		return TOY_VALUE_FROM_NULL();
 	}
@@ -245,7 +245,7 @@ Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 	}
 	else {
 		char buffer[256];
-		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_private_getValueTypeAsCString(compound.type));
+		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_getValueTypeAsCString(compound.type));
 		Toy_error(buffer);
 		return TOY_VALUE_FROM_NULL();
 	}
@@ -254,7 +254,7 @@ Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
 	if (opaqueAttributeCallback == NULL) {
 		char buffer[256];
-		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s' (did you set the opaque callbacks?)", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_private_getValueTypeAsCString(compound.type));
+		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s' (did you set the opaque callbacks?)", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_getValueTypeAsCString(compound.type));
 		Toy_error(buffer);
 		return TOY_VALUE_FROM_NULL();
 	}
@@ -262,6 +262,6 @@ Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy
 	return opaqueAttributeCallback(vm, compound, attribute);
 }
 
-void Toy_private_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb) {
+void Toy_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb) {
 	opaqueAttributeCallback = cb;
 }

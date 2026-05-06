@@ -157,7 +157,7 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy
 	//type check
 	if (type != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && type != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Incorrect value type in declaration of '%.*s' (expected %s, got %s)", key->info.length, key->leaf.data, Toy_private_getValueTypeAsCString(type), Toy_private_getValueTypeAsCString(value.type));
+		sprintf(buffer, "Incorrect value type in declaration of '%.*s' (expected %s, got %s)", key->info.length, key->leaf.data, Toy_getValueTypeAsCString(type), Toy_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}
@@ -180,7 +180,7 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 	//type check
 	if (entryPtr->type != TOY_VALUE_ANY && value.type != TOY_VALUE_NULL && entryPtr->type != value.type && value.type != TOY_VALUE_REFERENCE) {
 		char buffer[key->info.length + 256];
-		sprintf(buffer, "Incorrect value type in assignment of '%.*s' (expected %s, got %s)", key->info.length, key->leaf.data, Toy_private_getValueTypeAsCString(entryPtr->type), Toy_private_getValueTypeAsCString(value.type));
+		sprintf(buffer, "Incorrect value type in assignment of '%.*s' (expected %s, got %s)", key->info.length, key->leaf.data, Toy_getValueTypeAsCString(entryPtr->type), Toy_getValueTypeAsCString(value.type));
 		Toy_error(buffer);
 		return;
 	}

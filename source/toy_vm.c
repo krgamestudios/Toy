@@ -441,7 +441,7 @@ static void processAttribute(Toy_VM* vm) {
 	}
 	else {
 		char buffer[256];
-		snprintf(buffer, 256, "Can't access an attribute of type '%s'", Toy_private_getValueTypeAsCString(compound.type));
+		snprintf(buffer, 256, "Can't access an attribute of type '%s'", Toy_getValueTypeAsCString(compound.type));
 		Toy_error(buffer);
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
@@ -484,7 +484,7 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 	//check types
 	if ((!TOY_VALUE_IS_INTEGER(left) && !TOY_VALUE_IS_FLOAT(left)) || (!TOY_VALUE_IS_INTEGER(right) && !TOY_VALUE_IS_FLOAT(right))) {
 		char buffer[256];
-		snprintf(buffer, 256, "Invalid types '%s' and '%s' passed in arithmetic", Toy_private_getValueTypeAsCString(left.type), Toy_private_getValueTypeAsCString(right.type));
+		snprintf(buffer, 256, "Invalid types '%s' and '%s' passed in arithmetic", Toy_getValueTypeAsCString(left.type), Toy_getValueTypeAsCString(right.type));
 		Toy_error(buffer);
 
 		Toy_freeValue(left);
@@ -578,7 +578,7 @@ static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
 
 	if (Toy_checkValuesAreComparable(left, right) != true) {
 		char buffer[256];
-		snprintf(buffer, 256, "Can't compare value types '%s' and '%s'", Toy_private_getValueTypeAsCString(left.type), Toy_private_getValueTypeAsCString(right.type));
+		snprintf(buffer, 256, "Can't compare value types '%s' and '%s'", Toy_getValueTypeAsCString(left.type), Toy_getValueTypeAsCString(right.type));
 		Toy_error(buffer);
 
 		Toy_freeValue(left);
@@ -945,7 +945,7 @@ static void processIndex(Toy_VM* vm) {
 	}
 
 	else {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown value type '%s' found in processIndex, exiting\n" TOY_CC_RESET, Toy_private_getValueTypeAsCString(value.type));
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown value type '%s' found in processIndex, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(value.type));
 		exit(-1);
 	}
 

@@ -114,7 +114,7 @@ int inspect_bytecode(unsigned char* bytecode) {
 		for (unsigned int i = 0; (i*4) < paramSize; i += 2) {
 			printf(MARKER TOY_CC_NOTICE "%u (type %s, data %u)" TOY_CC_RESET "\n", MARKER_VALUE(param_addr + i, unsigned int),
 				i,
-				Toy_private_getValueTypeAsCString(((unsigned int*)(bytecode + param_addr))[i + 1]),
+				Toy_getValueTypeAsCString(((unsigned int*)(bytecode + param_addr))[i + 1]),
 				((unsigned int*)(bytecode + param_addr))[i] + data_addr
 			);
 		}
@@ -162,7 +162,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			char* cstr = ((char*)(bytecode + data_addr + jumpValue));
 			printf(MARKER "DECLARE %s: %s%s\n", MARKER_VALUE(pc, unsigned char),
 				cstr,
-				Toy_private_getValueTypeAsCString(bytecode[pc + 1]),
+				Toy_getValueTypeAsCString(bytecode[pc + 1]),
 				bytecode[pc + 3] ? " const" : ""
 			);
 			return 8;
@@ -182,7 +182,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 
 		case TOY_OPCODE_INVOKE:
 			printf(MARKER "INVOKE as '%s' (%d parameters)\n", MARKER_VALUE(pc, unsigned char),
-			Toy_private_getValueTypeAsCString(bytecode[pc + 1]),
+			Toy_getValueTypeAsCString(bytecode[pc + 1]),
 			bytecode[pc + 2]);
 			return 4;
 
@@ -380,7 +380,7 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 		case TOY_VALUE_ANY:
 		case TOY_VALUE_UNKNOWN:
 		default: {
-			printf(MARKER TOY_CC_WARN "READ %s (unhandled by inspector)" TOY_CC_RESET "\n", MARKER_VALUE(pc, unsigned char), Toy_private_getValueTypeAsCString(type));
+			printf(MARKER TOY_CC_WARN "READ %s (unhandled by inspector)" TOY_CC_RESET "\n", MARKER_VALUE(pc, unsigned char), Toy_getValueTypeAsCString(type));
 			return 4;
 		}
 	}

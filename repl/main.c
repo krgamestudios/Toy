@@ -259,7 +259,7 @@ static void debugStackPrint(Toy_Stack* stack) {
 			Toy_Value v = ((Toy_Value*)(stack + 1))[i]; //'stack + 1' is a naughty trick
 
 			//print type
-			printf("%-20s", Toy_private_getValueTypeAsCString(v.type));
+			printf("%-20s", Toy_getValueTypeAsCString(v.type));
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
@@ -289,7 +289,7 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 			Toy_String k = scope->data[i].key;
 			Toy_Value v = scope->data[i].value;
 
-			printf("%-10s%-10s%-20s", Toy_private_getValueTypeAsCString(scope->data[i].type), scope->data[i].constant ? "const" : "", k.leaf.data);
+			printf("%-10s%-10s%-20s", Toy_getValueTypeAsCString(scope->data[i].type), scope->data[i].constant ? "const" : "", k.leaf.data);
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));

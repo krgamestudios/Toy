@@ -91,4 +91,4 @@ TOY_API int Toy_compareValues(Toy_Value left, Toy_Value right);
 TOY_API union Toy_String_t* Toy_stringifyValue(struct Toy_Bucket** bucketHandle, Toy_Value value);
 
 //for error messages
-TOY_API const char* Toy_private_getValueTypeAsCString(Toy_ValueType type);
+TOY_API const char* Toy_getValueTypeAsCString(Toy_ValueType type);

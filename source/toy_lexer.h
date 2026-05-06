@@ -20,9 +20,9 @@ typedef struct {
 } Toy_Token;
 
 TOY_API void Toy_bindLexer(Toy_Lexer* lexer, const char* source);
-TOY_API Toy_Token Toy_private_scanLexer(Toy_Lexer* lexer);
+Toy_Token Toy_private_scanLexer(Toy_Lexer* lexer);
 
-TOY_API const char* Toy_private_findKeywordByType(const Toy_TokenType type);
-TOY_API Toy_TokenType Toy_private_findTypeByKeyword(const char* keyword);
-TOY_API void Toy_private_printToken(Toy_Token* token);
+const char* Toy_private_findKeywordByType(const Toy_TokenType type);
+Toy_TokenType Toy_private_findTypeByKeyword(const char* keyword);
+void Toy_private_printToken(Toy_Token* token);
 
