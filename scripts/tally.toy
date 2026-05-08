@@ -1,5 +1,5 @@
 fn makeCounter() {
-	var counter: int = 0;
+	var counter: Int = 0;
 
 	fn increment() {
 		return ++counter;

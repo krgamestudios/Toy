@@ -23,6 +23,9 @@ static void decrementRefCount(Toy_String* str) {
 		decrementRefCount(str->node.left);
 		decrementRefCount(str->node.right);
 	}
+	if (str->info.refCount == 0) {
+		Toy_releaseBucketPartition((void*)str);
+	}
 }
 
 //exposed functions
@@ -43,10 +46,10 @@ Toy_String* Toy_toStringLength(Toy_Bucket** bucketHandle, const char* cstring, u
 }
 
 Toy_String* Toy_createStringLength(Toy_Bucket** bucketHandle, const char* cstring, unsigned int length) {
-	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String));
+	Toy_String* ret = (Toy_String*)Toy_partitionBucket(bucketHandle, sizeof(Toy_String) + length + 1);
 
 	if (length > 0) {
-		ret->leaf.data = (char*)Toy_partitionBucket(bucketHandle, length + 1);
+		ret->leaf.data = (char*)(ret + 1); //increments by 1 'string', to the length +1
 		strncpy((char*)(ret->leaf.data), cstring, length);
 		((char*)(ret->leaf.data))[length] = '\0'; //don't forget the null
 		ret->info.length = length;

@@ -44,4 +44,6 @@ TOY_API void Toy_freeFunction(Toy_Function* fn) {
 	else if (fn->type == TOY_FUNCTION_NATIVE) {
 		fn->native.callback = NULL;
 	}
+
+	Toy_releaseBucketPartition((void*)fn);
 }

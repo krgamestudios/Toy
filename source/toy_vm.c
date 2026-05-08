@@ -1097,7 +1097,10 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 		Toy_resetStack(&vm->stack); //NOTE: has a realloc()
 	}
 
-	//NOTE: buckets are not altered during resets
+	//not sure how often to call teh GC
+	if (vm->memoryBucket) {
+		Toy_collectBucketGarbage(&vm->memoryBucket);
+	}
 }
 
 void Toy_initVM(Toy_VM* vm) {

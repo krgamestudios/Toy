@@ -1,5 +1,5 @@
 //find the leap years
-fn isLeapYear(n: int) {
+fn isLeapYear(n: Int) {
 	if (n % 400 == 0) return true;
 	if (n % 100 == 0) return false;
 	return n % 4 == 0;

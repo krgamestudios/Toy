@@ -1,9 +1,9 @@
 //standard example, using 'while' instead of 'for', because it's not ready yet
 
-var counter: int = 0;
+var counter: Int = 0;
 
 while (++counter <= 100) {
-	var result: string = "";
+	var result: String = "";
 
 	if (counter % 3 == 0) {
 		result = result .. "fizz";

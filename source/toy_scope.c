@@ -227,17 +227,29 @@ void Toy_private_incrementScopeRefCount(Toy_Scope* scope) {
 }
 
 void Toy_private_decrementScopeRefCount(Toy_Scope* scope) {
-	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
+	Toy_Scope* iter = scope;
+
+	while (iter) {
 		iter->refCount--;
-		if (iter->refCount == 0 && iter->data != NULL) {
+		if (iter->refCount == 0) {
 			//free the scope entries when this scope is no longer needed
-			for (unsigned int i = 0; i < iter->capacity; i++) {
-				if (iter->data[i].psl > 0) {
-					Toy_freeString(&(iter->data[i].key));
-					Toy_freeValue(iter->data[i].value);
+			if (iter->data != NULL) {
+				for (unsigned int i = 0; i < iter->capacity; i++) {
+					if (iter->data[i].psl > 0) {
+						Toy_freeString(&(iter->data[i].key));
+						Toy_freeValue(iter->data[i].value);
+					}
 				}
+				free(iter->data);
 			}
-			free(iter->data);
+
+			//free the scope itself, fixing the iterator for the next loop
+			Toy_Scope* empty = iter;
+			iter = iter->next;
+			Toy_releaseBucketPartition((void*)empty);
+		}
+		else {
+			iter = iter->next;
 		}
 	}
 }

@@ -56,7 +56,7 @@ int test_string_allocation(void) {
 
 		//inspect the bucket
 		if (bucket->capacity != 1024 ||
-			bucket->count != sizeof(Toy_String) + 12 ||
+			bucket->count != sizeof(Toy_String) + 12 + 4 || //+4 for bucket metadata
 			bucket->next != NULL)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected bucket state after 'Toy_createStringLength'\n" TOY_CC_RESET);

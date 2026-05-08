@@ -18,7 +18,10 @@ typedef struct Toy_Bucket {  //32 | 64 BITNESS
 
 TOY_API Toy_Bucket* Toy_allocateBucket(unsigned int capacity);
 TOY_API unsigned char* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount);
+TOY_API void Toy_releaseBucketPartition(unsigned char* ptr);
 TOY_API void Toy_freeBucket(Toy_Bucket** bucketHandle);
+
+TOY_API void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle);
 
 //standard capacity sizes
 #ifndef TOY_BUCKET_1KB

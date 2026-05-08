@@ -9,4 +9,5 @@ var b = 69;
 var c;
 var d;
 
+//BUG: still causes a segfault
 c, d = swap(a, b);
