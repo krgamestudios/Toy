@@ -384,6 +384,8 @@ static void processInvoke(Toy_VM* vm) {
 				Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
 
 				Toy_declareScope(subVM.scope, name, paramType, argValue, true);
+
+				Toy_freeString(name);
 			}
 
 			//run
@@ -417,6 +419,8 @@ static void processInvoke(Toy_VM* vm) {
 			Toy_error("Can't call an unknown function type");
 			break;
 	}
+
+	Toy_freeValue(value);
 }
 
 static void processAttribute(Toy_VM* vm) {
