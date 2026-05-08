@@ -161,12 +161,13 @@ int test_opcode_not_equal(Toy_Bucket** bucketHandle) {
 }
 
 static char* callbackUtilReceived = NULL;
-static void callbackUtil(const char* msg) {
+static int callbackUtil(const char* msg) {
 	if (msg != NULL) {
 		free(callbackUtilReceived);
 		callbackUtilReceived = (char*)malloc(strlen(msg) + 1);
 		strcpy(callbackUtilReceived, msg);
 	}
+	return 0;
 }
 
 int test_keyword_assert(Toy_Bucket** bucketHandle) {

@@ -5,9 +5,10 @@
 
 int counter = 0;
 
-void counterCallback(const char* msg) {
+int counterCallback(const char* msg) {
 	(void)msg;
 	counter++;
+	return 0;
 }
 
 int test_callbacks(void) {

@@ -79,35 +79,32 @@ int getFileName(char* dest, const char* src, size_t destLength) {
 #undef MIN
 }
 
-//callbacks
-static void printCallback(const char* msg) {
-	fprintf(stdout, "%s\n", msg);
-}
-
-static void errorAndExitCallback(const char* msg) {
+//error callbacks
+static int errorAndExitCallback(const char* msg) {
 	fprintf(stderr, TOY_CC_ERROR "Error: %s" TOY_CC_RESET "\n", msg);
 	exit(-1);
 }
 
-static void errorAndContinueCallback(const char* msg) {
-	fprintf(stderr, TOY_CC_ERROR "Error: %s" TOY_CC_RESET "\n", msg);
+static int errorAndContinueCallback(const char* msg) {
+	return fprintf(stderr, TOY_CC_ERROR "Error: %s" TOY_CC_RESET "\n", msg);
 }
 
-static void assertFailureAndExitCallback(const char* msg) {
+static int assertFailureAndExitCallback(const char* msg) {
 	fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s" TOY_CC_RESET "\n", msg);
 	exit(-1);
 }
 
-static void assertFailureAndContinueCallback(const char* msg) {
-	fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s" TOY_CC_RESET "\n", msg);
+static int assertFailureAndContinueCallback(const char* msg) {
+	return fprintf(stderr, TOY_CC_ASSERT "Assert Failure: %s" TOY_CC_RESET "\n", msg);
 }
 
-static void noOpCallback(const char* msg) {
+static int noOpCallback(const char* msg) {
 	//NO-OP
 	(void)msg;
+	return 0;
 }
 
-static void silentExitCallback(const char* msg) {
+static int silentExitCallback(const char* msg) {
 	//NO-OP
 	(void)msg;
 	exit(-1);
@@ -312,7 +309,7 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 //repl function
 int repl(const char* filepath, bool verbose) {
 	//output options
-	Toy_setPrintCallback(printCallback);
+	Toy_setPrintCallback(puts);
 	Toy_setErrorCallback(errorAndContinueCallback);
 	Toy_setAssertFailureCallback(assertFailureAndContinueCallback);
 
@@ -405,7 +402,7 @@ int repl(const char* filepath, bool verbose) {
 
 //main file
 int main(int argc, const char* argv[]) {
-	Toy_setPrintCallback(printCallback);
+	Toy_setPrintCallback(puts);
 	Toy_setErrorCallback(errorAndExitCallback);
 	Toy_setAssertFailureCallback(assertFailureAndExitCallback);
 

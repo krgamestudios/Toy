@@ -2,8 +2,8 @@
 
 #include "toy_common.h"
 
-//handle callbacks for printing to the terminal, or elsewhere
-typedef void (*Toy_callbackType)(const char*);
+//handle callbacks for printing to the terminal, or elsewhere (signature matches 'puts')
+typedef int (*Toy_callbackType)(const char*);
 
 TOY_API void Toy_print(const char* msg); //print keyword
 TOY_API void Toy_error(const char* msg); //runtime errors

@@ -2,21 +2,9 @@
 
 #include <stdio.h>
 
-static void outDefault(const char* msg) {
-	fprintf(stdout, "%s\n", msg);
-}
-
-static void errDefault(const char* msg) {
-	fprintf(stderr, "%s\n", msg);
-}
-
-static void assertDefault(const char* msg) {
-	fprintf(stderr, "%s\n", msg);
-}
-
-static Toy_callbackType printCallback = outDefault;
-static Toy_callbackType errorCallback = errDefault;
-static Toy_callbackType assertCallback = assertDefault;
+static Toy_callbackType printCallback = puts;
+static Toy_callbackType errorCallback = puts;
+static Toy_callbackType assertCallback = puts;
 
 void Toy_print(const char* msg) {
 	printCallback(msg);
@@ -43,13 +31,13 @@ void Toy_setAssertFailureCallback(Toy_callbackType cb) {
 }
 
 void Toy_resetPrintCallback(void) {
-	printCallback = outDefault;
+	printCallback = puts;
 }
 
 void Toy_resetErrorCallback(void) {
-	errorCallback = errDefault;
+	errorCallback = puts;
 }
 
 void Toy_resetAssertFailureCallback(void) {
-	assertCallback = assertDefault;
+	assertCallback = puts;
 }
