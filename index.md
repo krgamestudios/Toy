@@ -13,6 +13,6 @@ title: The Toy Programming Language
 
 The Toy Programming Language is an imperative, bytecode-interpreted, embeddable scripting language. Rather than functioning independently, it serves as part of another program, the "host". This design allows for straightforward customization by both the host's developers and end users, achieved by exposing program logic through text files.
 
-The documdentation on this website is under construction, for further information, see the repository on GitHub: [https://github.com/krgamestudios/Toy](https://github.com/krgamestudios/Toy), or mirrored at [https://gitea.krgamestudios.com/krgamestudios/Toy](https://gitea.krgamestudios.com/krgamestudios/Toy).
+The documentation on this website is under construction, for further information, see the repository: [https://gitea.krgamestudios.com/krgamestudios/Toy](https://gitea.krgamestudios.com/krgamestudios/Toy), or the GitHub mirror: [https://github.com/krgamestudios/Toy](https://github.com/krgamestudios/Toy).
 
 An example of Toy in action: [Vampire Toyvivors](https://gitea.krgamestudios.com/krgamestudios/VampireToyvivors).
