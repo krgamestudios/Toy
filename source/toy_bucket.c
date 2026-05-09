@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 //buckets of fun
 Toy_Bucket* Toy_allocateBucket(unsigned int capacity) {
@@ -15,6 +16,8 @@ Toy_Bucket* Toy_allocateBucket(unsigned int capacity) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate a 'Toy_Bucket' of %d capacity\n" TOY_CC_RESET, (int)capacity);
 		exit(1);
 	}
+
+	memset(bucket, 0, sizeof(Toy_Bucket) + capacity); //zero the memory, to avoid broken header metadata
 
 	//initialize the bucket
 	bucket->next = NULL;
