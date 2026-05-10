@@ -19,12 +19,12 @@ static Toy_ScopeEntry* lookupScopeEntryPtr(Toy_Scope* scope, Toy_String* key, un
 
 	while (true) {
 		//found the entry
-		if (Toy_compareStrings(&(scope->data[probe].key), key) == 0) {
+		if (scope->data[probe].key != NULL && Toy_compareStrings(scope->data[probe].key, key) == 0) {
 			return &(scope->data[probe]);
 		}
 
 		//if its an empty slot (didn't find it here)
-		if (scope->data[probe].key.info.length == 0) {
+		if (scope->data[probe].key == NULL) {
 			return recursive ? lookupScopeEntryPtr(scope->next, key, hash, recursive) : NULL;
 		}
 
@@ -36,12 +36,12 @@ static Toy_ScopeEntry* lookupScopeEntryPtr(Toy_Scope* scope, Toy_String* key, un
 static void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, Toy_ValueType type, bool constant) {
 	//make the entry
 	unsigned int probe = Toy_hashString(key) % scope->capacity;
-	Toy_ScopeEntry entry = (Toy_ScopeEntry){ .key = *key, .value = value, .type = type, .constant = constant, .psl = 1 };
+	Toy_ScopeEntry entry = (Toy_ScopeEntry){ .key = key, .value = value, .type = type, .constant = constant, .psl = 1 };
 
 	//probe
 	while (true) {
 		//if we're overriding an existing value
-		if (Toy_compareStrings(&(scope->data[probe].key), &(entry.key)) == 0) {
+		if (scope->data[probe].key != NULL && Toy_compareStrings(scope->data[probe].key, entry.key) == 0) {
 			scope->data[probe] = entry;
 			scope->maxPsl = entry.psl > scope->maxPsl ? entry.psl : scope->maxPsl;
 			return;
@@ -94,8 +94,8 @@ static Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapa
 
 	//for each existing entry in the old array, copy it into the new array
 	for (unsigned int i = 0; i < oldCapacity; i++) {
-		if (oldEntries[i].key.info.length > 0) {
-			probeAndInsert(scope, &(oldEntries[i].key), oldEntries[i].value, oldEntries[i].type, oldEntries[i].constant);
+		if (oldEntries[i].key != NULL && oldEntries[i].key->info.length > 0) {
+			probeAndInsert(scope, oldEntries[i].key, oldEntries[i].value, oldEntries[i].type, oldEntries[i].constant);
 		}
 	}
 
@@ -134,7 +134,10 @@ Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 	}
 
 	Toy_private_decrementScopeRefCount(scope);
-	return scope->next;
+
+	Toy_Scope* next = scope->next;
+	Toy_releaseBucketPartition((void*)scope);
+	return next;
 }
 
 void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy_Value value, bool constant) {
@@ -229,29 +232,21 @@ void Toy_private_incrementScopeRefCount(Toy_Scope* scope) {
 }
 
 void Toy_private_decrementScopeRefCount(Toy_Scope* scope) {
-	Toy_Scope* iter = scope;
-
-	while (iter) {
+	for (Toy_Scope* iter = scope; iter != NULL; iter = iter->next) {
 		iter->refCount--;
+
+		//clean up our insides if needed
 		if (iter->refCount == 0) {
-			//free the scope entries when this scope is no longer needed
+			//free the data
 			if (iter->data != NULL) {
 				for (unsigned int i = 0; i < iter->capacity; i++) {
-					if (iter->data[i].psl > 0) {
-						Toy_freeString(&(iter->data[i].key));
+					if (iter->data[i].key != NULL) {
+						Toy_freeString(iter->data[i].key);
 						Toy_freeValue(iter->data[i].value);
 					}
 				}
 				free(iter->data);
 			}
-
-			//free the scope itself, fixing the iterator for the next loop
-			Toy_Scope* empty = iter;
-			iter = iter->next;
-			Toy_releaseBucketPartition((void*)empty);
-		}
-		else {
-			iter = iter->next;
 		}
 	}
 }

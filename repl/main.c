@@ -280,14 +280,14 @@ static void debugScopePrint(Toy_Scope* scope, int depth) {
 
 		printf("\n" TOY_CC_NOTICE "Scope Dump [%d]" TOY_CC_RESET "\n" TOY_CC_NOTICE "%-20s%-20s%-20s" TOY_CC_RESET "\n", depth, "type", "name", "value");
 		for (unsigned int i = 0; i < scope->capacity; i++) {
-			if (scope->data[i].key.info.length == 0) {
+			if (scope->data[i].key == NULL || scope->data[i].key->info.length == 0) {
 				continue;
 			}
 
-			Toy_String k = scope->data[i].key;
+			Toy_String* k = scope->data[i].key;
 			Toy_Value v = scope->data[i].value;
 
-			printf("%-10s%-10s%-20s", Toy_getValueTypeAsCString(scope->data[i].type), scope->data[i].constant ? "const" : "", k.leaf.data);
+			printf("%-10s%-10s%-20s", Toy_getValueTypeAsCString(scope->data[i].type), scope->data[i].constant ? "const" : "", k != NULL ? k->leaf.data : "");
 
 			//print value
 			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
@@ -321,7 +321,7 @@ int repl(const char* filepath, bool verbose) {
 	char inputBuffer[INPUT_BUFFER_SIZE];
 	memset(inputBuffer, 0, INPUT_BUFFER_SIZE);
 
-	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL); //TODO: gc this
 
 	Toy_VM vm;
 	Toy_initVM(&vm);

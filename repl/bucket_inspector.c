@@ -1,43 +1,9 @@
 #include "bucket_inspector.h"
-// #include <toy_string.h>
+#include <toy_string.h>
 
 #include <stdio.h>
 
 int inspect_bucket(Toy_Bucket** bucketHandle) {
-	int depth = 0;
-
-	//for each bucket
-	for (Toy_Bucket* iter = (*bucketHandle); iter != NULL; iter = iter->next) {
-		int occupied = 0;
-		int released = 0;
-		unsigned char* ptr = iter->data;
-
-
-		while ((ptr - iter->data < iter->count) && *((int*)ptr) != 0) { //for each partition
-			if ( ( *((int*)ptr) & 1) == 0) { //is this partition still in use?
-				occupied++;
-			}
-			else {
-				released++;
-			}
-
-			//jump distance:   ((*((int*)ptr) | 1) ^ 1) + 4
-			// printf(" jump %d, ", ((*((int*)ptr) | 1) ^ 1) + 4);
-			ptr += ((*((int*)ptr) | 1) ^ 1) + 4; //OR + XOR to remove the 'free' flag from the size
-		}
-
-		printf("Bucket link %d: count %u, %d occupied, %d released\n", depth, iter->count, occupied, released);
-
-		depth++;
-	}
-
-	printf("\n");
-
-	return depth;
-}
-
-/*
-int inspect_bucket_for_strings(Toy_Bucket** bucketHandle) {
 	int depth = 0;
 
 	//for each bucket
@@ -79,4 +45,3 @@ int inspect_bucket_for_strings(Toy_Bucket** bucketHandle) {
 
 	return depth;
 }
-*/

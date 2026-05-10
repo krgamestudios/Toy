@@ -15,5 +15,5 @@ c, d = swap(a, b);
 */
 
 
-{ var str = "Hello"; var i = 0; while (i < 10_000) { str = str .. " World"; i++; } }
+{ var str = "Hello"; var i = 0; while (i < 100) { str = str .. " World"; i++; } }
 

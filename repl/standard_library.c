@@ -56,13 +56,9 @@ void initStandardLibrary(Toy_VM* vm) {
 
 	//declare each pair
 	for (int i = 0; callbackPairs[i].name; i++) {
-		//cheat
-		Toy_String key = (Toy_String){
-			.leaf = { ._padding = { .type = TOY_STRING_LEAF, .length = strlen(callbackPairs[i].name), .refCount = 1, .cachedHash = 0 }, .data = callbackPairs[i].name }
-		};
-
+		Toy_String* key = Toy_createStringLength(&vm->memoryBucket, callbackPairs[i].name, strlen(callbackPairs[i].name));
 		Toy_Function* fn = Toy_createFunctionFromCallback(&(vm->memoryBucket), callbackPairs[i].callback);
 
-		Toy_declareScope(vm->scope, &key, TOY_VALUE_FUNCTION, TOY_VALUE_FROM_FUNCTION(fn), true);
+		Toy_declareScope(vm->scope, key, TOY_VALUE_FUNCTION, TOY_VALUE_FROM_FUNCTION(fn), true);
 	}
 }

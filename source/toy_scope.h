@@ -8,7 +8,7 @@
 
 //keys are leaf-only strings
 typedef struct Toy_ScopeEntry {
-	Toy_String key;
+	Toy_String* key;
 	Toy_Value value;
 	Toy_ValueType type;
 	unsigned int psl; //psl '0' means empty
