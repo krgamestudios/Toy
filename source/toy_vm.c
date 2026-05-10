@@ -210,7 +210,7 @@ static void processAssign(Toy_VM* vm) {
 	Toy_Value name = Toy_popStack(&vm->stack);
 
 	//assign it
-	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), Toy_copyValue(&vm->memoryBucket, value)); //scope now owns the value, doesn't need to be freed
+	Toy_assignScope(vm->scope, TOY_VALUE_AS_STRING(name), Toy_copyValue(&vm->memoryBucket, value));
 
 	//in case of chaining, leave a copy on the stack
 	bool chainedAssignment = READ_BYTE(vm);
@@ -220,6 +220,7 @@ static void processAssign(Toy_VM* vm) {
 
 	//cleanup
 	Toy_freeValue(name);
+	Toy_freeValue(value);
 }
 
 static void processAssignCompound(Toy_VM* vm) {

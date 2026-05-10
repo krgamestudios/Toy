@@ -1,5 +1,5 @@
 
-
+/*
 fn swap(a, b) {
 	return b, a;
 }
@@ -11,3 +11,9 @@ var d;
 
 //BUG: still causes a segfault
 c, d = swap(a, b);
+
+*/
+
+
+{ var str = "Hello"; var i = 0; while (i < 10_000) { str = str .. " World"; i++; } }
+

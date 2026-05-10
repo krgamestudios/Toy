@@ -193,6 +193,8 @@ void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value) {
 		return;
 	}
 
+	Toy_freeValue(entryPtr->value);
+
 	entryPtr->value = value;
 }
 

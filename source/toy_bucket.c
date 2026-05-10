@@ -88,7 +88,7 @@ TOY_API void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle) {
 				gc = false;
 				break;
 			}
-			ptr += (*((int*)(ptr)) ^ 1) + 4; //XOR to remove the 'free' flag from the size
+			ptr += ((*((int*)ptr) | 1) ^ 1) + 4; //OR + XOR to remove the 'free' flag from the size
 		}
 
 		//free this link, if its been entirely released

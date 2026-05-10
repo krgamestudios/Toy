@@ -20,10 +20,18 @@ static void incrementRefCount(Toy_String* str) {
 static void decrementRefCount(Toy_String* str) {
 	str->info.refCount--;
 	if (str->info.type == TOY_STRING_NODE) {
+		//the parent of this node triggered a decrement across the whole tree
 		decrementRefCount(str->node.left);
 		decrementRefCount(str->node.right);
 	}
 	if (str->info.refCount == 0) {
+		if (str->info.type == TOY_STRING_NODE) {
+			//THIS node has triggered the decrement, so run this again
+			decrementRefCount(str->node.left);
+			decrementRefCount(str->node.right);
+		}
+
+		//mark this memory as unused
 		Toy_releaseBucketPartition((void*)str);
 	}
 }

@@ -1,5 +1,6 @@
 #include "ast_inspector.h"
 #include "bytecode_inspector.h"
+#include "bucket_inspector.h"
 
 #include "toy_console_colors.h"
 
@@ -380,14 +381,26 @@ int repl(const char* filepath, bool verbose) {
 		//run
 		Toy_runVM(&vm);
 
+		int depthBeforeGC = 0;
+		int depthAfterGC = 0;
+
 		//print the debug info
 		if (verbose) {
 			debugStackPrint(vm.stack);
 			debugScopePrint(vm.scope, 0);
+
+			depthBeforeGC = inspect_bucket(&vm.memoryBucket);
 		}
 
 		//free the memory, and leave the VM ready for the next loop
 		Toy_resetVM(&vm, true, true);
+
+		if (verbose) {
+			depthAfterGC = inspect_bucket(&vm.memoryBucket);
+
+			printf("GC Report: %d -> %d\n", depthBeforeGC, depthAfterGC);
+		}
+
 		free(bytecode);
 
 		printf("%s> ", prompt); //shows the terminal prompt

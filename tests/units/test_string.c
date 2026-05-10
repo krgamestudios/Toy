@@ -192,8 +192,8 @@ int test_string_concatenation(void) {
 
 		free(buffer);
 		Toy_freeString(result);
-		Toy_freeString(first);
-		Toy_freeString(second);
+		// Toy_freeString(first); //these do NOT need to be freed manually
+		// Toy_freeString(second);
 		Toy_freeBucket(&bucket);
 	}
 
