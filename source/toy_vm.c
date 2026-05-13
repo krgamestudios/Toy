@@ -1099,12 +1099,12 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 	}
 
 	if (!preserveStack) {
-		Toy_resetStack(&vm->stack); //NOTE: has a realloc()
+		Toy_resetStack(&vm->stack); //WARN: has a realloc()
 	}
 
 	//not sure how often to call teh GC
 	if (vm->memoryBucket) {
-		Toy_collectBucketGarbage(&vm->memoryBucket); //TODO: call GC after a certain number of bucket links allocated
+		Toy_collectBucketGarbage(&vm->memoryBucket); //URGENT: call GC after a certain number of bucket links allocated
 	}
 }
 
@@ -1190,8 +1190,8 @@ void Toy_freeVM(Toy_VM* vm) {
 }
 
 Toy_Array* Toy_extractResultsFromVM(Toy_VM* parentVM, Toy_VM* subVM, unsigned int resultCount) {
-	if (subVM->stack->count < resultCount) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Too many results requested from VM, exiting\n" TOY_CC_RESET);
+	if (subVM->stack->count != resultCount) {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Too %s results requested from VM, exiting\n" TOY_CC_RESET, subVM->stack->count < resultCount ? "many":"few");
 		exit(-1);
 	}
 

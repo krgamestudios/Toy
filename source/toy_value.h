@@ -51,7 +51,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_IS_ARRAY(value)				((value).type == TOY_VALUE_ARRAY || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_ARRAY))
 #define TOY_VALUE_IS_TABLE(value)				((value).type == TOY_VALUE_TABLE || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_TABLE))
 #define TOY_VALUE_IS_FUNCTION(value)			((value).type == TOY_VALUE_FUNCTION || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_FUNCTION))
-#define TOY_VALUE_IS_OPAQUE(value)				((value).type == TOY_VALUE_OPAQUE)
+#define TOY_VALUE_IS_OPAQUE(value)				((value).type == TOY_VALUE_OPAQUE || (TOY_VALUE_IS_REFERENCE(value) && Toy_unwrapValue(value).type == TOY_VALUE_OPAQUE))
 #define TOY_VALUE_IS_REFERENCE(value)			((value).type == TOY_VALUE_REFERENCE)
 
 #define TOY_VALUE_AS_BOOLEAN(value)				((value).as.boolean)
