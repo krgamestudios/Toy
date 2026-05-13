@@ -1,0 +1,12 @@
+
+
+
+var randi: Int = 69420;
+fn rand() {
+	return randi = randi * 1664525 + 1013904223;
+}
+
+
+var a  = rand();
+
+
