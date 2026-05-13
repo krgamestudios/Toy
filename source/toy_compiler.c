@@ -801,6 +801,7 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 	unsigned int result = 0;
 
 	//BUG: flip the order of target & value, to allow chained assignment AND multiple return values
+	//do I need multiple return values?
 
 	//target is a variable name
 	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value)) {

@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-Toy_Stack* Toy_allocateStack(void) { //TODO: add initial size as parameter
-	Toy_Stack* stack = malloc(TOY_STACK_INITIAL_CAPACITY * sizeof(Toy_Value) + sizeof(Toy_Stack)); //URGENT: Swap to a bucket (4 instances)
+Toy_Stack* Toy_allocateStack(void) {
+	Toy_Stack* stack = malloc(TOY_STACK_INITIAL_CAPACITY * sizeof(Toy_Value) + sizeof(Toy_Stack));
 
 	if (stack == NULL) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate a 'Toy_Stack' of %d capacity (%d space in memory)\n" TOY_CC_RESET, TOY_STACK_INITIAL_CAPACITY, (int)(TOY_STACK_INITIAL_CAPACITY * sizeof(Toy_Value) + sizeof(Toy_Stack)));

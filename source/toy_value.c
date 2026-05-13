@@ -104,7 +104,7 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			return TOY_VALUE_FROM_STRING(Toy_copyString(value.as.string));
 		}
 
-		case TOY_VALUE_ARRAY: { //TODO: switch to buckets
+		case TOY_VALUE_ARRAY: {
 			//arrays probably won't get copied much
 			Toy_Array* ptr = value.as.array;
 			Toy_Array* result = Toy_resizeArray(NULL, ptr->capacity);
@@ -119,7 +119,7 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			return TOY_VALUE_FROM_ARRAY(result);
 		}
 
-		case TOY_VALUE_TABLE: { //TODO: switch to buckets
+		case TOY_VALUE_TABLE: {
 			//tables probably won't get copied much
 			Toy_Table* ptr = value.as.table;
 			Toy_Table* result = Toy_allocateTable(ptr->capacity);
@@ -550,7 +550,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			//clean up
 			Toy_freeString(open);
 			Toy_freeString(close);
-			Toy_freeString(comma); //TODO: reusable global, or string type "permanent", needs benchmarking
+			Toy_freeString(comma);
 			Toy_freeString(quote);
 
 			return string;
@@ -625,8 +625,6 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 				//finally
 				string = final;
-
-				//TODO: would a simple buffer be faster here?
 
 				//if there's more elements
 				needsComma = true;

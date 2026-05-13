@@ -239,7 +239,7 @@ Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableRemove);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "forEach", 7)  == 0) { //BUG: compare the contents AND length of these strings
+	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "forEach", 7)  == 0) { //URGENT: compare the contents AND length of these strings
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableForEach);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}

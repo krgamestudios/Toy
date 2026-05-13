@@ -71,7 +71,7 @@ static void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, T
 
 static Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapacity) {
 	//allocate and zero a new Toy_ScopeEntry array in memory
-	Toy_ScopeEntry* newEntries = malloc(newCapacity * sizeof(Toy_ScopeEntry)); //URGENT: Swap to a bucket
+	Toy_ScopeEntry* newEntries = malloc(newCapacity * sizeof(Toy_ScopeEntry));
 
 	if (newEntries == NULL) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate space for 'Toy_Scope' entries\n" TOY_CC_RESET);

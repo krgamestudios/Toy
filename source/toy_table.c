@@ -46,7 +46,7 @@ static void probeAndInsert(Toy_Table** tableHandle, Toy_Value key, Toy_Value val
 //exposed functions
 Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int newCapacity) {
 	//allocate and zero a new table in memory
-	Toy_Table* newTable = malloc(newCapacity * sizeof(Toy_TableEntry) + sizeof(Toy_Table)); //URGENT: Swap to a bucket
+	Toy_Table* newTable = malloc(newCapacity * sizeof(Toy_TableEntry) + sizeof(Toy_Table));
 
 	if (newTable == NULL) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate a 'Toy_Table'\n" TOY_CC_RESET);

@@ -725,7 +725,7 @@ static void processAssert(Toy_VM* vm) {
 
 	//determine the args
 	if (count == 1) {
-		message = TOY_VALUE_FROM_STRING(Toy_toString(&vm->memoryBucket, "assertion failed")); //TODO: needs a better default message
+		message = TOY_VALUE_FROM_STRING(Toy_toString(&vm->memoryBucket, "assertion failed"));
 		value = Toy_popStack(&vm->stack);
 	}
 	else if (count == 2) {
@@ -1104,7 +1104,7 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 
 	//not sure how often to call teh GC
 	if (vm->memoryBucket) {
-		Toy_collectBucketGarbage(&vm->memoryBucket);
+		Toy_collectBucketGarbage(&vm->memoryBucket); //TODO: call GC after a certain number of bucket links allocated
 	}
 }
 
@@ -1199,7 +1199,7 @@ Toy_Array* Toy_extractResultsFromVM(Toy_VM* parentVM, Toy_VM* subVM, unsigned in
 
 	const unsigned int offset = subVM->stack->count - resultCount; //first element to extract
 
-	for (/* EMPTY */; results->count < resultCount; results->count++) { //TODO: make sure the parent bucket adopts the child bucket's responsibilities
+	for (/* EMPTY */; results->count < resultCount; results->count++) {
 		results->data[results->count] = Toy_copyValue(&parentVM->memoryBucket, subVM->stack->data[offset + results->count]);
 	}
 
