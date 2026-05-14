@@ -51,3 +51,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#mdbook files
+book
+mdbook
