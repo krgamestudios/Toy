@@ -2,3 +2,7 @@
 title = "The Toy Programming Language"
 authors = ["Kayne Ruse"]
 language = "en"
+
+[output.html]
+git-repository-url = "https://github.com/krgamestudios/Toy"
+git-repository-icon = "fab-github"

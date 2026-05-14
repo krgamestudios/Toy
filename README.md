@@ -1,23 +1,21 @@
 <p align="center">
-	<image src="toylogo.png" />
+	<image src="toylogo.png" alt="The Toy Logo" />
 </p>
-
-**This is a work in progress, and is not yet fit for purpose. I hope I can get it to a useable state, but personal issues can often make dedicating myself to a project difficult. Your patience and support is greatly appreciated.**
 
 # Toy v2.x
 
-The Toy Programming Language is an imperative, bytecode-interpreted, embeddable scripting language. Rather than functioning independently, it serves as part of another program, the "host". This design allows for straightforward customization by both the host's developers and end users, achieved by exposing program logic through text files.
+The Toy Programming Language is an imperative, bytecode-interpreted, embeddable scripting language. Rather than functioning independently, it serves as part of another program, the "host". This design allows for straightforward customization by both the host's developers and end users, achieved by exposing program logic through external scripts.
 
-This repository holds the reference implementation for Toy version 2.x, written in C.
+This repository holds the reference implementation for Toy version 2.x, written in C - alpha testing is currently underway.
 
 # Nifty Features
 
-* Simple C-style syntax
+* Simple C-like syntax
 * Intermediate AST and bytecode representations
 * Strong, but optional type system
 * First-class functions and closures
-* Extensible with imported native code
-* Can re-direct output, error and assert failure messages
+* Extensible with native C-bindings
+* Can re-direct output, error and assertion messages
 * Open-Source under the zlib license
 
 # Syntax
