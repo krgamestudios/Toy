@@ -321,8 +321,6 @@ int repl(const char* filepath, bool verbose) {
 	char inputBuffer[INPUT_BUFFER_SIZE];
 	memset(inputBuffer, 0, INPUT_BUFFER_SIZE);
 
-	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL); //TODO: gc this
-
 	Toy_VM vm;
 	Toy_initVM(&vm);
 
@@ -347,14 +345,16 @@ int repl(const char* filepath, bool verbose) {
 		}
 
 		//parse the input, prep the VM for execution
+		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Lexer lexer;
 		Toy_bindLexer(&lexer, inputBuffer);
 		Toy_Parser parser;
 		Toy_bindParser(&parser, &lexer);
-		Toy_Ast* ast = Toy_scanParser(&bucket, &parser); //Ast is in the bucket, so it doesn't need to be freed
+		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
 
 		//parsing error, retry
-		if (parser.error) {
+		if (parser.error || ast == NULL) {
+			Toy_freeBucket(&bucket);
 			printf("%s> ", prompt); //shows the terminal prompt
 			continue;
 		}
@@ -364,6 +364,12 @@ int repl(const char* filepath, bool verbose) {
 		}
 
 		unsigned char* bytecode = Toy_compileToBytecode(ast);
+		Toy_freeBucket(&bucket); //no need to for the GC here
+
+		if (bytecode == NULL) {
+			printf("%s> ", prompt);
+			continue;
+		}
 
 		if (verbose) {
 			inspect_bytecode(bytecode);
@@ -408,7 +414,6 @@ int repl(const char* filepath, bool verbose) {
 
 	//cleanup all memory
 	Toy_freeVM(&vm);
-	Toy_freeBucket(&bucket);
 
 	return 0;
 }
@@ -479,6 +484,12 @@ int main(int argc, const char* argv[]) {
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
 
+		if (ast == NULL) {
+			Toy_freeBucket(&bucket);
+			free(source);
+			return -1;
+		}
+
 		if (cmd.verbose) {
 			inspect_ast(ast);
 		}
@@ -486,6 +497,10 @@ int main(int argc, const char* argv[]) {
 		unsigned char* bytecode = Toy_compileToBytecode(ast);
 		Toy_freeBucket(&bucket);
 		free(source);
+
+		if (bytecode == NULL) {
+			return -1;
+		}
 
 		if (cmd.verbose) {
 			inspect_bytecode(bytecode);

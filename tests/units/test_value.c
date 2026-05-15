@@ -609,6 +609,7 @@ int main(void) {
 
 	//TODO: references
 	//TODO: type coersions
+	//TODO: opaques?
 
 	return total;
 }

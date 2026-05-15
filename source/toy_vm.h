@@ -51,5 +51,5 @@ void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope);
 TOY_API unsigned int Toy_runVM(Toy_VM* vm);
 TOY_API void Toy_freeVM(Toy_VM* vm);
 
-TOY_API Toy_Array* Toy_extractResultsFromVM(Toy_VM* parentVM, Toy_VM* subVM, unsigned int resultCount);
+TOY_API Toy_Value Toy_getReturnValueFromVM(Toy_VM* parentVM, Toy_VM* subVM);
 

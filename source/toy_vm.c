@@ -394,15 +394,8 @@ static void processInvoke(Toy_VM* vm) {
 
 			//extract and store any results
 			if (resultCount > 0) {
-				Toy_Array* results = Toy_extractResultsFromVM(vm, &subVM, resultCount);
-
-				for (unsigned int i = 0; i < results->count; i++) {
-					//NOTE: since the results array is being immediately freed, just push each element without a call to copy
-					Toy_pushStack(&vm->stack, results->data[i]);
-				}
-
-				//a bit naughty
-				free(results);
+				Toy_Value result = Toy_getReturnValueFromVM(vm, &subVM);
+				Toy_pushStack(&vm->stack, result);
 			}
 
 			//cleanup
@@ -1104,7 +1097,7 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 
 	//not sure how often to call teh GC
 	if (vm->memoryBucket) {
-		Toy_collectBucketGarbage(&vm->memoryBucket); //URGENT: call GC after a certain number of bucket links allocated
+		Toy_collectBucketGarbage(&vm->memoryBucket); //WONTFIX: call GC after a certain number of bucket links allocated
 	}
 }
 
@@ -1189,19 +1182,11 @@ void Toy_freeVM(Toy_VM* vm) {
 	}
 }
 
-Toy_Array* Toy_extractResultsFromVM(Toy_VM* parentVM, Toy_VM* subVM, unsigned int resultCount) {
-	if (subVM->stack->count != resultCount) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Too %s results requested from VM, exiting\n" TOY_CC_RESET, subVM->stack->count < resultCount ? "many":"few");
-		exit(-1);
+Toy_Value Toy_getReturnValueFromVM(Toy_VM* parentVM, Toy_VM* subVM) {
+	if (subVM->stack->count > 0) {
+		return Toy_copyValue(&parentVM->memoryBucket, subVM->stack->data[subVM->stack->count-1]);
 	}
-
-	Toy_Array* results = Toy_resizeArray(NULL, resultCount);
-
-	const unsigned int offset = subVM->stack->count - resultCount; //first element to extract
-
-	for (/* EMPTY */; results->count < resultCount; results->count++) {
-		results->data[results->count] = Toy_copyValue(&parentVM->memoryBucket, subVM->stack->data[offset + results->count]);
+	else {
+		return TOY_VALUE_FROM_NULL();
 	}
-
-	return results;
 }

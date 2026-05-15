@@ -494,7 +494,6 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			return Toy_copyString(value.as.string);
 
 		case TOY_VALUE_ARRAY: {
-			//TODO: concat + free is definitely a performance nightmare, could make an append function?
 			Toy_Array* ptr = value.as.array;
 
 			//if array is empty, skip below

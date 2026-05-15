@@ -9,13 +9,17 @@
 //if set, used for delegating to user-defined code
 static Toy_OpaqueAttributeHandler opaqueAttributeCallback = NULL;
 
-//NOTE: there is no need to call 'Toy_freeValue' on the arguments, as the VM assumes you don't
+//utils
+#define MATCH_VALUE_AND_CSTRING(value, cstring) \
+	((TOY_VALUE_AS_STRING(value)->info.length == strlen(cstring)) && \
+	(strncmp(cstring, TOY_VALUE_AS_STRING(value)->leaf.data, TOY_VALUE_AS_STRING(value)->info.length) == 0))
 
+//NOTE: there is no need to call 'Toy_freeValue' on the arguments, as the VM assumes you don't
 Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
-	if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "length", 6)  == 0) {
+	if (MATCH_VALUE_AND_CSTRING(attribute, "length")) {
 		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_STRING(compound)->info.length);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "asUpper", 7)  == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "asUpper")) {
 		char* buffer = Toy_getStringRaw(TOY_VALUE_AS_STRING(compound));
 		for (int i = 0; buffer[i] != '\0'; i++) {
 			buffer[i] = toupper(buffer[i]);
@@ -24,7 +28,7 @@ Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy
 		free(buffer);
 		return TOY_VALUE_FROM_STRING(str);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "asLower", 7) == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "asLower")) {
 		char* buffer = Toy_getStringRaw(TOY_VALUE_AS_STRING(compound));
 		for (int i = 0; buffer[i] != '\0'; i++) {
 			buffer[i] = tolower(buffer[i]);
@@ -116,7 +120,7 @@ static void attr_arrayForEach(Toy_VM* vm) {
 				Toy_declareScope(subVM.scope, Toy_copyString(name), paramType, Toy_copyValue(&subVM.memoryBucket, array->data[iterator]), true);
 				Toy_freeString(name);
 
-				Toy_runVM(&subVM); //TODO: could use a 'map'-style method by storing the results
+				Toy_runVM(&subVM);
 
 				Toy_resetVM(&subVM, false, true);
 			}
@@ -148,22 +152,22 @@ static void attr_arraySort(Toy_VM* vm) {
 }
 
 Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
-	if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "length", 6)  == 0) {
+	if (MATCH_VALUE_AND_CSTRING(attribute, "length")) {
 		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_ARRAY(compound)->count);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "pushBack", 8)  == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "pushBack")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayPushBack);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "popBack", 7)  == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "popBack")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayPopBack);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "forEach", 7)  == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "forEach")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayForEach);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "sort", 4)  == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "sort")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arraySort);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
@@ -224,22 +228,22 @@ static void attr_tableForEach(Toy_VM* vm) {
 }
 
 Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
-	if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "length", 6)  == 0) {
+	if (MATCH_VALUE_AND_CSTRING(attribute, "length")) {
 		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_ARRAY(compound)->count);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "insert", 6)  == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "insert")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableInsert);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "hasKey", 6)  == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "hasKey")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableHasKey);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "remove", 6)  == 0) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "remove")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableRemove);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (strncmp(TOY_VALUE_AS_STRING(attribute)->leaf.data, "forEach", 7)  == 0) { //URGENT: compare the contents AND length of these strings
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "forEach")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableForEach);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
