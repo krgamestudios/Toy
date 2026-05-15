@@ -123,6 +123,7 @@ static void attr_arrayForEach(Toy_VM* vm) {
 				Toy_runVM(&subVM);
 
 				Toy_resetVM(&subVM, false, true);
+				subVM.scope = NULL; //BUGFIX: need to clear the scope when iterating
 			}
 		}
 		break;

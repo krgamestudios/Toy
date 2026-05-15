@@ -1,11 +1,11 @@
 
-fn swap(a, b) {
-	return b, a;
-}
 
-var a = 42;
-var b = 69;
-var c;
-var d;
+var array = [1,2,3];
 
-c, d = swap(a, b);
+print array;
+
+fn double(x: Int) { return x * 2; }
+
+array.forEach(double);
+
+print array;
