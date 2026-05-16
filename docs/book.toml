@@ -1,6 +1,7 @@
 [book]
 title = "The Toy Programming Language"
-authors = ["Kayne Ruse"]
+authors = ["Kayne Ruse (Ratstail91)"]
+description = "Documentation For The Toy Programming Language"
 language = "en"
 
 [output.html]
