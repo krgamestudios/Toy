@@ -1,4 +1,5 @@
 # Summary
 
-- [Introduction](./README.md)
+- [Front Page](./README.md)
 - [Quick Start](./quickstart.md)
+- [Cheat Sheet](./cheatsheet.md)

@@ -20,9 +20,29 @@ This repository holds the reference implementation for Toy version 2.x, written 
 
 # Syntax
 
-Watch this space.
+```toy
+fn makeCounter() {
+	var counter: Int = 0;
 
-(The `scripts` or `tests` directory might help, the docs website is WIP.)
+	fn increment() {
+		return ++counter;
+	}
+
+	return increment;
+}
+
+var tally = makeCounter();
+
+while (true) {
+	var result = tally();
+
+	print result; //prints 1 to 10
+
+	if (result >= 10) {
+		break;
+	}
+}
+```
 
 # Building
 
@@ -30,15 +50,9 @@ This project requires `gcc` and `make` by default, but should also work in other
 
 Run `make` in the root directory to build the shared library named `libToy.so` and a useable REPL named `repl.out`.
 
-# Tools
-
-Watch this space.
-
-(There's some utility functions in `repl/` that are WIP but useful.)
-
 # Documentation
 
-Watch this space.
+The contents of `docs/` is also available on the official website [toylang.com](https://toylang.com/).
 
 # License
 

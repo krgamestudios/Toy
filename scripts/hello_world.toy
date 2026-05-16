@@ -1,11 +1,12 @@
 
 
-var array = [1,2,3];
 
-print array;
-
-fn double(x: Int) { return x * 2; }
-
-array.forEach(double);
-
-print array;
+if (true) {
+	print "Who?";
+}
+else if (true) {
+	print "What?";
+}
+else {
+	print "IDK";
+}

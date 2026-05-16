@@ -57,3 +57,4 @@ TOY_API void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle);
 #define TOY_BUCKET_IDEAL (TOY_BUCKET_64KB - sizeof(Toy_Bucket))
 #endif
 
+//TODO: check for leaks when freeBucket is called, for debugging

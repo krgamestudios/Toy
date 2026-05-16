@@ -4,7 +4,7 @@ To help you start using Toy as fast as possible, here are the most useful elemen
 
 ## Keyword 'print'
 
-The `print` keyword takes one value as a parameter, which is sent to stdout by default, or can be redirected elsewhere using C.
+The `print` keyword prints a given value to stdout (or elsewhere if configured with the API).
 
 ```
 print "Hello World!";
@@ -12,7 +12,7 @@ print "Hello World!";
 
 ## Keyword 'assert'
 
-The `assert` keyword takes two values as parameters, separated by a comma. If the first value is falsy or `null`, the optional second parameter is sent to stderr by default, or can be redirected elsewhere using C. If no second parameter is provided, a generic error message is used instead.
+The `assert` keyword takes two values separated by a comma. If the first value is falsy or `null` the optional second parameter is printed to stderr (or elsewhere if configured with the API). If no second parameter is provided a generic error message is used instead.
 
 ```
 //nothing happens
@@ -24,7 +24,7 @@ assert null, "Hello world!";
 
 ## Variables and Types
 
-Variables can be declared with the `var` keyword, and can be given an optional type from the list below. If no type is specified, `Any` is used by default.
+Variables are declared with the `var` keyword with and an optional type from the list below. If no type is specified `Any` is used instead.
 
 ```
 var answer = 42;
@@ -32,31 +32,29 @@ var answer = 42;
 var question: String = "How many roads must a man walk down?";
 ```
 
-To make a variable immutable, use the `const` keyword after the type declaration. In this case, it must be assigend a value.
+To make a variable immutable put the `const` keyword after the type. If you do, it must be assigned a value.
 
 ```
-var quote: string const = "War. War never changes.";
+var quote: String const = "War. War never changes.";
 ```
 
-The types available in Toy are:
+Toy's types are:
 
 | type | name | description |
 | --- | --- | --- |
 | `Bool` | Boolean | Either `true` or `false`. |
-| `Int` | Integer | Any whole number (32-bits). |
-| `Float` | Float | A decimal number (32-bits), using floating-point arithmetic. |
-| `String` | String | A series of characters used for text processing. |
+| `Int` | Integer | Any signed whole number (32-bits). |
+| `Float` | Float | Any signed decimal number (32-bits), using floating point arithmatic. |
+| `String` | String | Normal text, effectively utf-8. |
 | `Array` | Array | A series of values stored sequentially in memory. |
-| `Table` | Table | A series key-value pairs stored in such a way that allows for fast lookups. Booleans, functions, opaques and `null` can't be used as keys. |
-| `Function` | Function | A chunk of reusable code that takes zero or more parameters, and may return a result. Functions are declared with the `fn` keyword. |
-| `Opaque` | Opaque | This value is unusable in Toy, but allows you to pass data between C bindings. |
-| `Any` | Any | The default type when nothing is specified. Theis can hold any value. |
+| `Table` | Table | A series key-value pairs stored in a hash table. Booleans, functions, opaques and `null` can't be used as keys. |
+| `Function` | Function | A chunk of reusable code that takes zero or more parameters, and may return a result. Functions are declared with the `fn` keyword, or in the API. |
+| `Opaque` | Opaque | This value is unusable in Toy, but allows you to pass data between C bindings provided with the API. |
+| `Any` | Any | The default type when nothing is specified. It can hold any value. |
 
 ## Control Flow
 
-Making a decision, or repeating a chunk of code multiple times, is essential for any general purpose language.
-
-Choosing between two options can be done with the `if-then-else` else statement. If the condition is truthy, the 'then-branch' will be executed. Otherwise, the optional 'else-branch' is executed instead.
+Making a decision, or repeating a chunk of code multiple times, is essential for any language. Choosing between multiple options can be done with the `if-then-else` statement - if the condition is truthy, the 'then-branch' will be executed. Otherwise, the optional 'else-branch' is executed instead.
 
 ```
 var answer = 42;
@@ -79,7 +77,7 @@ if (challenge == "hard") {
 //the else-branch is optional
 ```
 
-To repeat a certain action, use the `while-then` loop, which repeats the body as long as the condition is true at the beginning of each loop.
+To repeat a certain action, use the `while-then` loop, which repeats the body as long as the given condition remains true on each loop.
 
 ```
 var loops = 0;
@@ -103,7 +101,7 @@ while (true) {
 }
 ```
 
-*Note: The `for` loop is coming, eventually, but isn't vital right now.*
+*Note: The `for` loop is coming soon, and will allow for iteration over an array or table, but isn't vital right now.*
 
 ## Arrays and Tables
 
@@ -132,13 +130,13 @@ var table = ["alpha": 1, "beta": 2, "gamma": 3];
 //the 'Table' keyword can define the type, and an empty table still has a colon
 var under: Table = [:];
 
-//printing a table does NOT guarantee internal order, but the elements can be accessed with the keys.
+//printing the whole table does NOT guarantee internal order
 print table["beta"];
 ```
 
 ## Attributes
 
-Some value types, including Strings, Arrays and Tables, have "attributes" which are accessible with the dot `.` operator. These can expose internal values or components for manipulating said values.
+Some values, including Strings, Arrays and Tables, have "attributes" which are accessible with the dot `.` operator. These can expose internal values or components for manipulating said values.
 
 ```
 var string = "Hello World";
@@ -159,12 +157,13 @@ table.remove("alpha"); //table = ["beta":2,"key":4]
 var emptyTable = [:];
 ```
 
+Opaques can also be given attributes, but this requires some in-depth understanding of the API, so won't be covered here.
 
 ## Functions
 
-Functions are defined with the `fn` keyword, and follow a c-like syntax, with optional types on the parameters:
+Functions are defined with the `fn` keyword, and follow a c-like syntax, with optional types on each parameter:
 
-```
+```toy
 fn fib(n: Int) {
 	if (n < 2) return n;
 	return fib(n-1) + fib(n-2);
@@ -173,7 +172,15 @@ fn fib(n: Int) {
 print fib(12); //144
 ```
 
-## External Libraries and Extending Toy
+```toy
+fn isLeapYear(n: Int) {
+	if (n % 400 == 0) return true;
+	if (n % 100 == 0) return false;
+	return n % 4 == 0;
+}
+```
 
-Watch this space, docs for the C API are coming soon.
+## External API and Extending Toy
+
+*Note: Watch this space, docs for the C API are coming soon. For now, the [Cheat Sheet](/cheatsheet) can get you started.*
 
