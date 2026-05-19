@@ -724,7 +724,7 @@ static Toy_AstFlag invoke(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 		parsePrecedence(bucketHandle, parser, &ast, PREC_GROUP);
 
 		//add to the args aggregate (is added backwards, because weird)
-		Toy_private_emitAstAggregate(bucketHandle, &args, TOY_AST_FLAG_COLLECTION, ast);
+		Toy_private_emitAstAggregate(bucketHandle, &args, TOY_AST_FLAG_FN_ARGUMENTS, ast);
 	}
 
 	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' at the end of argument list");
@@ -902,10 +902,14 @@ static void makeContinueStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 }
 
 static void makeReturnStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
-	parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //expect an aggregate
-	Toy_private_emitAstReturn(bucketHandle, rootHandle);
-
-	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of return statement");
+	if (match(parser, TOY_TOKEN_OPERATOR_SEMICOLON)) {
+		Toy_private_emitAstReturn(bucketHandle, rootHandle);
+	}
+	else {
+		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //expect an aggregate
+		Toy_private_emitAstReturn(bucketHandle, rootHandle);
+		consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of return statement");
+	}
 }
 
 static void makePrintStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {

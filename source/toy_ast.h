@@ -76,6 +76,7 @@ typedef enum Toy_AstFlag {
 	TOY_AST_FLAG_COLLECTION = 32,
 	TOY_AST_FLAG_PAIR = 33,
 	TOY_AST_FLAG_INDEX = 34,
+	TOY_AST_FLAG_FN_ARGUMENTS = 35,
 
 	//unary flags
 	TOY_AST_FLAG_NEGATE = 40,

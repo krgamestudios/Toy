@@ -718,7 +718,7 @@ static void processAssert(Toy_VM* vm) {
 
 	//determine the args
 	if (count == 1) {
-		message = TOY_VALUE_FROM_STRING(Toy_toString(&vm->memoryBucket, "assertion failed"));
+		message = TOY_VALUE_FROM_STRING(Toy_toString(&vm->memoryBucket, "assertion failed")); //TODO: better default error message
 		value = Toy_popStack(&vm->stack);
 	}
 	else if (count == 2) {

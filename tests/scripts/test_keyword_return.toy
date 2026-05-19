@@ -1,0 +1,8 @@
+
+fn empty() { //BUG: there's an extra return in the bytecode
+	return;
+}
+
+fn full() {
+	return 42;
+}

@@ -580,6 +580,18 @@ static unsigned int writeInstructionAggregate(Toy_Bytecode** mb, Toy_AstAggregat
 
 		return 1; //leaves only 1 value on the stack
 	}
+	else if (ast.flag == TOY_AST_FLAG_FN_ARGUMENTS) {
+		//BUGFIX: invoking a function as an argument gets messy, so re-count the aggregate elements and discard 'result'
+		int count = ast.left != NULL ? 2 : 1;
+		Toy_Ast* iter = ast.right;
+
+		while (iter != NULL && iter->type == TOY_AST_AGGREGATE) {
+			iter = iter->aggregate.right;
+			count++;
+		}
+
+		return count;
+	}
 	else {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST aggregate flag found\n" TOY_CC_RESET);
 		exit(-1);
@@ -776,7 +788,7 @@ static unsigned int writeInstructionReturn(Toy_Bytecode** mb, Toy_AstReturn ast)
 	EMIT_BYTE(mb, code,0);
 	EMIT_BYTE(mb, code,0);
 
-	return 0;
+	return retCount;
 }
 
 static unsigned int writeInstructionPrint(Toy_Bytecode** mb, Toy_AstPrint ast) {
@@ -1114,7 +1126,7 @@ static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke 
 	EMIT_BYTE(mb, code, TOY_OPCODE_INVOKE);
 	EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
 	EMIT_BYTE(mb, code, (unsigned char)argCount);
-	EMIT_BYTE(mb, code, 0); //IDK how many returns
+	EMIT_BYTE(mb, code, 0); //BUG: IDK how many returns
 
 	return chainedInvoke ? 1 : 0;
 }
