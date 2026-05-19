@@ -1287,8 +1287,7 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 			break;
 
 		case TOY_AST_END:
-			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Unknown 'end'\n" TOY_CC_RESET);
-			(*mb)->panic = true;
+			//NO-OP
 			break;
 	}
 

@@ -16,7 +16,7 @@ void Toy_private_appendAstBlock(Toy_Bucket** bucketHandle, Toy_Ast* block, Toy_A
 	//first, check if we're an empty head
 	if (block->block.child == NULL) {
 		block->block.child = child;
-		return; //NOTE: first call on an empty head skips any memory allocations
+		return; //First call on an empty head skips any memory allocations
 	}
 
 	//run (or jump) until we hit the current tail

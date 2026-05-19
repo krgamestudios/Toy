@@ -11,3 +11,5 @@ assert 1 < 2;
 
 //assert with an optional message
 assert true, "Assertion message";
+
+//TODO: add mustfails

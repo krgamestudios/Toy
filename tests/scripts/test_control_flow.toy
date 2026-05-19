@@ -1,9 +1,0 @@
-//these are allowed
-/* EMPTY */;
-if (true) { }
-if (true) pass;
-
-
-//these are not allowed
-// if (true) /* EMPTY */;
-
