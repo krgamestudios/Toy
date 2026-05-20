@@ -1,10 +1,14 @@
 //WARN: This is just a scratch pad, don't use it
+//TODO: table.hasValue or table.getKeyFromValue?
+
 
 //for (var i in array) print i;
+//for (var i in table) print i;
 //for (var i in range(10)) print i;
+//for (range(10)) print "ha";
 
 
-//example of a `range` function
+//example of a `range`-like function
 fn range(limit: Int) {
 	var counter: Int = 0;
 

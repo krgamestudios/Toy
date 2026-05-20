@@ -16,6 +16,8 @@ Toy_Function* Toy_createFunctionFromCallback(Toy_Bucket** bucketHandle, Toy_nati
 
 	fn->type = TOY_FUNCTION_NATIVE;
 	fn->native.callback = callback;
+	fn->native.meta1 = 0; //BUGFIX: Workaround for native functions lacking access to a closure-like scope
+	fn->native.meta2 = 0;
 
 	return fn;
 }
@@ -23,15 +25,22 @@ Toy_Function* Toy_createFunctionFromCallback(Toy_Bucket** bucketHandle, Toy_nati
 Toy_Function* Toy_copyFunction(Toy_Bucket** bucketHandle, Toy_Function* original) {
 	Toy_Function* fn = (Toy_Function*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Function));
 
-	if (original->type == TOY_FUNCTION_CUSTOM) {
-		fn->type = original->type;
-		fn->bytecode.code = original->bytecode.code;
-		fn->bytecode.parentScope = original->bytecode.parentScope;
-		Toy_private_incrementScopeRefCount(fn->bytecode.parentScope);
-	}
-	else if (fn->type == TOY_FUNCTION_NATIVE) {
-		fn->type = original->type;
-		fn->native.callback = original->native.callback;
+	switch(original->type) {
+		case TOY_FUNCTION_CUSTOM: {
+			fn->type = original->type;
+			fn->bytecode.code = original->bytecode.code;
+			fn->bytecode.parentScope = original->bytecode.parentScope;
+			Toy_private_incrementScopeRefCount(fn->bytecode.parentScope);
+		}
+		break;
+
+		case TOY_FUNCTION_NATIVE: {
+			fn->type = original->type;
+			fn->native.callback = original->native.callback;
+			fn->native.meta1 = original->native.meta1;
+			fn->native.meta2 = original->native.meta2;
+		}
+		break;
 	}
 
 	return fn;

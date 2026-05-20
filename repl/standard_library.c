@@ -15,18 +15,21 @@ typedef struct CallbackPairs {
 } CallbackPairs;
 
 //example callbacks
-void debug(Toy_VM* vm) {
+static void answer(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)vm;
-	Toy_print("This function returns the integer '42' to the calling scope.");
+	(void)self;
+	Toy_print(TOY_CC_DEBUG "This function returns the integer '42' to the calling scope." TOY_CC_RESET);
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(42));
 }
 
-void identity(Toy_VM* vm) {
+static void identity(Toy_VM* vm, Toy_FunctionNative* self) {
 	//does nothing, but any arguements are left on the stack as results
 	(void)vm;
+	(void)self;
 }
 
-void echo(Toy_VM* vm) {
+static void echo(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
 	//pops one argument, and prints it
 	Toy_Value value = Toy_popStack(&vm->stack);
 	Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, value);
@@ -39,10 +42,49 @@ void echo(Toy_VM* vm) {
 	Toy_freeValue(value);
 }
 
+static void next(Toy_VM* vm, Toy_FunctionNative* self) {
+	//used by 'range'
+	if (self->meta2 < self->meta1) {
+		Toy_Value result = TOY_VALUE_FROM_INTEGER(self->meta2);
+		Toy_pushStack(&vm->stack, result);
+		self->meta2++;
+	}
+	else {
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+	}
+}
+
+static void range(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	//one arg to represent the number of iterations
+	Toy_Value value = Toy_popStack(&vm->stack);
+
+	//check types
+	if (!TOY_VALUE_IS_INTEGER(value)) {
+		char buffer[256];
+		snprintf(buffer, 256, "Expected Integer argument in 'range', found '%s'", Toy_getValueTypeAsCString(value.type));
+		Toy_error(buffer);
+		Toy_freeValue(value);
+		return;
+	}
+
+	//make the callback
+	Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, next);
+	fn->native.meta1 = TOY_VALUE_AS_INTEGER(value); //fake a closure
+	fn->native.meta2 = 0; //counter
+
+	Toy_Value result = TOY_VALUE_FROM_FUNCTION(fn);
+
+	Toy_pushStack(&vm->stack, result);
+}
+
+
 CallbackPairs callbackPairs[] = {
-	{"debug", debug},
-	{"identity", identity},
-	{"echo", echo},
+	{"dbg_answer", answer},
+	{"dbg_identity", identity},
+	{"dbg_echo", echo},
+	{"range", range},
 
 	{NULL, NULL},
 };

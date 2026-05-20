@@ -405,7 +405,7 @@ static void processInvoke(Toy_VM* vm) {
 
 		case TOY_FUNCTION_NATIVE: {
 			//NOTE: arguments are on the stack, leave results on the stack
-			fn->native.callback(vm);
+			fn->native.callback(vm, &fn->native);
 		}
 		break;
 

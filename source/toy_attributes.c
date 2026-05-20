@@ -45,7 +45,9 @@ Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy
 	}
 }
 
-static void attr_arrayPushBack(Toy_VM* vm) {
+static void attr_arrayPushBack(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
 	Toy_Value compound = Toy_popStack(&vm->stack);
 	Toy_Value element = Toy_popStack(&vm->stack);
 
@@ -69,7 +71,9 @@ static void attr_arrayPushBack(Toy_VM* vm) {
 	array->count++;
 }
 
-static void attr_arrayPopBack(Toy_VM* vm) {
+static void attr_arrayPopBack(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
 	Toy_Value compound = Toy_popStack(&vm->stack);
 
 	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
@@ -86,7 +90,9 @@ static void attr_arrayPopBack(Toy_VM* vm) {
 	Toy_pushStack(&vm->stack, element);
 }
 
-static void attr_arrayForEach(Toy_VM* vm) {
+static void attr_arrayForEach(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
 	Toy_Value compound = Toy_popStack(&vm->stack);
 	Toy_Value callback = Toy_popStack(&vm->stack);
 
@@ -133,7 +139,7 @@ static void attr_arrayForEach(Toy_VM* vm) {
 			for (unsigned int iterator = 0; iterator < array->count; iterator++) {
 				Toy_pushStack(&subVM.stack, Toy_copyValue(&subVM.memoryBucket, array->data[iterator]));
 
-				fn->native.callback(&subVM); //NOTE: try not to leave anything on the stack afterwards
+				fn->native.callback(&subVM, &fn->native); //NOTE: try not to leave anything on the stack afterwards
 			}
 		}
 		break;
@@ -147,8 +153,10 @@ static void attr_arrayForEach(Toy_VM* vm) {
 	Toy_freeVM(&subVM);
 }
 
-static void attr_arraySort(Toy_VM* vm) {
+static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)vm;
+	(void)self;
+
 	//URGENT: attr_arraySort
 }
 
@@ -180,7 +188,9 @@ Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 	}
 }
 
-static void attr_tableInsert(Toy_VM* vm) {
+static void attr_tableInsert(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
 	Toy_Value compound = Toy_popStack(&vm->stack);
 	Toy_Value value = Toy_popStack(&vm->stack); //NOTE: the args are still backwards, except compound
 	Toy_Value key = Toy_popStack(&vm->stack);
@@ -202,7 +212,9 @@ static void attr_tableInsert(Toy_VM* vm) {
 	}
 }
 
-static void attr_tableHasKey(Toy_VM* vm) {
+static void attr_tableHasKey(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
 	Toy_Value compound = Toy_popStack(&vm->stack);
 	Toy_Value key = Toy_popStack(&vm->stack);
 
@@ -214,7 +226,9 @@ static void attr_tableHasKey(Toy_VM* vm) {
 	Toy_pushStack(&vm->stack, result);
 }
 
-static void attr_tableRemove(Toy_VM* vm) {
+static void attr_tableRemove(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
 	Toy_Value compound = Toy_popStack(&vm->stack);
 	Toy_Value key = Toy_popStack(&vm->stack);
 
@@ -223,8 +237,10 @@ static void attr_tableRemove(Toy_VM* vm) {
 	Toy_removeTable(&table, key);
 }
 
-static void attr_tableForEach(Toy_VM* vm) {
+static void attr_tableForEach(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)vm;
+	(void)self;
+
 	//URGENT: attr_tableForEach
 }
 

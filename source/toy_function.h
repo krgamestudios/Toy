@@ -7,7 +7,9 @@
 
 //forward declare
 struct Toy_VM;
-typedef void (*Toy_nativeCallback)(struct Toy_VM*);
+struct Toy_FunctionNative;
+
+typedef void (*Toy_nativeCallback)(struct Toy_VM*, struct Toy_FunctionNative* self);
 
 typedef enum Toy_FunctionType {
 	TOY_FUNCTION_CUSTOM,
@@ -23,6 +25,8 @@ typedef struct Toy_FunctionBytecode {
 typedef struct Toy_FunctionNative {
 	Toy_FunctionType type;
 	Toy_nativeCallback callback;
+	int meta1;
+	int meta2;
 } Toy_FunctionNative;
 
 typedef union Toy_Function_t {
