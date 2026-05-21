@@ -122,6 +122,7 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 static Toy_AstFlag unaryPostfix(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag invoke(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag attribute(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
+static Toy_AstFlag iterable(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 
 //precedence definitions
 static ParsingTuple parsingRulesetTable[] = {
@@ -156,7 +157,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_FUNCTION,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_IF,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_IMPORT,
-	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_IN,
+	{PREC_CALL,NULL,iterable},// TOY_TOKEN_KEYWORD_IN,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_OF,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_PASS,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_PRINT,
@@ -760,6 +761,19 @@ static Toy_AstFlag attribute(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 	}
 }
 
+static Toy_AstFlag iterable(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	//infix must advance
+	advance(parser);
+
+	Toy_Ast* expr = NULL;
+	parsePrecedence(bucketHandle, parser, &expr, PREC_CALL);
+	Toy_private_emitAstIterable(bucketHandle, rootHandle, expr);
+
+	//TODO: check for var declare without assignment
+
+	return TOY_AST_FLAG_NONE;
+}
+
 //grammar rules
 static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle, ParsingPrecedence precRule) {
 	//'step over' the token to parse
@@ -865,7 +879,7 @@ static void makeIfThenElseStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, To
 	makeExpr(bucketHandle, parser, &condBranch);
 	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'if' condition");
 
-	// { thenBranch }
+	//{ thenBranch }
 	makeDeclarationStmt(bucketHandle, parser, &thenBranch, true);
 
 	//else { elseBranch }
@@ -885,10 +899,27 @@ static void makeWhileStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 	makeExpr(bucketHandle, parser, &condBranch);
 	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'while' condition");
 
-	// { thenBranch }
+	//{ thenBranch }
 	makeDeclarationStmt(bucketHandle, parser, &thenBranch, true);
 
 	Toy_private_emitAstWhileThen(bucketHandle, rootHandle, condBranch, thenBranch);
+}
+
+static void makeForStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	Toy_Ast* condBranch = NULL;
+	Toy_Ast* thenBranch = NULL;
+
+	//for (condBranch)
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_LEFT, "Expected '(' after 'for' keyword");
+	makeExpr(bucketHandle, parser, &condBranch);
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'for' condition");
+
+	//TODO: check for an iterable node
+
+	//{ thenBranch }
+	makeDeclarationStmt(bucketHandle, parser, &thenBranch, true);
+
+	Toy_private_emitAstForThen(bucketHandle, rootHandle, condBranch, thenBranch);
 }
 
 static void makeBreakStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
@@ -1070,7 +1101,11 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//URGENT: for-pre-clause-post-then
+	//for
+	else if (match(parser, TOY_TOKEN_KEYWORD_FOR)) {
+		makeForStmt(bucketHandle, parser, rootHandle);
+		return;
+	}
 
 	//break
 	else if (match(parser, TOY_TOKEN_KEYWORD_BREAK)) {

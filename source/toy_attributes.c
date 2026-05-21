@@ -91,6 +91,7 @@ static void attr_arrayPopBack(Toy_VM* vm, Toy_FunctionNative* self) {
 }
 
 static void attr_arrayForEach(Toy_VM* vm, Toy_FunctionNative* self) {
+	//URGENT: replace with for-loop
 	(void)self;
 
 	Toy_Value compound = Toy_popStack(&vm->stack);
@@ -241,7 +242,7 @@ static void attr_tableForEach(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)vm;
 	(void)self;
 
-	//URGENT: attr_tableForEach
+	//URGENT: replace with for-loop
 }
 
 Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {

@@ -718,6 +718,15 @@ static unsigned int writeInstructionWhileThen(Toy_Bytecode** mb, Toy_AstWhileThe
 	return 0;
 }
 
+static unsigned int writeInstructionForThen(Toy_Bytecode** mb, Toy_AstForThen ast) {
+	//URGENT: WIP
+	(void)mb;
+	(void)ast;
+
+	(*mb)->panic = true;
+	return 1;
+}
+
 static unsigned int writeInstructionBreak(Toy_Bytecode** mb, Toy_AstBreak ast) {
 	//unused
 	(void)ast;
@@ -1244,6 +1253,10 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 			result += writeInstructionWhileThen(mb, ast->whileThen);
 			break;
 
+		case TOY_AST_FOR_THEN:
+			result += writeInstructionForThen(mb, ast->forThen);
+			break;
+
 		case TOY_AST_BREAK:
 			result += writeInstructionBreak(mb, ast->breakPoint);
 			break;
@@ -1282,6 +1295,12 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 
 		case TOY_AST_ATTRIBUTE:
 			result += writeInstructionAttribute(mb, ast->attribute);
+			break;
+
+		case TOY_AST_ITERABLE:
+			//the 'in' keyword is only valid within a for-loop's condition
+			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: the 'in' keyword is only valid within a for-loop's condition\n" TOY_CC_RESET);
+			(*mb)->panic = true;
 			break;
 
 		case TOY_AST_STACK_POP:

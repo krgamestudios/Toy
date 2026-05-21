@@ -1060,6 +1060,7 @@ static unsigned int process(Toy_VM* vm) {
 				processIndex(vm);
 				break;
 
+			case TOY_OPCODE_ITERABLE: //tmp
 			case TOY_OPCODE_UNUSED:
 			case TOY_OPCODE_PASS:
 			case TOY_OPCODE_ERROR:

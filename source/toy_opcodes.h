@@ -12,6 +12,7 @@ typedef enum Toy_OpcodeType {
 	TOY_OPCODE_ACCESS,
 	TOY_OPCODE_INVOKE, //for calling functions
 	TOY_OPCODE_ATTRIBUTE, //for accessing parts of compounds
+	TOY_OPCODE_ITERABLE, //for operating on all members of a compound
 	TOY_OPCODE_DUPLICATE, //duplicate the top of the stack
 	TOY_OPCODE_ELIMINATE, //remove the top of the stack
 
