@@ -289,7 +289,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 8;
 
 		case TOY_OPCODE_ESCAPE:
-			printf(MARKER  TOY_CC_DEBUG "ESCAPE relative %s%d (GOTO %u) and pop %d\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
+			printf(MARKER  TOY_CC_DEBUG "ESCAPE relative %s%d (GOTO %u) and pop %d scopes\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
 				(*(int*)(bytecode + pc + 4)) > 0 ? "+" : "", //show a + sign when positive
 				(*(int*)(bytecode + pc + 4)),
 				(*(int*)(bytecode + pc + 4)) + pc + 12,

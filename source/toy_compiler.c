@@ -784,6 +784,41 @@ static unsigned int writeInstructionForThen(Toy_Bytecode** mb, Toy_AstForThen as
 	//end of the loop, overwrite the parameter
 	OVERWRITE_INT(mb, code, thenParamAddr, CURRENT_ADDRESS(mb, code) - (thenParamAddr + 4));
 
+	//set the break & continue data
+	while ((*mb)->breakEscapes->count > 0) {
+		//extract
+		unsigned int addr = (*mb)->breakEscapes->data[(*mb)->breakEscapes->count - 1].addr;
+		unsigned int depth = (*mb)->breakEscapes->data[(*mb)->breakEscapes->count - 1].depth;
+
+		unsigned int diff = depth - (*mb)->currentScopeDepth;
+
+		OVERWRITE_INT(mb, code, addr, CURRENT_ADDRESS(mb, code) - (addr + 8)); //tell break to come here AFTER reading the instruction
+		OVERWRITE_INT(mb, code, addr, diff);
+
+		//tick down
+		(*mb)->breakEscapes->count--;
+	}
+
+	while ((*mb)->continueEscapes->count > 0) {
+		//extract
+		unsigned int addr = (*mb)->continueEscapes->data[(*mb)->continueEscapes->count - 1].addr;
+		unsigned int depth = (*mb)->continueEscapes->data[(*mb)->continueEscapes->count - 1].depth;
+
+		unsigned int diff = depth - (*mb)->currentScopeDepth;
+
+		OVERWRITE_INT(mb, code, addr, beginAddr - (addr + 8)); //tell continue to return to the start AFTER reading the instruction
+		OVERWRITE_INT(mb, code, addr, diff);
+
+		//tick down
+		(*mb)->continueEscapes->count--;
+	}
+
+	//eliminate the value & counter from within the bytecode, so they're cleaned up after breaks
+	EMIT_BYTE(mb, code,TOY_OPCODE_ELIMINATE);
+	EMIT_BYTE(mb, code, 2);
+	EMIT_BYTE(mb, code, 0);
+	EMIT_BYTE(mb, code, 0);
+
 	return 0;
 }
 

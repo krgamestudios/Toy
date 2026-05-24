@@ -499,9 +499,11 @@ static void processIterate(Toy_VM* vm) {
 
 		//check out-of-bounds
 		if (index >= array->count) {
-			Toy_freeValue(counter);
-			Toy_freeValue(compound);
-			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL()); //force a jump
+			//DON'T free the iterable & counter, that's embedded in the bytecode
+			Toy_pushStack(&vm->stack, compound);
+			Toy_pushStack(&vm->stack, counter);
+			//force a jump then exit
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			processJump(vm);
 			return;
 		}

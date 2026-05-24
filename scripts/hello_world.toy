@@ -1,10 +1,10 @@
 
 
-var array = ["foo", "bar"];
+var array = ["foo", "bar", "buzz", "fizz"];
 
 for (var i in array) {
+	if (i == "buzz") break; //use break or continue
 	print i;
-	break;
 }
 
 print "done";
