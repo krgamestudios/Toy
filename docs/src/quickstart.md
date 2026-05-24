@@ -101,7 +101,17 @@ while (true) {
 }
 ```
 
-*Note: The `for` loop is coming soon, and will allow for iteration over an array or table, but isn't vital right now.*
+*Note: The `for` loop is underway, and will allow for iteration over an arrays, tables, and maybe functions.*
+
+```
+//arrays do currently work with for-loops
+var array = ["foo", "bar", "buzz", "fizz"];
+
+for (var i in array) {
+    if (i == "buzz") break; //supports break or continue
+    print i;
+}
+```
 
 ## Arrays and Tables
 
