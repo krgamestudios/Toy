@@ -482,6 +482,7 @@ static void processEliminate(Toy_VM* vm) {
 }
 
 static void processIterate(Toy_VM* vm) {
+	//URGENT: finish this
 	//ITERATE on [-2] based on type, with [-1] as counter
 	//then delegate to processJump
 
