@@ -139,7 +139,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 27)) != 0 ||
 
 			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 29)) != 0 ||
+			*((unsigned char*)(buffer + 29)) != 1 ||
 			*((unsigned char*)(buffer + 30)) != 0 ||
 			*((unsigned char*)(buffer + 31)) != 0 ||
 
@@ -197,7 +197,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 27)) != 0 ||
 
 			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 29)) != 0 ||
+			*((unsigned char*)(buffer + 29)) != 1 ||
 			*((unsigned char*)(buffer + 30)) != 0 ||
 			*((unsigned char*)(buffer + 31)) != 0 ||
 
@@ -257,7 +257,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*(int*)(buffer + 28) != 42 ||
 
 			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 33)) != 0 ||
+			*((unsigned char*)(buffer + 33)) != 1 ||
 			*((unsigned char*)(buffer + 34)) != 0 ||
 			*((unsigned char*)(buffer + 35)) != 0 ||
 
@@ -317,7 +317,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*(float*)(buffer + 28) != 3.1415f ||
 
 			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 33)) != 0 ||
+			*((unsigned char*)(buffer + 33)) != 1 ||
 			*((unsigned char*)(buffer + 34)) != 0 ||
 			*((unsigned char*)(buffer + 35)) != 0 ||
 
@@ -389,7 +389,7 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			*(unsigned int*)(code + 4) != 0 || //the jump index
 
 			*((unsigned char*)(code + 8)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(code + 9)) != 0 ||
+			*((unsigned char*)(code + 9)) != 1 ||
 			*((unsigned char*)(code + 10)) != 0 ||
 			*((unsigned char*)(code + 11)) != 0 ||
 
@@ -499,7 +499,7 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 43)) != 0 ||
 
 			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 45)) != 0 ||
+			*((unsigned char*)(buffer + 45)) != 1 ||
 			*((unsigned char*)(buffer + 46)) != 0 ||
 			*((unsigned char*)(buffer + 47)) != 0 ||
 
@@ -569,7 +569,7 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 43)) != 0 ||
 
 			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 45)) != 0 ||
+			*((unsigned char*)(buffer + 45)) != 1 ||
 			*((unsigned char*)(buffer + 46)) != 0 ||
 			*((unsigned char*)(buffer + 47)) != 0 ||
 
@@ -639,7 +639,7 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 43)) != 0 ||
 
 			*((unsigned char*)(buffer + 44)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 45)) != 0 ||
+			*((unsigned char*)(buffer + 45)) != 1 ||
 			*((unsigned char*)(buffer + 46)) != 0 ||
 			*((unsigned char*)(buffer + 47)) != 0 ||
 
@@ -735,7 +735,7 @@ int test_compiler_binary(Toy_Bucket** bucketHandle) {
 			*((unsigned char*)(buffer + 67)) != 0 ||
 
 			*((unsigned char*)(buffer + 68)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 69)) != 0 ||
+			*((unsigned char*)(buffer + 69)) != 1 ||
 			*((unsigned char*)(buffer + 70)) != 0 ||
 			*((unsigned char*)(buffer + 71)) != 0 ||
 

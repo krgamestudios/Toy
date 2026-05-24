@@ -122,7 +122,6 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 static Toy_AstFlag unaryPostfix(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag invoke(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 static Toy_AstFlag attribute(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
-static Toy_AstFlag iterable(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle);
 
 //precedence definitions
 static ParsingTuple parsingRulesetTable[] = {
@@ -157,7 +156,7 @@ static ParsingTuple parsingRulesetTable[] = {
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_FUNCTION,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_IF,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_IMPORT,
-	{PREC_CALL,NULL,iterable},// TOY_TOKEN_KEYWORD_IN,
+	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_IN,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_OF,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_PASS,
 	{PREC_NONE,NULL,NULL},// TOY_TOKEN_KEYWORD_PRINT,
@@ -761,19 +760,6 @@ static Toy_AstFlag attribute(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 	}
 }
 
-static Toy_AstFlag iterable(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
-	//infix must advance
-	advance(parser);
-
-	Toy_Ast* expr = NULL;
-	parsePrecedence(bucketHandle, parser, &expr, PREC_CALL);
-	Toy_private_emitAstIterable(bucketHandle, rootHandle, expr);
-
-	//TODO: check for var declare without assignment
-
-	return TOY_AST_FLAG_NONE;
-}
-
 //grammar rules
 static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle, ParsingPrecedence precRule) {
 	//'step over' the token to parse
@@ -785,7 +771,7 @@ static void parsePrecedence(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 	if (prefix == NULL) {
 		//make a nice error message
 		if (Toy_private_findKeywordByType(parser->previous.type)) {
-			printError(parser, parser->previous, "Found reserved keyword instead");
+			printError(parser, parser->previous, "Expected expression, found reserved keyword instead");
 		}
 		else {
 			printError(parser, parser->previous, "Expected expression");
@@ -906,20 +892,52 @@ static void makeWhileStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 }
 
 static void makeForStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	Toy_Ast* declBranch = NULL;
 	Toy_Ast* condBranch = NULL;
 	Toy_Ast* thenBranch = NULL;
 
 	//for (condBranch)
 	consume(parser, TOY_TOKEN_OPERATOR_PAREN_LEFT, "Expected '(' after 'for' keyword");
-	makeExpr(bucketHandle, parser, &condBranch);
-	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'for' condition");
+	consume(parser, TOY_TOKEN_KEYWORD_VAR, "Expected 'var' in 'for' conditional");
 
-	//TODO: check for an iterable node
+	//WARN: duped from var declare
+	consume(parser, TOY_TOKEN_NAME, "Expected variable name after 'var' keyword");
+
+	if (parser->previous.length > 255) {
+		printError(parser, parser->previous, "Can't have a variable name longer than 255 characters");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return;
+	}
+
+	Toy_Token nameToken = parser->previous;
+
+	//read the type specifier if present
+	Toy_ValueType varType = TOY_VALUE_ANY;
+	bool constant = false;
+
+	if (match(parser, TOY_TOKEN_OPERATOR_COLON)) {
+		varType = readType(parser);
+		if (match(parser, TOY_TOKEN_KEYWORD_CONST)) {
+			constant = true;
+		}
+	}
+
+	//build the name string & emit a var declare
+	Toy_String* nameStr = Toy_toStringLength(bucketHandle, nameToken.lexeme, nameToken.length);
+	Toy_private_emitAstVariableDeclaration(bucketHandle, &declBranch, nameStr, varType, constant, NULL);
+
+	//continue to the 'in' keyword
+	consume(parser, TOY_TOKEN_KEYWORD_IN, "Expected 'in' inside 'for' condition");
+	parsePrecedence(bucketHandle, parser, &condBranch, PREC_CALL);
+
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'for' condition");
 
 	//{ thenBranch }
 	makeDeclarationStmt(bucketHandle, parser, &thenBranch, true);
 
-	Toy_private_emitAstForThen(bucketHandle, rootHandle, condBranch, thenBranch);
+	//finalize everything
+	Toy_private_emitAstIterable(bucketHandle, &declBranch, condBranch);
+	Toy_private_emitAstForThen(bucketHandle, rootHandle, declBranch, thenBranch);
 }
 
 static void makeBreakStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
@@ -1125,7 +1143,7 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//TODO: import
+	//import?
 
 	//print
 	else if (match(parser, TOY_TOKEN_KEYWORD_PRINT)) {

@@ -1,12 +1,10 @@
 
 
+var array = ["foo", "bar"];
 
-fn a(x) {
-	print x;
+for (var i in array) {
+	print i;
+	break;
 }
 
-fn b() {
-	return 42;
-}
-
-a(b(), b());
+print "done";

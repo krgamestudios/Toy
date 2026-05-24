@@ -1,0 +1,23 @@
+
+
+```toy
+for (var name in array) {
+	//
+}
+```
+
+
+pushStack name
+pushStack array
+pushStack counter //tracks the index for each loop
+
+OPCODE iterable:
+	pushScope
+	declare name = array.next() if next is not null else jump to end
+	
+	(user code)
+
+	popScope
+	jump to beginning
+
+popStack counter, array, name

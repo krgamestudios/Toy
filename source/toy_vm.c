@@ -33,6 +33,9 @@ static inline void fixAlignment(Toy_VM* vm) {
 	vm->programCounter = (vm->programCounter + 3) & ~3;
 }
 
+//forward declarations for delegations
+static void processJump(Toy_VM* vm);
+
 //instruction handlers
 static void processRead(Toy_VM* vm) {
 	Toy_ValueType type = READ_BYTE(vm);
@@ -470,9 +473,51 @@ static void processDuplicate(Toy_VM* vm) {
 }
 
 static void processEliminate(Toy_VM* vm) {
-	//discard the stack top
-	Toy_Value value = Toy_popStack(&vm->stack);
-	Toy_freeValue(value);
+	//discard the stack top, X times
+	unsigned int x = (unsigned int)READ_BYTE(vm);
+	for (unsigned int i = 0; i < x; i++) {
+		Toy_Value value = Toy_popStack(&vm->stack);
+		Toy_freeValue(value);
+	}
+}
+
+static void processIterate(Toy_VM* vm) {
+	//ITERATE on [-2] based on type, with [-1] as counter
+	//then delegate to processJump
+
+	Toy_Value counter = Toy_popStack(&vm->stack);
+	Toy_Value compound = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_INTEGER(counter)) {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown counter type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(counter.type));
+		exit(-1);
+	}
+
+	if (TOY_VALUE_IS_ARRAY(compound)) {
+		Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
+		unsigned int index = (unsigned int)TOY_VALUE_AS_INTEGER(counter);
+
+		//check out-of-bounds
+		if (index >= array->count) {
+			Toy_freeValue(counter);
+			Toy_freeValue(compound);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL()); //force a jump
+			processJump(vm);
+			return;
+		}
+
+		//get the desired element
+		Toy_Value value = Toy_copyValue(&vm->memoryBucket, array->data[index]);
+
+		//push everything back onto the stack (iterating the counter)
+		Toy_pushStack(&vm->stack, compound);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(index + 1));
+		Toy_pushStack(&vm->stack, value);
+	}
+	else {
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown iterable type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(compound.type));
+		exit(-1);
+	}
 }
 
 static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
@@ -675,6 +720,17 @@ static void processJump(Toy_VM* vm) {
 		case TOY_OP_PARAM_JUMP_IF_FALSE: {
 			Toy_Value value = Toy_popStack(&vm->stack);
 			if (Toy_checkValueIsTruthy(value) != true) {
+				Toy_freeValue(value);
+				break;
+			}
+
+			Toy_freeValue(value);
+			return;
+		}
+
+		case TOY_OP_PARAM_JUMP_IF_NULL: {
+			Toy_Value value = Toy_popStack(&vm->stack);
+			if (TOY_VALUE_IS_NULL(value)) {
 				Toy_freeValue(value);
 				break;
 			}
@@ -997,6 +1053,10 @@ static unsigned int process(Toy_VM* vm) {
 				processEliminate(vm);
 				break;
 
+			case TOY_OPCODE_ITERATE:
+				processIterate(vm);
+				break;
+
 			//arithmetic instructions
 			case TOY_OPCODE_ADD:
 			case TOY_OPCODE_SUBTRACT:
@@ -1060,7 +1120,6 @@ static unsigned int process(Toy_VM* vm) {
 				processIndex(vm);
 				break;
 
-			case TOY_OPCODE_ITERABLE: //tmp
 			case TOY_OPCODE_UNUSED:
 			case TOY_OPCODE_PASS:
 			case TOY_OPCODE_ERROR:
