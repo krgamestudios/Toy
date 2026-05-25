@@ -517,6 +517,34 @@ static void processIterate(Toy_VM* vm) {
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(index + 1));
 		Toy_pushStack(&vm->stack, value);
 	}
+	else if (TOY_VALUE_IS_TABLE(compound)) {
+		Toy_Table* table = TOY_VALUE_AS_TABLE(compound);
+		unsigned int index = (unsigned int)TOY_VALUE_AS_INTEGER(counter);
+
+		//loop to the next element
+		while(index < table->capacity) {
+			//is this a useable element
+			if (!TOY_VALUE_IS_NULL(table->data[index].key)) {
+				break;
+			}
+
+			index++;
+		}
+
+		//return the compound & counter to the stack
+		Toy_pushStack(&vm->stack, compound);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(index + 1));
+
+		//if something was found, push it and return
+		if (index < table->capacity) {
+			Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, table->data[index].value));
+		}
+		else {
+			//otherwise force a jump then exit
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+			processJump(vm);
+		}
+	}
 	else {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown iterable type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(Toy_unwrapValue(compound).type));
 		exit(-1);
