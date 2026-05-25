@@ -763,6 +763,7 @@ static unsigned int writeInstructionForThen(Toy_Bytecode** mb, Toy_AstForThen as
 
 	emitString(mb, ast.condBranch->iterable.left->varDeclare.name);
 
+	//TODO: use a different approach
 	//BUGFIX: shadow the iterable's name
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
 	EMIT_BYTE(mb, code, TOY_VALUE_NULL);
