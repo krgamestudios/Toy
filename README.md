@@ -6,7 +6,7 @@
 
 The Toy Programming Language is an imperative, bytecode-interpreted, embeddable scripting language. Rather than functioning independently, it serves as part of another program, the "host". This design allows for straightforward customization by both the host's developers and end users, achieved by exposing program logic through external scripts.
 
-This repository holds the reference implementation for Toy version 2.x, written in C - alpha testing is currently underway.
+This repository holds the reference implementation for Toy version 2.x, written in C - open beta is currently underway.
 
 # Nifty Features
 
@@ -60,6 +60,13 @@ This source code is covered by the Zlib license (see [LICENSE](LICENSE) for deta
 
 # Contributors and Special Thanks
 
+<p align="center">
+	<image src="noai.png" alt="No AI" width="200px" />
+</p>
+
+Contributions via the [GitHub mirror](https://github.com/krgamestudios/Toy) are welcome, but absolutely no AI contributions will be accepted.
+
+"No AI" logo by [Suyash Dwivedi, via wikimedia, CC BY-SA 4.0](https://commons.wikimedia.org/w/index.php?curid=165477595)  
 @NishiOwO - Unofficial NetBSD support  
 @Gipson62 - v1 docs spell checking  
 @8051Enthusiast - `fixAlignment()` trick  
@@ -70,6 +77,6 @@ This source code is covered by the Zlib license (see [LICENSE](LICENSE) for deta
 Various Anons - Feedback  
 @munificent - For [writing the book](http://craftinginterpreters.com/) that sparked my interest in langdev  
 
-# Patreon Supporters
+# Financial Supporters
 
-You can show your support and be listed here by joining my [Patreon](https://patreon.com/krgamestudios).
+You can show your support and be listed here by joining my [Patreon](https://patreon.com/krgamestudios), or buying me a coffee at [ko-fi](https://ko-fi.com/krgamestudios).
