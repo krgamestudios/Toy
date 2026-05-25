@@ -1,10 +1,7 @@
 
 
-var array = ["foo", "bar", "buzz", "fizz"];
+var table = ["alpha": 1, "beta": 2];
 
-for (var i in array) {
-	if (i == "buzz") break; //use break or continue
+for (var i in table) {
 	print i;
 }
-
-print "done";

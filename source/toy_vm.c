@@ -150,7 +150,7 @@ static void processRead(Toy_VM* vm) {
 			unsigned int addr = (unsigned int)READ_INT(vm);
 
 			//create and push the function value
-			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr, vm->scope); //BUG: functions don't have the jumps indirection?
+			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr, vm->scope); //BUG: functions don't have the jumpTable indirection?
 			value = TOY_VALUE_FROM_FUNCTION(function);
 
 			break;
@@ -442,7 +442,7 @@ static void processAttribute(Toy_VM* vm) {
 	}
 	else {
 		char buffer[256];
-		snprintf(buffer, 256, "Can't access an attribute of type '%s'", Toy_getValueTypeAsCString(compound.type));
+		snprintf(buffer, 256, "Can't access an attribute of type '%s'", Toy_getValueTypeAsCString(Toy_unwrapValue(compound).type));
 		Toy_error(buffer);
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
@@ -490,7 +490,7 @@ static void processIterate(Toy_VM* vm) {
 	Toy_Value compound = Toy_popStack(&vm->stack);
 
 	if (!TOY_VALUE_IS_INTEGER(counter)) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown counter type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(counter.type));
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown counter type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(Toy_unwrapValue(counter).type));
 		exit(-1);
 	}
 
@@ -518,7 +518,7 @@ static void processIterate(Toy_VM* vm) {
 		Toy_pushStack(&vm->stack, value);
 	}
 	else {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown iterable type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(compound.type));
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown iterable type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(Toy_unwrapValue(compound).type));
 		exit(-1);
 	}
 }
@@ -530,7 +530,7 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 	//check types
 	if ((!TOY_VALUE_IS_INTEGER(left) && !TOY_VALUE_IS_FLOAT(left)) || (!TOY_VALUE_IS_INTEGER(right) && !TOY_VALUE_IS_FLOAT(right))) {
 		char buffer[256];
-		snprintf(buffer, 256, "Invalid types '%s' and '%s' passed in arithmetic", Toy_getValueTypeAsCString(left.type), Toy_getValueTypeAsCString(right.type));
+		snprintf(buffer, 256, "Invalid types '%s' and '%s' passed in arithmetic", Toy_getValueTypeAsCString(Toy_unwrapValue(left).type), Toy_getValueTypeAsCString(Toy_unwrapValue(right).type));
 		Toy_error(buffer);
 
 		Toy_freeValue(left);
@@ -624,7 +624,7 @@ static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
 
 	if (Toy_checkValuesAreComparable(left, right) != true) {
 		char buffer[256];
-		snprintf(buffer, 256, "Can't compare value types '%s' and '%s'", Toy_getValueTypeAsCString(left.type), Toy_getValueTypeAsCString(right.type));
+		snprintf(buffer, 256, "Can't compare value types '%s' and '%s'", Toy_getValueTypeAsCString(Toy_unwrapValue(left).type), Toy_getValueTypeAsCString(Toy_unwrapValue(right).type));
 		Toy_error(buffer);
 
 		Toy_freeValue(left);
@@ -1002,7 +1002,7 @@ static void processIndex(Toy_VM* vm) {
 	}
 
 	else {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown value type '%s' found in processIndex, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(value.type));
+		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown value type '%s' found in processIndex, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(Toy_unwrapValue(value).type));
 		exit(-1);
 	}
 
