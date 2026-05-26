@@ -169,8 +169,8 @@ static unsigned int emitString(Toy_Bytecode** mb, Toy_String* str) {
 	}
 
 	//mark the position within the jump index, reusing an existing entry if it exists
-	for (unsigned int i = 0; i < (*mb)->jumpsCount; i++) {
-		if ((*mb)->jumps[i] == dataAddr) {
+	for (unsigned int i = 0; i < (*mb)->jumpsCount; i += 4) {
+		if (*(unsigned int*)((*mb)->jumps + i) == dataAddr) {
 			//reuse, and finish
 			EMIT_INT(mb, code, i);
 			return 1;
@@ -206,8 +206,8 @@ static unsigned int emitParameters(Toy_Bytecode* mb, Toy_Ast* ast) {
 	unsigned int dataAddr = emitCStringToData(&(mb->data), &(mb->dataCapacity), &(mb->dataCount), buffer);
 
 	//check the param index for that entry i.e. don't reuse parameter names
-	for (unsigned int i = 0; i < mb->paramCount; i++) {
-		if (mb->param[i] == dataAddr) {
+	for (unsigned int i = 0; i < mb->paramCount; i+=4) {
+		if (*(unsigned int*)(mb->param + i) == dataAddr) {
 			//not allowed
 			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Function parameters must have unique names\n" TOY_CC_RESET);
 			mb->panic = true;
