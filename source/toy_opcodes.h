@@ -22,6 +22,7 @@ typedef enum Toy_OpcodeType {
 	TOY_OPCODE_MULTIPLY,
 	TOY_OPCODE_DIVIDE,
 	TOY_OPCODE_MODULO,
+	TOY_OPCODE_INVERT, //negative numbers
 
 	//comparison instructions
 	TOY_OPCODE_COMPARE_EQUAL,

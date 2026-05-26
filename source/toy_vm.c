@@ -554,6 +554,25 @@ static void processIterate(Toy_VM* vm) {
 }
 
 static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
+	//BUGFIX: handle negative variables
+	if (opcode == TOY_OPCODE_INVERT) {
+		Toy_Value value = Toy_popStack(&vm->stack);
+		if (TOY_VALUE_IS_INTEGER(value)) {
+			int intermediate = TOY_VALUE_AS_INTEGER(value);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(-intermediate));
+		}
+		else if (TOY_VALUE_IS_FLOAT(value)) {
+			float intermediate = TOY_VALUE_AS_FLOAT(value);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_FLOAT(-intermediate));
+		}
+		else {
+			Toy_error("Can't negate a non-number");
+			Toy_freeValue(value);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		}
+		return;
+	}
+
 	Toy_Value right = Toy_popStack(&vm->stack);
 	Toy_Value left = Toy_popStack(&vm->stack);
 
@@ -1096,6 +1115,7 @@ static unsigned int process(Toy_VM* vm) {
 			case TOY_OPCODE_MULTIPLY:
 			case TOY_OPCODE_DIVIDE:
 			case TOY_OPCODE_MODULO:
+			case TOY_OPCODE_INVERT:
 				processArithmetic(vm, opcode);
 				break;
 

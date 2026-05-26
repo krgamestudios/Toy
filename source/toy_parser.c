@@ -417,7 +417,7 @@ static Toy_AstFlag unary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast*
 		}
 		else {
 			//actually emit the negation node
-			Toy_private_emitAstUnary(bucketHandle, rootHandle, TOY_AST_FLAG_NEGATE);
+			Toy_private_emitAstUnary(bucketHandle, rootHandle, TOY_AST_FLAG_INVERT);
 		}
 	}
 

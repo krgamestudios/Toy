@@ -377,6 +377,17 @@ static unsigned int writeInstructionUnary(Toy_Bytecode** mb, Toy_AstUnary ast) {
 		result = 1;
 	}
 
+	else if (ast.flag == TOY_AST_FLAG_INVERT) {
+		result = writeBytecodeFromAst(mb, ast.child);
+
+		EMIT_BYTE(mb, code, TOY_OPCODE_INVERT);
+
+		//4-byte alignment
+		EMIT_BYTE(mb, code, 0);
+		EMIT_BYTE(mb, code, 0);
+		EMIT_BYTE(mb, code, 0);
+	}
+
 	else {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST unary flag found\n" TOY_CC_RESET);
 		exit(-1);

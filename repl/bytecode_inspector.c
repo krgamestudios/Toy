@@ -233,6 +233,10 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			printf(MARKER "MODULO %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
 			return 4;
 
+		case TOY_OPCODE_INVERT:
+			printf(MARKER "INVERT\n", MARKER_VALUE(pc, unsigned char));
+			return 4;
+
 		case TOY_OPCODE_COMPARE_EQUAL:
 			printf(MARKER "COMPARE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] != TOY_OPCODE_NEGATE ? "==" : "!=");
 			return 4;
