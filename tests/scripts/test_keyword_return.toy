@@ -1,8 +1,12 @@
 
-fn empty() { //BUG: there's an extra return in the bytecode
+fn empty() {
+	//
+}
+
+fn almostEmpty() {
 	return;
 }
 
-fn full() {
+fn notEmpty() {
 	return 42;
 }
