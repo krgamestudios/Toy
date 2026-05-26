@@ -1,0 +1,10 @@
+
+var randi: Int = 69420;
+fn rand() {
+	//a quick and dirty random number generator
+	return randi = randi * 1664525 + 1013904223;
+}
+
+print rand();
+print rand();
+print rand();

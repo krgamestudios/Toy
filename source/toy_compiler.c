@@ -632,6 +632,12 @@ static unsigned int writeInstructionIfThenElse(Toy_Bytecode** mb, Toy_AstIfThenE
 	//cond-branch
 	writeBytecodeFromAst(mb, ast.condBranch);
 
+	//leave the assigned value on the stack when inside a condition
+	if (checkForChainedAssign(ast.condBranch)) {
+		Toy_AstVarAccess access = { .type = TOY_AST_VAR_ACCESS, .child = ast.condBranch->varAssign.target };
+		writeInstructionAccess(mb, access);
+	}
+
 	//emit the jump word (opcode, type, condition, padding)
 	EMIT_BYTE(mb, code, TOY_OPCODE_JUMP);
 	EMIT_BYTE(mb, code, TOY_OP_PARAM_JUMP_RELATIVE);
@@ -676,6 +682,12 @@ static unsigned int writeInstructionWhileThen(Toy_Bytecode** mb, Toy_AstWhileThe
 
 	//cond-branch
 	writeBytecodeFromAst(mb, ast.condBranch);
+
+	//leave the assigned value on the stack when inside a condition
+	if (checkForChainedAssign(ast.condBranch)) {
+		Toy_AstVarAccess access = { .type = TOY_AST_VAR_ACCESS, .child = ast.condBranch->varAssign.target };
+		writeInstructionAccess(mb, access);
+	}
 
 	//emit the jump word (opcode, type, condition, padding)
 	EMIT_BYTE(mb, code, TOY_OPCODE_JUMP);

@@ -1,11 +1,10 @@
-//find the leap years
+//is 'n' a leap year
 fn isLeapYear(n: Int) {
 	if (n % 400 == 0) return true;
 	if (n % 100 == 0) return false;
 	return n % 4 == 0;
 }
 
-//check for string reuse
 {
 	print isLeapYear(1999);
 }

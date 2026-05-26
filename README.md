@@ -33,10 +33,9 @@ fn makeCounter() {
 
 var tally = makeCounter();
 
-while (true) {
-	var result = tally();
-
-	print result; //prints 1 to 10
+var result = 0;
+while (result = tally()) {
+	print result;
 
 	if (result >= 10) {
 		break;

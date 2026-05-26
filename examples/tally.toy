@@ -8,11 +8,11 @@ fn makeCounter() {
 	return increment;
 }
 
+//'tally' becomes a closure
 var tally = makeCounter();
 
-while (true) {
-	var result = tally();
-
+var result = 0;
+while (result = tally()) {
 	print result;
 
 	if (result >= 10) {
