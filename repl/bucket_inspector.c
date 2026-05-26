@@ -13,7 +13,7 @@ int inspect_bucket(Toy_Bucket** bucketHandle) {
 		unsigned char* ptr = iter->data;
 
 
-		while ((ptr - iter->data < iter->count) && *((int*)ptr) != 0) { //for each partition
+		while ((ptr >= iter->data) && (ptr < iter->data + iter->count) && *((int*)ptr) != 0) { //for each partition
 			if ( ( *((int*)ptr) & 1) == 0) { //is this partition still in use?
 				occupied++;
 

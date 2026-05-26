@@ -78,6 +78,7 @@ static void emitByte(unsigned char** handle, unsigned int* capacity, unsigned in
 	((unsigned char*)(*handle))[(*count)++] = byte;
 }
 
+//BUG: There might be issues here when compiled on big-endian platforms
 static void emitInt(unsigned char** handle, unsigned int* capacity, unsigned int* count, unsigned int bytes) {
 	char* ptr = (char*)&bytes;
 	emitByte(handle, capacity, count, *(ptr++));
@@ -200,8 +201,8 @@ static unsigned int emitParameters(Toy_Bytecode* mb, Toy_Ast* ast) {
 	}
 
 	//the address within the data section
-	char buffer[128];
-	snprintf(buffer, 128, "%.*s", ast->varDeclare.name->info.length, ast->varDeclare.name->leaf.data);
+	char buffer[256];
+	snprintf(buffer, 256, "%.*s", ast->varDeclare.name->info.length, ast->varDeclare.name->leaf.data);
 	unsigned int dataAddr = emitCStringToData(&(mb->data), &(mb->dataCapacity), &(mb->dataCount), buffer);
 
 	//check the param index for that entry i.e. don't reuse parameter names

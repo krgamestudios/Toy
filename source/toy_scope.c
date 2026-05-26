@@ -48,7 +48,7 @@ static void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, T
 		}
 
 		//if this spot is free, insert and return
-		if (TOY_VALUE_IS_NULL(scope->data[probe].value)) {
+		if (scope->data[probe].key == NULL) { //fuck my life
 			scope->data[probe] = entry;
 			scope->count++;
 			scope->maxPsl = entry.psl > scope->maxPsl ? entry.psl : scope->maxPsl;

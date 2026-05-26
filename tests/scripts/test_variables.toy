@@ -157,4 +157,11 @@ print !false; //true
 	print a;
 }
 
+{
+	//Yet Another Cosmic Joke
+	var a = null;
+	var i = 42;
+	print a;
+}
+
 //TODO: type casting

@@ -172,7 +172,7 @@ static void attr_tableRemove(Toy_VM* vm, Toy_FunctionNative* self) {
 
 Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
 	if (MATCH_VALUE_AND_CSTRING(attribute, "length")) {
-		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_ARRAY(compound)->count);
+		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_TABLE(compound)->count);
 	}
 	else if (MATCH_VALUE_AND_CSTRING(attribute, "insert")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_tableInsert);

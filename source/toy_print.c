@@ -1,5 +1,6 @@
 #include "toy_print.h"
 
+#include <assert.h>
 #include <stdio.h>
 
 static Toy_callbackType printCallback = puts;
@@ -19,14 +20,17 @@ void Toy_assertFailure(const char* msg) {
 }
 
 void Toy_setPrintCallback(Toy_callbackType cb) {
+	assert(cb);
 	printCallback = cb;
 }
 
 void Toy_setErrorCallback(Toy_callbackType cb) {
+	assert(cb);
 	errorCallback = cb;
 }
 
 void Toy_setAssertFailureCallback(Toy_callbackType cb) {
+	assert(cb);
 	assertCallback = cb;
 }
 

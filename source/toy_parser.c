@@ -324,7 +324,7 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 
 		case TOY_TOKEN_LITERAL_INTEGER: {
 			//filter the '_' character
-			char buffer[parser->previous.length];
+			char buffer[parser->previous.length + 1];
 
 			unsigned int i = 0, o = 0;
 			do {
@@ -341,7 +341,7 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 
 		case TOY_TOKEN_LITERAL_FLOAT: {
 			//filter the '_' character
-			char buffer[parser->previous.length];
+			char buffer[parser->previous.length + 1];
 
 			unsigned int i = 0, o = 0;
 			do {

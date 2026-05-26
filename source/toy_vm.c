@@ -73,6 +73,8 @@ static void processRead(Toy_VM* vm) {
 			//grab the jump as an integer
 			unsigned int jump = *((int*)(vm->code + vm->jumpsAddr + READ_INT(vm)));
 
+			//BUG: the jump parameter could cause an out of bounds read if it's malformed
+
 			//jumps are relative to the data address
 			char* cstring = (char*)(vm->code + vm->dataAddr + jump);
 

@@ -26,7 +26,7 @@ unsigned char* readFile(char* path, int* size) {
 
 	//determine the file's length
 	fseek(file, 0L, SEEK_END);
-	*size = ftell(file);
+	*size = (int)ftell(file);
 	rewind(file);
 
 	//make some space
@@ -44,7 +44,7 @@ unsigned char* readFile(char* path, int* size) {
 		return NULL;
 	}
 
-	buffer[(*size)++] = '\0';
+	buffer[(*size)] = '\0';
 
 	//clean up and return
 	fclose(file);
@@ -334,7 +334,7 @@ int repl(const char* filepath, bool verbose) {
 			inputBuffer[--length] = '\0';
 		}
 
-		if (length == 0 || !inputBuffer[ strspn(inputBuffer, " \r\n\t") ]) {
+		if (length == 0 || inputBuffer[ strspn(inputBuffer, " \r\n\t") ] == '\0') {
 			printf("%s> ", prompt); //shows the terminal prompt and restart
 			continue;
 		}
