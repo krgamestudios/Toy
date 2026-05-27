@@ -464,29 +464,15 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			}
 
 		case TOY_VALUE_INTEGER: {
-			char buffer[16];
+			char buffer[128];
 			sprintf(buffer, "%d", value.as.integer);
 			return Toy_createStringLength(bucketHandle, buffer, strlen(buffer));
 		}
 
 		case TOY_VALUE_FLOAT: {
-			//using printf
-			char buffer[16];
-			sprintf(buffer, "%f", value.as.number);
-
-			//BUGFIX: printf format specificer '%f' will set the precision to 6 decimal places, which means there's trailing zeroes
+			char buffer[128];
+			sprintf(buffer, "%g", value.as.number);
 			unsigned int length = strlen(buffer);
-
-			//find the decimal, if it exists
-			unsigned int decimal = 0;
-			while (decimal != length && buffer[decimal] != '.' && buffer[decimal] != ',') decimal++; //'.' and ',' supports more locales
-
-			//locales are hard, sorry!
-			if (decimal != length && buffer[decimal] == ',') buffer[decimal] = '.';
-
-			//wipe the trailing zeros
-			while(decimal != length && buffer[length-1] == '0') buffer[--length] = '\0';
-
 			return Toy_createStringLength(bucketHandle, buffer, length);
 		}
 

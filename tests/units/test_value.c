@@ -607,8 +607,8 @@ int main(void) {
 		total += res;
 	}
 
-	//TODO: references
-	//TODO: type coersions
+	//TODO: references?
+	//TODO: type coersions?
 	//TODO: opaques?
 
 	return total;

@@ -1,7 +1,6 @@
 #include "standard_library.h"
 #include "toy_console_colors.h"
 
-#include "toy_print.h"
 #include "toy_scope.h"
 #include "toy_stack.h"
 
@@ -14,36 +13,85 @@ typedef struct CallbackPairs {
 	Toy_nativeCallback callback;
 } CallbackPairs;
 
-//example callbacks
-static void answer(Toy_VM* vm, Toy_FunctionNative* self) {
-	(void)vm;
+//example of how to write and use C bindings
+static void std_min(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)self;
-	Toy_print(TOY_CC_DEBUG "This function returns the integer '42' to the calling scope." TOY_CC_RESET);
-	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(42));
+
+	//return the lesser of two values, or null on error
+	Toy_Value first = Toy_popStack(&vm->stack);
+	Toy_Value second = Toy_popStack(&vm->stack);
+
+	//check types
+	if ((!TOY_VALUE_IS_INTEGER(first) && !TOY_VALUE_IS_FLOAT(first)) || (!TOY_VALUE_IS_INTEGER(second) && !TOY_VALUE_IS_FLOAT(second))) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid types '%s' and '%s' found in 'min()'", Toy_getValueTypeAsCString(Toy_unwrapValue(first).type), Toy_getValueTypeAsCString(Toy_unwrapValue(second).type));
+		Toy_error(buffer);
+
+		Toy_freeValue(first);
+		Toy_freeValue(second);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	//compare ints, or coerce ints into floats if needed
+	if (TOY_VALUE_IS_INTEGER(first) && TOY_VALUE_IS_INTEGER(second)) {
+		Toy_Value result = TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_INTEGER(first) < TOY_VALUE_AS_INTEGER(second) ? TOY_VALUE_AS_INTEGER(first) : TOY_VALUE_AS_INTEGER(second));
+		Toy_pushStack(&vm->stack, result);
+		return;
+	}
+	else if (TOY_VALUE_IS_INTEGER(first) && TOY_VALUE_IS_FLOAT(second)) {
+		first = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(first) );
+	}
+	else if (TOY_VALUE_IS_FLOAT(first) && TOY_VALUE_IS_INTEGER(second)) {
+		second = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(second) );
+	}
+
+	//finally, do the comparison on floats
+	Toy_Value result = TOY_VALUE_FROM_FLOAT(TOY_VALUE_AS_FLOAT(first) < TOY_VALUE_AS_FLOAT(second) ? TOY_VALUE_AS_FLOAT(first) : TOY_VALUE_AS_FLOAT(second));
+	Toy_pushStack(&vm->stack, result);
+	//NOTE: not freeing scalar values does work, but only in narrow cases
 }
 
-static void identity(Toy_VM* vm, Toy_FunctionNative* self) {
-	//does nothing, but any arguements are left on the stack as results
-	(void)vm;
+static void std_max(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)self;
-}
 
-static void echo(Toy_VM* vm, Toy_FunctionNative* self) {
-	(void)self;
-	//pops one argument, and prints it
-	Toy_Value value = Toy_popStack(&vm->stack);
-	Toy_String* string = Toy_stringifyValue(&vm->memoryBucket, value);
-	char* cstr = Toy_getStringRaw(string);
+	//return the lesser of two values, or null on error
+	Toy_Value first = Toy_popStack(&vm->stack);
+	Toy_Value second = Toy_popStack(&vm->stack);
 
-	Toy_print(cstr);
+	//check types
+	if ((!TOY_VALUE_IS_INTEGER(first) && !TOY_VALUE_IS_FLOAT(first)) || (!TOY_VALUE_IS_INTEGER(second) && !TOY_VALUE_IS_FLOAT(second))) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid types '%s' and '%s' found in 'min()'", Toy_getValueTypeAsCString(Toy_unwrapValue(first).type), Toy_getValueTypeAsCString(Toy_unwrapValue(second).type));
+		Toy_error(buffer);
 
-	free(cstr);
-	Toy_freeString(string);
-	Toy_freeValue(value);
+		Toy_freeValue(first);
+		Toy_freeValue(second);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	//compare ints, or coerce ints into floats if needed
+	if (TOY_VALUE_IS_INTEGER(first) && TOY_VALUE_IS_INTEGER(second)) {
+		Toy_Value result = TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_INTEGER(first) > TOY_VALUE_AS_INTEGER(second) ? TOY_VALUE_AS_INTEGER(first) : TOY_VALUE_AS_INTEGER(second));
+		Toy_pushStack(&vm->stack, result);
+		return;
+	}
+	else if (TOY_VALUE_IS_INTEGER(first) && TOY_VALUE_IS_FLOAT(second)) {
+		first = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(first) );
+	}
+	else if (TOY_VALUE_IS_FLOAT(first) && TOY_VALUE_IS_INTEGER(second)) {
+		second = TOY_VALUE_FROM_FLOAT( (float)TOY_VALUE_AS_INTEGER(second) );
+	}
+
+	//finally, do the comparison on floats
+	Toy_Value result = TOY_VALUE_FROM_FLOAT(TOY_VALUE_AS_FLOAT(first) > TOY_VALUE_AS_FLOAT(second) ? TOY_VALUE_AS_FLOAT(first) : TOY_VALUE_AS_FLOAT(second));
+	Toy_pushStack(&vm->stack, result);
+	//NOTE: not freeing scalar values does work, but only in narrow cases
 }
 
 static void next(Toy_VM* vm, Toy_FunctionNative* self) {
-	//used by 'range'
+	//used by 'std_range'
 	if (self->meta2 < self->meta1) {
 		Toy_Value result = TOY_VALUE_FROM_INTEGER(self->meta2);
 		Toy_pushStack(&vm->stack, result);
@@ -54,7 +102,7 @@ static void next(Toy_VM* vm, Toy_FunctionNative* self) {
 	}
 }
 
-static void range(Toy_VM* vm, Toy_FunctionNative* self) {
+static void std_range(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)self;
 
 	//one arg to represent the number of iterations
@@ -79,12 +127,10 @@ static void range(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, result);
 }
 
-
 CallbackPairs callbackPairs[] = {
-	{"dbg_answer", answer},
-	{"dbg_identity", identity},
-	{"dbg_echo", echo},
-	{"range", range},
+	{"min", std_min},
+	{"max", std_max},
+	{"range", std_range},
 
 	{NULL, NULL},
 };

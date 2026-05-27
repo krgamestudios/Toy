@@ -546,7 +546,7 @@ static void processIterate(Toy_VM* vm) {
 			processJump(vm);
 		}
 	}
-	//TODO: support closures as a parameter
+	//TODO: support closures in for-loops
 	else {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown iterable type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(Toy_unwrapValue(compound).type));
 		exit(-1);
@@ -826,7 +826,7 @@ static void processAssert(Toy_VM* vm) {
 
 	//determine the args
 	if (count == 1) {
-		message = TOY_VALUE_FROM_STRING(Toy_toString(&vm->memoryBucket, "assertion failed")); //TODO: better default error message
+		message = TOY_VALUE_FROM_STRING(Toy_toString(&vm->memoryBucket, "assertion failed")); //TODO: better default assert message
 		value = Toy_popStack(&vm->stack);
 	}
 	else if (count == 2) {

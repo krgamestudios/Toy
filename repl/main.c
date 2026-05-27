@@ -9,7 +9,6 @@
 #include "toy_compiler.h"
 #include "toy_vm.h"
 
-//NOTE: for testing
 #include "standard_library.h"
 
 #include <stdio.h>

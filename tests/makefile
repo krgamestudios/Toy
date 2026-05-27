@@ -7,5 +7,3 @@ all:
 gdb:
 	$(MAKE) -C units -k gdb
 	$(MAKE) -C scripts -k gdb
-
-#TODO: valgrind
