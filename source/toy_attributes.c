@@ -1,5 +1,7 @@
 #include "toy_attributes.h"
-#include "toy_console_colors.h"
+#include "toy_array.h"
+#include "toy_sort.h"
+#include "toy_value.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +15,20 @@ static Toy_OpaqueAttributeHandler opaqueAttributeCallback = NULL;
 #define MATCH_VALUE_AND_CSTRING(value, cstring) \
 	((TOY_VALUE_AS_STRING(value)->info.length == strlen(cstring)) && \
 	(strncmp(cstring, TOY_VALUE_AS_STRING(value)->leaf.data, TOY_VALUE_AS_STRING(value)->info.length) == 0))
+
+static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
+    (void)self;
+
+    Toy_Value first_argument = Toy_popStack(&vm->stack);
+	Toy_Array* array = TOY_VALUE_AS_ARRAY(first_argument);
+
+	if (array->count == 0) {
+	    return;
+	}
+	Toy_Value *data = array->data;
+
+	dual_pivot_quick_sort(data, 0, array->count, &toy_value_default_compare);
+}
 
 //NOTE: there is no need to call 'Toy_freeValue' on the arguments, as the VM assumes you don't
 Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
@@ -53,7 +69,6 @@ static void attr_arrayPushBack(Toy_VM* vm, Toy_FunctionNative* self) {
 
 	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
 
-	//BUGFIX: check the capacity limit
 	if (array->count == array->capacity) {
 		//correct the source value's pointer
 		array = Toy_resizeArray(array, array->capacity * TOY_ARRAY_EXPANSION_RATE);
@@ -88,13 +103,6 @@ static void attr_arrayPopBack(Toy_VM* vm, Toy_FunctionNative* self) {
 	array->count--;
 
 	Toy_pushStack(&vm->stack, element);
-}
-
-static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
-	(void)vm;
-	(void)self;
-
-	//URGENT: attr_arraySort
 }
 
 Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {

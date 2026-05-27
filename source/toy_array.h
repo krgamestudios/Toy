@@ -12,6 +12,8 @@ typedef struct Toy_Array { //32 | 64 BITNESS
 
 TOY_API Toy_Array* Toy_resizeArray(Toy_Array* array, unsigned int capacity);
 
+TOY_API Toy_Array* Toy_createArray(unsigned int capacity);
+
 //some useful sizes, could be swapped out as needed
 #ifndef TOY_ARRAY_INITIAL_CAPACITY
 #define TOY_ARRAY_INITIAL_CAPACITY 8

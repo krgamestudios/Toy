@@ -12,7 +12,7 @@
 // [x] array.pushBack(x)
 // [x] array.popBack()
 // [x] array.forEach(fn) // fn(x) -> void
-// [ ] array.sort(fn)    // fn(a,b) -> int
+// [x] array.sort(fn)    // fn(a,b) -> int
 // [x] table.length
 // [x] table.insert(x, y)
 // [x] table.hasKey(x)
@@ -23,6 +23,8 @@ Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy
 Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+
+static void attr_arrayPushBack(Toy_VM* vm, Toy_FunctionNative* self);
 
 //plug-and-play attributes for custom objects
 typedef Toy_Value (*Toy_OpaqueAttributeHandler)(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
