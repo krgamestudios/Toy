@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 typedef struct CallbackPairs {
 	const char* name;
@@ -62,7 +63,7 @@ static void std_max(Toy_VM* vm, Toy_FunctionNative* self) {
 	//check types
 	if ((!TOY_VALUE_IS_INTEGER(first) && !TOY_VALUE_IS_FLOAT(first)) || (!TOY_VALUE_IS_INTEGER(second) && !TOY_VALUE_IS_FLOAT(second))) {
 		char buffer[256];
-		snprintf(buffer, 256, "Invalid types '%s' and '%s' found in 'min()'", Toy_getValueTypeAsCString(Toy_unwrapValue(first).type), Toy_getValueTypeAsCString(Toy_unwrapValue(second).type));
+		snprintf(buffer, 256, "Invalid types '%s' and '%s' found in 'max()'", Toy_getValueTypeAsCString(Toy_unwrapValue(first).type), Toy_getValueTypeAsCString(Toy_unwrapValue(second).type));
 		Toy_error(buffer);
 
 		Toy_freeValue(first);
@@ -88,6 +89,93 @@ static void std_max(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_Value result = TOY_VALUE_FROM_FLOAT(TOY_VALUE_AS_FLOAT(first) > TOY_VALUE_AS_FLOAT(second) ? TOY_VALUE_AS_FLOAT(first) : TOY_VALUE_AS_FLOAT(second));
 	Toy_pushStack(&vm->stack, result);
 	//NOTE: not freeing scalar values does work, but only in narrow cases
+}
+
+static void std_floor(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	Toy_Value value = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_INTEGER(value) && !TOY_VALUE_IS_FLOAT(value)) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid type '%s' found in 'floor()'", Toy_getValueTypeAsCString(Toy_unwrapValue(value).type));
+		Toy_error(buffer);
+
+		Toy_freeValue(value);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	//this only runs on floats, but converts them to integers
+	if (TOY_VALUE_IS_FLOAT(value)) {
+		double d = (double)TOY_VALUE_AS_FLOAT(value);
+		d = floor(d);
+		value = TOY_VALUE_FROM_INTEGER((int)d);
+	}
+
+	Toy_pushStack(&vm->stack, value);
+}
+
+static void std_ceil(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	Toy_Value value = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_INTEGER(value) && !TOY_VALUE_IS_FLOAT(value)) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid type '%s' found in 'ceil()'", Toy_getValueTypeAsCString(Toy_unwrapValue(value).type));
+		Toy_error(buffer);
+
+		Toy_freeValue(value);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	//this only runs on floats, but converts them to integers
+	if (TOY_VALUE_IS_FLOAT(value)) {
+		double d = (double)TOY_VALUE_AS_FLOAT(value);
+		d = ceil(d);
+		value = TOY_VALUE_FROM_INTEGER((int)d);
+	}
+
+	Toy_pushStack(&vm->stack, value);
+}
+
+static void std_sqrt(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	Toy_Value value = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_INTEGER(value) && !TOY_VALUE_IS_FLOAT(value)) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid type '%s' found in 'sqrt()'", Toy_getValueTypeAsCString(Toy_unwrapValue(value).type));
+		Toy_error(buffer);
+
+		Toy_freeValue(value);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	double d = 0;
+
+	if (TOY_VALUE_IS_INTEGER(value)) d = (double)TOY_VALUE_AS_INTEGER(value);
+	else if (TOY_VALUE_IS_FLOAT(value)) d = (double)TOY_VALUE_AS_FLOAT(value);
+
+	//only works on non-negative values
+	if (d < 0) {
+		char buffer[256];
+		snprintf(buffer, 256, "Can't get the sqrt of a negative number (found '%g')", d);
+		Toy_error(buffer);
+
+		Toy_freeValue(value);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	//do the thing and push the result
+	d = sqrt(d);
+
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_FLOAT((float)d));
 }
 
 static void next(Toy_VM* vm, Toy_FunctionNative* self) {
@@ -130,6 +218,9 @@ static void std_range(Toy_VM* vm, Toy_FunctionNative* self) {
 CallbackPairs callbackPairs[] = {
 	{"min", std_min},
 	{"max", std_max},
+	{"floor", std_floor},
+	{"ceil", std_ceil},
+	{"sqrt", std_sqrt},
 	{"range", std_range},
 
 	{NULL, NULL},
