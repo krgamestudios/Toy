@@ -142,3 +142,18 @@ TOY_API unsigned int Toy_runVM(Toy_VM* vm);
 TOY_API void Toy_freeVM(Toy_VM* vm);
 TOY_API Toy_Value Toy_getReturnValueFromVM(Toy_VM* parentVM, Toy_VM* subVM);
 ```
+
+## Standard Library
+
+The tools in `repl/` includes a standard library, which can be added to the root VM by calling `initStandardLibrary` just before `Toy_runVM`. It provides the following general purpose functions:
+
+* `min(x, y)`
+* `max(x, y)`
+* `floor(x)`
+* `ceil(x)`
+* `sqrt(x)`
+* `range(x)`
+
+It also offers an example of how to write an API.
+
+*Note: Range returns a closure intended for use in the `for` keyword, but the that keyword isn't done yet.*
