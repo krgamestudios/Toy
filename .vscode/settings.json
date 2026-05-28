@@ -1,16 +1,16 @@
 {
-	"todo-tree.filtering.includeGlobs": [
+	"better-todo-tree.filtering.includeGlobs": [
 		"**/repl/**",
 		"**/scripts/**",
 		"**/source/**",
 		"**/tests/**",
 		"**/tools/**",
 	],
-	"todo-tree.filtering.excludeGlobs": [
+	"better-todo-tree.filtering.excludeGlobs": [
 		"**/obj/**",
 		"**/out/**",
 	],
-	"todo-tree.general.tags": [
+	"better-todo-tree.general.tags": [
 		"URGENT",
 		"BUG",
 		"TODO",
@@ -19,7 +19,7 @@
 		"WONTFIX",
 		"NOTE"
 	],
-	"todo-tree.highlights.customHighlight": {
+	"better-todo-tree.highlights.customHighlight": {
 		"URGENT": {
 			"icon": "alert",
 			"type": "text",
