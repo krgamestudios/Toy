@@ -97,7 +97,7 @@ typedef enum Toy_AstFlag {
 //the root AST type
 typedef union Toy_Ast Toy_Ast;
 
-typedef struct Toy_AstBlock {
+typedef struct Toy_AstBlock { //TODO: optimize away single-line blocks in the AST
 	Toy_AstType type;
 	bool innerScope;
 	Toy_Ast* child; //begin encoding the line
