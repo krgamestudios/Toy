@@ -37,6 +37,8 @@ Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy
 		free(buffer);
 		return TOY_VALUE_FROM_STRING(str);
 	}
+	//TODO: as capitalized
+	//TODO: split?
 	else {
 		char buffer[256];
 		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_getValueTypeAsCString(compound.type));

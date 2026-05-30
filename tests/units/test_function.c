@@ -117,7 +117,7 @@ int test_functions_from_bytecodes(void) {
 }
 
 int test_functions_from_callbacks(void) {
-	//URGENT: Test not yet implemented
+	//WARN: Test not yet implemented
 	printf(TOY_CC_WARN "WIP test not yet implemented: %s\n" TOY_CC_RESET, __FILE__);
 	return 0;
 }

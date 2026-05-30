@@ -607,9 +607,8 @@ int main(void) {
 		total += res;
 	}
 
-	//TODO: references?
-	//TODO: type coersions?
-	//TODO: opaques?
+	//WARN: Testing references not implemented
+	//WARN: Testing opaques not implemented
 
 	return total;
 }

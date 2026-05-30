@@ -17,5 +17,5 @@ print "\tHello\nworld!";
 print "Hello world"[0,5];
 
 //print from a substring, after a concat
-print ("hello" .. "world")[2,6];
+print ("hello" .. "world")[3,3]; //should print "low"
 

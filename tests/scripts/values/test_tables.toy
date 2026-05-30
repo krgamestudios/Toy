@@ -1,0 +1,33 @@
+//1-D table
+{
+	var table: Table = ["alpha": 1, "beta": 2, "gamma": 3];
+	table["beta"] = 6;
+	assert table == ["alpha": 1, "beta": 6, "gamma": 3], "1-D tables failed";
+}
+
+//nested
+{
+	var table: Table = [
+		"outer": ["inner": true],
+		"alpha": 1,
+		"beta": 2,
+		"gamma": 3
+	];
+
+	assert table == ["alpha": 1, "beta": 2, "gamma": 3, "outer": ["inner": true]], "nested tables failed";
+}
+
+//syntax
+{
+	var empty = [:];
+	assert empty.length == 0, "Empty table failed";
+
+	var trailing = [
+		"alpha":1,
+		"beta":2,
+		"gamma":3,
+	];
+
+	assert trailing == ["alpha": 1, "beta": 2, "gamma": 3], "Trailing comma table failed";
+}
+

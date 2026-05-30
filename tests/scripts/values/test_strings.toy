@@ -1,0 +1,27 @@
+//declare, define and manipulate strings
+{
+	var string: String = "Hello World";
+	assert string[5] == " ", "String indexing failed";
+
+	var greeting: String = string[0:5];
+	assert greeting == "Hello", "String slicing failed";
+
+	var parting: String = "Goodbye " .. string[6:5];
+	print parting;
+	assert parting == "Goodbye World", "String concat from an index failed";
+
+	//WARN: Unbounded slice not possible without indexing from the end of a string
+	//var simple: String = parting[5:-1];
+	//assert simple == "bye World", "String unbounded slice failed";
+}
+
+//var greeting: String = "Hello World";
+//var parting: String = "Goodbye " .. greeting[6:5];
+
+//String attributes
+{
+	var string: String = "Hello World";
+	assert string.length == 11, "string.length failed";
+	assert string.asUpper == "HELLO WORLD", "string.asUpper failed";
+	assert string.asLower == "hello world", "string.asLower failed";
+}

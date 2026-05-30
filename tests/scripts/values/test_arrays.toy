@@ -1,0 +1,46 @@
+//1-D array
+{
+	var array: Array = [1, 2, 3];
+	array[1] = 6;
+	assert array == [1, 6, 3], "1-D array failed";
+}
+
+//we need to go deeper
+{
+	var array = [
+		[1, 2, 3],
+		[4, 5, 6],
+		[7, 8, 9]
+	];
+
+	array[1][1] = 99;
+
+	assert array == [[1, 2, 3],[4,99,6],[7,8,9]], "2-D array failed";
+}
+
+//attributes
+{
+	var array = [0,1,2,3,4,5,6,7,8,9];
+	assert array.length == 10, "Array length attribute failed";
+
+	array.pushBack(10);
+	assert array.length == 11, "Array pushBack attribute failed";
+
+	array.popBack();
+	array.popBack();
+	assert array.popBack() == 8, "Array popBack attribute failed";
+}
+
+//sorting algorithm
+{
+	//WARN: Array sorting algorithm not yet implemented
+}
+
+//syntax
+{
+	var empty = [];
+	assert empty.length == 0, "Empty array failed";
+
+	var trailing = [1, 2, 3, ];
+	assert trailing == [1,2,3], "Trailing comma array failed";
+}

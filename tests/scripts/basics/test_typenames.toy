@@ -1,4 +1,4 @@
-//typenames are now capitalized, so ensure they don't overlap with variable names
+//NOTE: typenames are now capitalized, to ensure they don't overlap with variable names
 
 var bool: Bool = true;
 print bool;

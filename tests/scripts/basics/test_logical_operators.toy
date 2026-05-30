@@ -163,5 +163,3 @@ print !false; //true
 	var i = 42;
 	print a;
 }
-
-//TODO: type casting

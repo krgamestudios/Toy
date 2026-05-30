@@ -20,10 +20,10 @@ endif
 TEST_ROOTDIR=../..
 TEST_SOURCEDIR=$(TEST_ROOTDIR)/$(TOY_SOURCEDIR)
 TEST_REPLDIR=$(TEST_ROOTDIR)/$(TOY_REPLDIR)
-TEST_SCRIPTDIR=.
+TEST_SCRIPTDIRS=basics values keywords algorithms
 
 #file names
-TEST_SCRIPTFILES=$(wildcard $(TEST_SCRIPTDIR)/test_*.toy)
+TEST_SCRIPTFILES=$(foreach dir,$(TEST_SCRIPTDIRS), $(wildcard $(dir)/test_*.toy))
 
 #build the source and repl, copy to the local dir, and run
 all: source repl copy run

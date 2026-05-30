@@ -895,6 +895,8 @@ static void processConcat(Toy_VM* vm) {
 static void processIndex(Toy_VM* vm) {
 	unsigned char count = READ_BYTE(vm); //value[index, length] ; 1[2, 3]
 
+	//TODO: slicing from the end of a string/array, value[0:-1]
+
 	Toy_Value value = TOY_VALUE_FROM_NULL();
 	Toy_Value index = TOY_VALUE_FROM_NULL();
 	Toy_Value length = TOY_VALUE_FROM_NULL();

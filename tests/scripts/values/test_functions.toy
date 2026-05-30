@@ -1,0 +1,55 @@
+//define and invoke a function
+{
+	
+	fn greeting() {
+		return "Hello world";
+	}
+
+	assert greeting() == "Hello world", "Function definition failed";
+}
+
+//functions within other function argument lists
+{
+	fn outer(arg: String) {
+		return arg == "Hello world";
+	}
+
+	fn inner() {
+		return "Hello world";
+	}
+
+	assert outer(inner()), "Functions within argument lists failed";
+}
+
+//first class functions
+{
+	fn hello() {
+		print "Hello world";
+	}
+
+	fn identity(x) {
+		return x;
+	}
+
+	assert identity(hello) == hello, "First class functions failed";
+}
+
+//closures
+{
+	//closures
+	fn makeCounter() {
+		var counter: Int = 0;
+		fn increment() {
+			return ++counter;
+		}
+		return increment;
+	}
+
+	var tally: Function = makeCounter();
+
+	tally();
+	tally();
+	tally();
+
+	assert tally() == 4, "closures failed";
+}
