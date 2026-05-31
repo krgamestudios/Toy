@@ -43,7 +43,7 @@ while (result = tally()) {
 
 This website is a work in progress - for further info, see the official repository: [https://gitea.krgamestudios.com/krgamestudios/Toy](https://gitea.krgamestudios.com/krgamestudios/Toy), or the GitHub mirror: [https://github.com/krgamestudios/Toy](https://github.com/krgamestudios/Toy).
 
-An example of Toy in action: [Vampire Toyvivors](https://gitea.krgamestudios.com/krgamestudios/VampireToyvivors) (a simple "game" used for testing, not intended for commercial release).
+An example of Toy in action: [ToyBox](https://gitea.krgamestudios.com/krgamestudios/ToyBox) - IDK what it is, I'll figure it out on the way.
 
 <p align="center">
 	<image src="img/noai.png" alt="No AI" width="200px" />
