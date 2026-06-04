@@ -151,7 +151,7 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy
 	}
 
 	//expand the table capacity if needed
-	if (scope->count >= scope->capacity * 0.8f) {
+	if (scope->count >= scope->capacity * TOY_SCOPE_EXPANSION_THRESHOLD) {
 		scope->data = adjustScopeEntries(scope, scope->capacity * TOY_SCOPE_EXPANSION_RATE);
 	}
 

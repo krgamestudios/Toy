@@ -2,6 +2,7 @@
 #include "ast_inspector.h"
 #include "bytecode_inspector.h"
 #include "stack_inspector.h"
+#include "scope_inspector.h"
 
 #include "toy_console_colors.h"
 
@@ -246,41 +247,6 @@ CmdLine parseCmdLine(int argc, const char* argv[]) {
 	return cmd;
 }
 
-//debugging
-static void debugScopePrint(Toy_Scope* scope, int depth) {
-	//DEBUG: if there's anything in the scope, print it
-	if (scope->count > 0) {
-		Toy_Bucket* stringBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-
-		printf("\n" TOY_CC_NOTICE "Scope Dump [%d]" TOY_CC_RESET "\n" TOY_CC_NOTICE "%-20s%-20s%-20s" TOY_CC_RESET "\n", depth, "type", "name", "value");
-		for (unsigned int i = 0; i < scope->capacity; i++) {
-			if (scope->data[i].key == NULL || scope->data[i].key->info.length == 0) {
-				continue;
-			}
-
-			Toy_String* k = scope->data[i].key;
-			Toy_Value v = scope->data[i].value;
-
-			printf("%-10s%-10s%-20s", Toy_getValueTypeAsCString(scope->data[i].type), scope->data[i].constant ? "const" : "", k != NULL ? k->leaf.data : "");
-
-			//print value
-			Toy_String* string = Toy_stringifyValue(&stringBucket, Toy_unwrapValue(v));
-			char* buffer = Toy_getStringRaw(string);
-			printf("%-20s", buffer);
-			free(buffer);
-			Toy_freeString(string);
-
-			printf("\n");
-		}
-
-		Toy_freeBucket(&stringBucket);
-	}
-
-	if (scope->next != NULL) {
-		debugScopePrint(scope->next, depth + 1);
-	}
-}
-
 //repl function
 int repl(const char* filepath, bool verbose) {
 	//output options
@@ -367,7 +333,7 @@ int repl(const char* filepath, bool verbose) {
 		//print the debug info
 		if (verbose) {
 			inspect_stack(vm.stack);
-			debugScopePrint(vm.scope, 0);
+			inspect_scope(vm.scope, 0);
 
 			depthBeforeGC = inspect_bucket(&vm.memoryBucket);
 		}
@@ -491,7 +457,7 @@ int main(int argc, const char* argv[]) {
 		//print the debug info
 		if (cmd.verbose) {
 			inspect_stack(vm.stack);
-			debugScopePrint(vm.scope, 0);
+			inspect_scope(vm.scope, 0);
 		}
 
 		//cleanup
