@@ -1,0 +1,24 @@
+WARN: This datestamp header is currently not implemented
+
+There are four components in the datestamp header:
+
+TOY_VERSION_MAJOR
+TOY_VERSION_MINOR
+TOY_VERSION_PATCH
+TOY_VERSION_BUILD
+
+The first three are each one unsigned byte, and the fourth is a null terminated C-string.
+
+ * Under no circumstance, should you ever run bytecode whose major version is different
+ * Under no circumstance, should you ever run bytecode whose minor version is above the interpreter’s minor version
+ * You may, at your own risk, attempt to run bytecode whose patch version is different from the interpreter’s patch version
+ * You may, at your own risk, attempt to run bytecode whose build version is different from the interpreter’s build version
+
+An additional note: The contents of the build string may be anything, such as:
+
+ * the compilation date and time of the interpreter
+ * a marker identifying the current fork and/or branch
+ * identification information, such as the developer's copyright
+ * a link to Risk Astley's "Never Gonna Give You Up" on YouTube
+
+Please note that in the final bytecode, if the null terminator of TOY_VERSION_BUILD is not 4-byte aligned, extra space will be allocated to round out the header's size to a multiple of 4. The contents of the extra bytes are undefined.
