@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-unsigned char* readFile(char* path, int* size) {
+unsigned char* readFile(const char* path, int* size) {
 	//open the file
 	FILE* file = fopen(path, "rb");
 	if (file == NULL) {
@@ -113,38 +113,35 @@ static int silentExitCallback(const char* msg) {
 }
 
 //handle command line arguments
-typedef struct CmdLine {
+typedef struct Settings {
 	bool error;
 	bool help;
 	bool version;
-	char* infile;
-	int infileLength;
+	const char* script;
 	bool silentPrint;
 	bool silentAssert;
-	bool removeAssert;
 	bool verbose;
-} CmdLine;
+} Settings;
 
-void usageCmdLine(int argc, const char* argv[]) {
+void usageInfo(int argc, const char* argv[]) {
 	(void)argc;
-	printf("Usage: %s [ -h | -v | -f source.toy ]\n\n", argv[0]);
+	printf("Usage: %s [ -h | -v | -f script.toy ] [-d]\n\n", argv[0]);
 }
 
-void helpCmdLine(int argc, const char* argv[]) {
-	usageCmdLine(argc, argv);
+void helpInfo(int argc, const char* argv[]) {
+	usageInfo(argc, argv);
 
 	printf("The Toy Programming Language, leave arguments blank for an interactive REPL.\n\n");
 
 	printf("  -h, --help\t\t\tShow this help then exit.\n");
 	printf("  -v, --version\t\t\tShow version and copyright information then exit.\n");
-	printf("  -f, --file infile\t\tParse, compile and execute the source file then exit.\n");
+	printf("  -f, --file script\t\tParse, compile and execute the file then exit.\n");
 	printf("      --silent-print\t\tSuppress output from the print keyword.\n");
 	printf("      --silent-assert\t\tSuppress output from the assert keyword.\n");
-	printf("      --remove-assert\t\tDo not include the assert statement in the bytecode.\n");
 	printf("  -d, --verbose\t\tPrint debugging information about Toy's internals.\n");
 }
 
-void versionCmdLine(int argc, const char* argv[]) {
+void versionInfo(int argc, const char* argv[]) {
 	(void)argc;
 	(void)argv;
 	printf("The Toy Programming Language, Version %d.%d.%d %s\n\n", TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, TOY_VERSION_BUILD);
@@ -174,77 +171,52 @@ void versionCmdLine(int argc, const char* argv[]) {
 	printf("%s",license);
 }
 
-CmdLine parseCmdLine(int argc, const char* argv[]) {
-	CmdLine cmd = {
-		.error = false,
-		.help = false,
-		.version = false,
-		.infile = NULL,
-		.infileLength = 0,
-		.silentPrint = false,
-		.silentAssert = false,
-		.removeAssert = false,
-		.verbose = false,
-	};
+Settings parseSettings(int argc, const char* argv[]) {
+	Settings settings = {0};
 
 	for (int i = 1; i < argc; i++) {
 		if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-			cmd.help = true;
+			settings.help = true;
 		}
 
 		else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version")) {
-			cmd.version = true;
+			settings.version = true;
 		}
 
 		else if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "--file")) {
 			if (argc <= i + 1) {
-				cmd.error = true;
+				settings.error = true;
+				break;
 			}
-			else {
-				if (cmd.infile != NULL) { //don't leak
-					free(cmd.infile);
-				}
 
-				i++;
-
-				//total space to reserve
-				cmd.infileLength = strlen(argv[i]) + 1;
-				cmd.infileLength = (cmd.infileLength + 3) & ~3; //BUGFIX: align to  word size
-				cmd.infile = malloc(cmd.infileLength);
-
-				if (cmd.infile == NULL) {
-					fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate space while parsing the command line, exiting\n" TOY_CC_RESET);
-					exit(-1);
-				}
-
-				int len = strlen(argv[i]);
-				strncpy(cmd.infile, argv[i], len);
-				cmd.infile[len] = '\0';
+			if (settings.script != NULL) {
+				fprintf(stderr, TOY_CC_ERROR "ERROR: No more than one script file allowed\n" TOY_CC_RESET);
+				settings.error = true;
+				break;
 			}
+
+			i++;
+			settings.script = argv[i];
 		}
 
 		else if (!strcmp(argv[i], "--silent-print")) {
-			cmd.silentPrint = true;
+			settings.silentPrint = true;
 		}
 
 		else if (!strcmp(argv[i], "--silent-assert")) {
-			cmd.silentAssert = true;
-		}
-
-		else if (!strcmp(argv[i], "--remove-assert")) {
-			cmd.removeAssert = true;
+			settings.silentAssert = true;
 		}
 
 		else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--verbose")) {
-			cmd.verbose = true;
+			settings.verbose = true;
 		}
 
 		else {
-			cmd.error = true;
+			settings.error = true;
 		}
 	}
 
-	return cmd;
+	return settings;
 }
 
 //repl function
@@ -360,59 +332,53 @@ int repl(const char* filepath, bool verbose) {
 
 //main file
 int main(int argc, const char* argv[]) {
+	//if there's args, process them
+	Settings settings = parseSettings(argc, argv);
+	if (settings.error) {
+		usageInfo(argc, argv);
+		return 1;
+	}
+
+	//setup the output options
 	Toy_setPrintCallback(puts);
 	Toy_setErrorCallback(errorAndExitCallback);
 	Toy_setAssertFailureCallback(assertFailureAndExitCallback);
-
-	//if there's args, process them
-	CmdLine cmd = parseCmdLine(argc, argv);
-
-	//output options
-	if (cmd.silentPrint) {
+	if (settings.silentPrint) {
 		Toy_setPrintCallback(noOpCallback);
 	}
-
-	if (cmd.silentAssert) {
+	if (settings.silentAssert) {
 		Toy_setAssertFailureCallback(silentExitCallback);
 	}
 
 	//process
-	if (cmd.error) {
-		usageCmdLine(argc, argv);
+	if (settings.help) {
+		helpInfo(argc, argv);
 	}
-	else if (cmd.help) {
-		helpCmdLine(argc, argv);
+	else if (settings.version) {
+		versionInfo(argc, argv);
 	}
-	else if (cmd.version) {
-		versionCmdLine(argc, argv);
-	}
-	else if (cmd.infile != NULL) {
+	else if (settings.script != NULL) {
 		//read the source file
 		int size;
-		unsigned char* source = readFile(cmd.infile, &size);
+		unsigned char* source = readFile(settings.script, &size);
 
 		//check the file
 		if (source == NULL) {
 			if (size == 0) {
-				fprintf(stderr, TOY_CC_ERROR "ERROR: Could not parse an empty file '%s', exiting\n" TOY_CC_RESET, cmd.infile);
+				fprintf(stderr, TOY_CC_ERROR "ERROR: Could not parse an empty file '%s', exiting\n" TOY_CC_RESET, settings.script);
 				return -1;
 			}
 
 			else if (size == -1) {
-				fprintf(stderr, TOY_CC_ERROR "ERROR: File not found '%s', exiting\n" TOY_CC_RESET, cmd.infile);
+				fprintf(stderr, TOY_CC_ERROR "ERROR: File not found '%s', exiting\n" TOY_CC_RESET, settings.script);
 				return -1;
 			}
 
 			else {
-				fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown error while reading file '%s', exiting\n" TOY_CC_RESET, cmd.infile);
+				fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown error while reading file '%s', exiting\n" TOY_CC_RESET, settings.script);
 				return -1;
 			}
 		}
-
-		free(cmd.infile);
-
-		cmd.infile = NULL;
-		cmd.infileLength = 0;
 
 		//compile the source code
 		Toy_Lexer lexer;
@@ -430,7 +396,7 @@ int main(int argc, const char* argv[]) {
 			return -1;
 		}
 
-		if (cmd.verbose) {
+		if (settings.verbose) {
 			inspect_ast(ast);
 		}
 
@@ -442,7 +408,7 @@ int main(int argc, const char* argv[]) {
 			return -1;
 		}
 
-		if (cmd.verbose) {
+		if (settings.verbose) {
 			inspect_bytecode(bytecode);
 		}
 
@@ -455,7 +421,7 @@ int main(int argc, const char* argv[]) {
 		Toy_runVM(&vm);
 
 		//print the debug info
-		if (cmd.verbose) {
+		if (settings.verbose) {
 			inspect_stack(vm.stack);
 			inspect_scope(vm.scope, 0);
 		}
@@ -465,7 +431,7 @@ int main(int argc, const char* argv[]) {
 		free(bytecode);
 	}
 	else {
-		repl(argv[0], cmd.verbose);
+		repl(argv[0], settings.verbose);
 	}
 
 	return 0;

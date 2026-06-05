@@ -55,7 +55,7 @@
 
 //version specifiers, embedded as the header
 #define TOY_VERSION_MAJOR 2
-#define TOY_VERSION_MINOR 1
+#define TOY_VERSION_MINOR 0
 #define TOY_VERSION_PATCH 0
 
 //defined as a function, for technical reasons
