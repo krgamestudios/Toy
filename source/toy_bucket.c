@@ -70,7 +70,7 @@ void Toy_freeBucket(Toy_Bucket** bucketHandle) {
 	(*bucketHandle) = NULL;
 }
 
-TOY_API void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle) {
+void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle) {
 	//clear whatever this handle is pointing to
 	if ((*bucketHandle) == NULL) {
 		return;

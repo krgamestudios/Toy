@@ -72,14 +72,12 @@ This is a rough outline of all API functions declared in Toy's headers. As a rul
 ```c
 TOY_API Toy_Array* Toy_resizeArray(Toy_Array* array, unsigned int capacity);
 TOY_API void Toy_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb);
-TOY_API void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle) {
 TOY_API Toy_Bucket* Toy_allocateBucket(unsigned int capacity);
 TOY_API unsigned char* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount);
 TOY_API void Toy_releaseBucketPartition(unsigned char* ptr);
 TOY_API void Toy_freeBucket(Toy_Bucket** bucketHandle);
 TOY_API void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle);
 TOY_API unsigned char* Toy_compileToBytecode(Toy_Ast* ast);
-TOY_API void Toy_freeFunction(Toy_Function* fn) {
 TOY_API Toy_Function* Toy_createFunctionFromBytecode(Toy_Bucket** bucketHandle, unsigned char* bytecode, Toy_Scope* parentScope);
 TOY_API Toy_Function* Toy_createFunctionFromCallback(Toy_Bucket** bucketHandle, Toy_nativeCallback callback);
 TOY_API Toy_Function* Toy_copyFunction(Toy_Bucket** bucketHandle, Toy_Function* fn);
@@ -156,4 +154,75 @@ The tools in `repl/` includes a standard library, which can be added to the root
 
 It also offers an example of how to write an API.
 
-*Note: Range returns a closure intended for use in the `for` keyword, but the that keyword isn't done yet.*
+*Note: `range()` returns a closure intended for use in the `for` keyword, but the that keyword isn't done yet.*
+
+## Inspector Tools
+
+Other tools within `repl/` include:
+
+* ast_inspector
+* bucket_inspector
+* bytecode_inspector
+* scope_inspector
+* stack_inspector
+
+While these are useful tools and are expanded as needed, there may be some components of each that aren't complete yet. These are only intended for use when developing Toy itself, but may prove useful for others looking to debug their code.
+
+## Creating and Using Functions
+
+See `repl/standard_library.c` for examples.
+
+## Creating And Using Opaques
+
+This is a quick rundown of how I'm using opaques to create the API in [ToyBox](https://gitea.krgamestudios.com/krgamestudios/ToyBox):
+
+```c
+//an enum of all opaques
+typedef enum OpaqueType {
+	OPAQUE_KEYBOARD,
+	//mouse, etc.
+} OpaqueType;
+
+//'type' being the first member allows for pointer punning
+typedef struct KeyboardData {
+	OpaqueType type;
+} KeyboardData;
+
+//'keyboardData' holds information about the keyboard state
+KeyboardData keyboardData = {
+	.type = OPAQUE_KEYBOARD,
+};
+
+//inject 'keyboardData' into the current scope with the name 'Keyboard'
+Toy_String* name = Toy_toString(&vm->memoryBucket, "Keyboard");
+Toy_declareScope(vm->scope, name, TOY_VALUE_OPAQUE, TOY_OPAQUE_FROM_POINTER(&keyboardData), true);
+Toy_freeString(name); //don't forget to clean up after yourself!
+
+//each opaque has its own handler, which is called from a central dispatch callback
+Toy_Value dispatchOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
+	//pointer punning to determine the opaque's type
+	OpaqueType* type = (OpaqueType*)TOY_VALUE_AS_OPAQUE(compound);
+
+	switch(*type) {
+		case OPAQUE_KEYBOARD:
+			return handleKeyboardAttributes(vm, compound, attribute);
+	}
+}
+
+//the dispatch is usually set early on
+Toy_setOpaqueAttributeHandler(dispatchOpaqueAttributes);
+
+//from here, each opaque does what it needs to
+Toy_Value handleKeyboardAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
+	KeyboardData* keyboard = (KeyboardData*)TOY_VALUE_AS_OPAQUE(compound);
+	Toy_String* string = TOY_VALUE_AS_STRING(attribute);
+	const char* cstr = string->leaf.data;
+
+	if (strlen(cstr) == 5 && strcmp(cstr, "ENTER") == 0) {
+		//TODO: check if enter was pressed
+	}
+
+	//the return value is left on the stack
+	return TOY_VALUE_FROM_NULL();
+}
+```

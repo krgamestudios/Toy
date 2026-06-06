@@ -46,7 +46,7 @@ Toy_Function* Toy_copyFunction(Toy_Bucket** bucketHandle, Toy_Function* original
 	return fn;
 }
 
-TOY_API void Toy_freeFunction(Toy_Function* fn) {
+void Toy_freeFunction(Toy_Function* fn) {
 	if (fn->type == TOY_FUNCTION_CUSTOM) {
 		Toy_private_decrementScopeRefCount(fn->bytecode.parentScope);
 	}

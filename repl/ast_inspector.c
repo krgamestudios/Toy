@@ -24,6 +24,7 @@ void inspect_ast(Toy_Ast* ast) {
 }
 
 void inspect_by_type(Toy_Ast* ast, int depth) {
+	//TODO: AST inspector is incomplete
 	switch(ast->type) {
 		case TOY_AST_BLOCK:
 			inspect_block(ast, depth);
