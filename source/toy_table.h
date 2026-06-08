@@ -38,7 +38,7 @@ Toy_TableEntry* Toy_private_lookupTableEntryPtr(Toy_Table** tableHandle, Toy_Val
 #define TOY_TABLE_EXPANSION_RATE 2
 #endif
 
-//expand when the contents passes a certain percentage (80%) of the capacity
+//expand when the contents passes a certain percentage of the capacity
 #ifndef TOY_TABLE_EXPANSION_THRESHOLD
 #define TOY_TABLE_EXPANSION_THRESHOLD 0.7f
 #endif
