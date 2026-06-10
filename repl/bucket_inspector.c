@@ -1,5 +1,6 @@
 #include "bucket_inspector.h"
-#include <toy_string.h>
+#include "toy_console_colors.h"
+#include "toy_string.h"
 
 #include <stdio.h>
 
@@ -17,14 +18,19 @@ int inspect_bucket(Toy_Bucket** bucketHandle) {
 			if ( ( *((int*)ptr) & 1) == 0) { //is this partition still in use?
 				occupied++;
 
-				//try to print as a string if possible
-				Toy_String* str = (void*)(ptr + 4);
+				if (*ptr >= sizeof(Toy_String)) {
+					//try to print as a string if possible
+					Toy_String* str = (void*)(ptr + 4);
 
-				if (str->info.type == TOY_STRING_LEAF && str->info.length < 255) {
-					printf("String Leaf (%d bytes, %d refCount): %.*s\n", *((int*)ptr), str->info.refCount, str->info.length, str->leaf.data);
+					if (str->info.type == TOY_STRING_LEAF && str->info.length < 255) {
+						printf("String Leaf (%d bytes, %d refCount): %.*s\n", *((int*)ptr), str->info.refCount, str->info.length, str->leaf.data);
+					}
+					else if (str->info.type == TOY_STRING_NODE) {
+						printf("String Node (%d bytes, %d refCount): ...\n", *((int*)ptr), str->info.refCount);
+					}
 				}
-				else if (str->info.type == TOY_STRING_NODE) {
-					printf("String Node (%d bytes, %d refCount): ...\n", *((int*)ptr), str->info.refCount);
+				else {
+					printf("Unknown (%u bytes)\n", *((unsigned int*)ptr));
 				}
 			}
 			else {
@@ -36,7 +42,7 @@ int inspect_bucket(Toy_Bucket** bucketHandle) {
 			ptr += ((*((int*)ptr) | 1) ^ 1) + 4; //OR + XOR to remove the 'free' flag from the size
 		}
 
-		printf("Bucket link %d: count %u, %d occupied, %d released\n", depth, iter->count, occupied, released);
+		printf(TOY_CC_DEBUG "Bucket link %d: count %u, %d occupied, %d released" TOY_CC_RESET "\n", depth, iter->count, occupied, released);
 
 		depth++;
 	}

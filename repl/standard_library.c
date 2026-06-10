@@ -1,6 +1,5 @@
 #include "standard_library.h"
 #include "toy_console_colors.h"
-
 #include "toy_scope.h"
 #include "toy_stack.h"
 
