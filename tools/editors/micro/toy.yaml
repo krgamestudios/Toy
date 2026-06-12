@@ -48,7 +48,9 @@ rules:
   - comment.line:
       start: '//'
       end: '$'
+      rules: []
     # Multi-line comment.
   - comment.block:
       start: '/\*'
       end: '\*/'
+      rules: []
