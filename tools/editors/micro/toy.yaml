@@ -27,7 +27,7 @@ rules:
     # Non-operator symbols.
   - symbol: '[=:]'
     # Operators.
-  - symbol.operator: '[+\-*/%!<>]=?|++|--|==|&&|\|\||?|\.{1,3}'
+  - symbol.operator: '[+\-*/%!<>]=?|\+\+|--|==|[&|?]|\.{1,3}'
     # Separator symbols.
   - symbol.comma: '[,;]'
     # Boolean literals.
