@@ -65,7 +65,7 @@ This source code is covered by the Zlib license (see [LICENSE](LICENSE) for deta
 
 Contributions via the [GitHub mirror](https://github.com/krgamestudios/Toy) are welcome, but absolutely no AI contributions will be accepted.
 
-@Jenny-hso - Micro text editor support  
+@Jenny-hso - Syntax highlighting for multiple text editors  
 Suyash Dwivedi - "No AI" logo [via wikimedia, CC BY-SA 4.0](https://commons.wikimedia.org/w/index.php?curid=165477595)  
 @NishiOwO - Unofficial NetBSD support  
 @Gipson62 - v1 docs spell checking  
