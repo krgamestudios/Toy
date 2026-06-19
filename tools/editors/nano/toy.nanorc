@@ -1,0 +1,36 @@
+syntax "Toy" "\.toy$"
+
+## Function invocations.
+icolor brightyellow "\<[a-z0-9]+\("
+## Brackets.
+color white "[()[\]\{}]"
+## `print` keyword.
+color cyan "\<print\>"
+## Declaration keywords.
+color cyan "\<(fn|class|var)\>"
+## Statements that affect control flow.
+color magenta "\<(break|continue|return|yield)\>"
+## Statements.
+color cyan "\<(assert|if|else|while|for|in|of|import|export|as|pass)\>"
+## Types.
+color green "\<(Bool|Int|Float|String|Function|Opaque|Any)\>"
+## Collection types.
+color brightgreen "\<(Array|Table)\>"
+## `const` keyword.
+color red "\<const\>"
+## Operator-ish symbols.
+color red "[-=:+*/%!<><=>&|?.]+"
+## Boolean literals.
+color brightcyan "\<(true|false)\>"
+## Integer literals.
+color blue "\<[0-9][0-9_]*\>"
+## Floating point literals.
+color blue "\<[0-9][0-9_]*\.[0-9][0-9_]*\>"
+## Single-line comments.
+color brightblue "^[[:space:]]*//.*$"
+## Multi-line comment.
+color brightblue start="/\*" end="\*/"
+## String literals.
+color yellow "\"(\\.|[^\"])*?\""
+## Trailing spaces.
+color ,green "[[:space:]]+$"

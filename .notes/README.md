@@ -4,6 +4,6 @@ This folder is full of development notes, and are probably out of date. Check th
 
 - Improve tool support:
   - Editors:
-    - [ ] nano (`.nanorc` syntax file)
-    - [ ] vim/Neovim (`.vim` syntax file)
+    - [x] nano (`.nanorc` syntax file)
+    - [x] vim/Neovim (`.vim` syntax file)
     - [ ] VSCode (extension)
