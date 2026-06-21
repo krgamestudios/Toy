@@ -31,9 +31,12 @@
 	assert array.popBack() == 8, "Array popBack attribute failed";
 }
 
-//sorting algorithm
+//index
 {
-	//WARN: Array sorting algorithm not yet implemented
+	var array = [1,2,3,4,5,6,7,8,9,10];
+	assert array[4] == 5, "Array index failed";
+	assert array[-2] == 9, "Array negative index failed";
+	//assert array[4:3] == [5,6,7], "Array index-length failed"; //WARN: Array slicing not yet implemented
 }
 
 //syntax
@@ -43,4 +46,9 @@
 
 	var trailing = [1, 2, 3, ];
 	assert trailing == [1,2,3], "Trailing comma array failed";
+}
+
+//sorting algorithm
+{
+	//WARN: Array sorting algorithm not yet implemented
 }

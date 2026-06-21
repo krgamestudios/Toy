@@ -130,6 +130,22 @@ for (var i in table) {
 }
 ```
 
+## Strings
+
+Strings are defined as text between two quotation marks, and can be indexed with a pair of brackets to produce a substring.
+
+```
+//define a string
+var string = "Hello World";
+
+//strings can be indexed and concatenated
+var greeting: String = string[0:5];
+var parting: String = "Goodbye " .. string[6:5];
+
+//indexing works backwards too
+print greeting .. " Beautiful " .. string[-5:5]; //Hello Beautiful World
+```
+
 ## Arrays and Tables
 
 Arrays are defined with a pair of brackets, and can contain a list of comma-separated values.

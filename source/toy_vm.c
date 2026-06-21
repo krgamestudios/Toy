@@ -895,8 +895,6 @@ static void processConcat(Toy_VM* vm) {
 static void processIndex(Toy_VM* vm) {
 	unsigned char count = READ_BYTE(vm); //value[index, length] ; 1[2, 3]
 
-	//TODO: slicing from the end of a string/array, value[0:-1]
-
 	Toy_Value value = TOY_VALUE_FROM_NULL();
 	Toy_Value index = TOY_VALUE_FROM_NULL();
 	Toy_Value length = TOY_VALUE_FROM_NULL();
@@ -942,9 +940,26 @@ static void processIndex(Toy_VM* vm) {
 		int l = TOY_VALUE_IS_INTEGER(length) ? TOY_VALUE_AS_INTEGER(length) : 1;
 		Toy_String* str = TOY_VALUE_AS_STRING(value);
 
+		//URGENT: unbounded slicing is needed
+
+		//reorient negative index
+		if (i < 0) {
+			i = str->info.length + i;
+		}
+
 		//check indexing is within bounds
-		if ( (i < 0 || (unsigned int)i >= str->info.length) || (i+l <= 0 || (unsigned int)(i+l) > str->info.length)) {
+		if (i < 0 || (unsigned int)i >= str->info.length) {
 			Toy_error("String index is out of bounds");
+			Toy_freeValue(value);
+			Toy_freeValue(index);
+			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+			return;
+		}
+
+		//check length is within bounds
+		if (l == 0 || i+l <= 0 || (unsigned int)(i+l) > str->info.length) {
+			Toy_error("String length is out of bounds");
 			Toy_freeValue(value);
 			Toy_freeValue(index);
 			Toy_freeValue(length);
@@ -999,8 +1014,13 @@ static void processIndex(Toy_VM* vm) {
 		int l = TOY_VALUE_IS_INTEGER(length) ? TOY_VALUE_AS_INTEGER(length) : 1;
 		Toy_Array* array = TOY_VALUE_AS_ARRAY(value);
 
+		//reorient negative index
+		if (i < 0) {
+			i = array->count + i;
+		}
+
 		//check indexing is within bounds
-		if ( (i < 0 || (unsigned int)i >= array->count) || (i+l <= 0 || (unsigned int)(i+l) > array->count)) {
+		if ( (i < 0 || (unsigned int)i >= array->count)) {
 			Toy_error("Array index is out of bounds");
 			Toy_freeValue(value);
 			Toy_freeValue(index);
@@ -1008,6 +1028,18 @@ static void processIndex(Toy_VM* vm) {
 			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
 		}
+
+		//check length is within bounds
+		if (l == 0 || i+l <= 0 || (unsigned int)(i+l) > array->count) {
+			Toy_error("Array length is out of bounds");
+			Toy_freeValue(value);
+			Toy_freeValue(index);
+			Toy_freeValue(length);
+			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+			return;
+		}
+
+		//BUG: array slicing is not implemented (length is ignored)
 
 		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
 		if (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i]) || TOY_VALUE_IS_FUNCTION(array->data[i])) {

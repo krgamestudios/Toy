@@ -10,13 +10,11 @@
 	print parting;
 	assert parting == "Goodbye World", "String concat from an index failed";
 
-	//WARN: Unbounded slice not possible without indexing from the end of a string
-	//var simple: String = parting[5:-1];
-	//assert simple == "bye World", "String unbounded slice failed";
-}
+	var simple: String = parting[-5:5];
+	assert simple == "World", "String negative index failed";
 
-//var greeting: String = "Hello World";
-//var parting: String = "Goodbye " .. greeting[6:5];
+	//TODO: Unbounded slices not yet implemented
+}
 
 //String attributes
 {
