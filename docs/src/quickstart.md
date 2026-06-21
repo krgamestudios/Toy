@@ -170,6 +170,7 @@ var string = "Hello World";
 print string.length; //11
 print string.asUpper; //HELLO WORLD
 print string.asLower; //hello world
+print string.asLower.asCapitalized; //Hello world
 
 var array = [1,2,3];
 array.pushBack(4); //array = [1,2,3,4]

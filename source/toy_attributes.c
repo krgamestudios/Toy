@@ -37,8 +37,14 @@ Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy
 		free(buffer);
 		return TOY_VALUE_FROM_STRING(str);
 	}
-	//TODO: as capitalized
-	//TODO: split?
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "asCapitalized")) {
+		char* buffer = Toy_getStringRaw(TOY_VALUE_AS_STRING(compound));
+		buffer[0] = toupper(buffer[0]); //only applies toteh first character
+		Toy_String* str = Toy_createStringLength(&vm->memoryBucket, buffer, strlen(buffer));
+		free(buffer);
+		return TOY_VALUE_FROM_STRING(str);
+	}
+	//TODO: string.split?
 	else {
 		char buffer[256];
 		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_getValueTypeAsCString(compound.type));
@@ -92,19 +98,19 @@ static void attr_arrayPopBack(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, element);
 }
 
-// static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
-// 	(void)vm;
-// 	(void)self;
+static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)vm;
+	(void)self;
 
-// 	//URGENT: attr_arraySort
-// }
+	//URGENT: attr_arraySort
+}
 
-// static void attr_arrayFlatten(Toy_VM* vm, Toy_FunctionNative* self) {
-// 	(void)vm;
-// 	(void)self;
+static void attr_arrayFlatten(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)vm;
+	(void)self;
 
-// 	//URGENT: attr_arrayFlatten
-// }
+	//URGENT: attr_arrayFlatten
+}
 
 Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
 	if (MATCH_VALUE_AND_CSTRING(attribute, "length")) {
@@ -118,14 +124,14 @@ Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayPopBack);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	// else if (MATCH_VALUE_AND_CSTRING(attribute, "sort")) {
-	// 	Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arraySort);
-	// 	return TOY_VALUE_FROM_FUNCTION(fn);
-	// }
-	// else if (MATCH_VALUE_AND_CSTRING(attribute, "flatten")) {
-	// 	Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayFlatten);
-	// 	return TOY_VALUE_FROM_FUNCTION(fn);
-	// }
+	else if (false && MATCH_VALUE_AND_CSTRING(attribute, "sort")) {
+		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arraySort);
+		return TOY_VALUE_FROM_FUNCTION(fn);
+	}
+	else if (false && MATCH_VALUE_AND_CSTRING(attribute, "flatten")) {
+		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayFlatten);
+		return TOY_VALUE_FROM_FUNCTION(fn);
+	}
 	else {
 		char buffer[256];
 		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_getValueTypeAsCString(compound.type));
