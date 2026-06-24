@@ -206,7 +206,7 @@ static unsigned int emitParameters(Toy_Bytecode* mb, Toy_Ast* ast) {
 	unsigned int dataAddr = emitCStringToData(&(mb->data), &(mb->dataCapacity), &(mb->dataCount), buffer);
 
 	//check the param index for that entry i.e. don't reuse parameter names
-	for (unsigned int i = 0; i < mb->paramCount; i+=4) {
+	for (unsigned int i = 0; i < mb->paramCount; i+=8) {
 		if (*(unsigned int*)(mb->param + i) == dataAddr) {
 			//not allowed
 			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Function parameters must have unique names\n" TOY_CC_RESET);
