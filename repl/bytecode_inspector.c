@@ -16,8 +16,8 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 #define MARKER_VALUE(pc, type) \
 	((unsigned int)(pc * sizeof(type)))
 
-#define MARKER "\t\033[" TOY_CC_FONT_BLACK "m" " %u\t" TOY_CC_RESET
-#define FONT_BLACK "\033[" TOY_CC_FONT_BLACK "m"
+#define MARKER "\t\033[" TOY_CC_FONT_CYAN "m" " %u\t" TOY_CC_RESET
+#define FONT "\033[" TOY_CC_FONT_CYAN "m"
 
 //exposed functions
 int inspect_bytecode(unsigned char* bytecode) {
@@ -29,7 +29,7 @@ int inspect_bytecode(unsigned char* bytecode) {
 	unsigned int const dataSize = ((unsigned int*)(bytecode))[3];
 	unsigned int const subsSize = ((unsigned int*)(bytecode))[4];
 
-	printf(FONT_BLACK ".header:\r" TOY_CC_RESET);
+	printf(FONT ".header:\r" TOY_CC_RESET);
 
 	//bytecode size
 	printf(MARKER TOY_CC_NOTICE "Bytecode Size: \t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(0, unsigned int), bytecodeSize);
@@ -88,7 +88,7 @@ int inspect_bytecode(unsigned char* bytecode) {
 
 	if (code_end == 0) code_end = bytecodeSize; //very hacky
 
-	printf(FONT_BLACK ".code:\r" TOY_CC_RESET);
+	printf(FONT ".code:\r" TOY_CC_RESET);
 
 	unsigned int pc = code_addr;
 	while(pc < code_end) {
@@ -97,7 +97,7 @@ int inspect_bytecode(unsigned char* bytecode) {
 
 	//jumps
 	if (jumpsSize > 0) {
-		printf(FONT_BLACK ".jumps:\r" TOY_CC_RESET);
+		printf(FONT ".jumps:\r" TOY_CC_RESET);
 
 		for (unsigned int i = 0; (i*4) < jumpsSize; i++) {
 			printf(MARKER TOY_CC_NOTICE "%u (data %u)" TOY_CC_RESET "\n", MARKER_VALUE(jumps_addr + i, unsigned int),
@@ -109,7 +109,7 @@ int inspect_bytecode(unsigned char* bytecode) {
 
 	//param
 	if (paramSize > 0) {
-		printf(FONT_BLACK ".param:\r" TOY_CC_RESET);
+		printf(FONT ".param:\r" TOY_CC_RESET);
 
 		for (unsigned int i = 0; (i*4) < paramSize; i += 2) {
 			printf(MARKER TOY_CC_NOTICE "%u (type %s, data %u)" TOY_CC_RESET "\n", MARKER_VALUE(param_addr + i, unsigned int),
@@ -122,7 +122,7 @@ int inspect_bytecode(unsigned char* bytecode) {
 
 	//data; assume there's only strings for now
 	if (dataSize > 0) {
-		printf(FONT_BLACK ".data:\r" TOY_CC_RESET);
+		printf(FONT ".data:\r" TOY_CC_RESET);
 
 		for (unsigned int i = 0; (i*4) < dataSize; i++) {
 			printf(MARKER TOY_CC_NOTICE "%c %c %c %c" TOY_CC_RESET "\n", MARKER_VALUE(data_addr + i, unsigned int),
@@ -136,7 +136,7 @@ int inspect_bytecode(unsigned char* bytecode) {
 
 	//subs
 	if (subsSize > 0) {
-		printf(FONT_BLACK ".subs:\n" TOY_CC_RESET);
+		printf(FONT ".subs:\n" TOY_CC_RESET);
 
 		unsigned int i = 0;
 		while (i < subsSize) {
@@ -199,7 +199,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 4;
 
 		case TOY_OPCODE_ITERATE:
-			printf(MARKER  TOY_CC_DEBUG "ITERATE on [-2] based on type, with [-1] as counter, then delegate to: JUMP %s%s (%s%d) (GOTO %u)\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
+			printf(MARKER  TOY_CC_NOTICE "ITERATE on [-2] based on type, with [-1] as counter, then delegate to: JUMP %s%s (%s%d) (GOTO %u)\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
 				bytecode[pc + 1] == TOY_OP_PARAM_JUMP_ABSOLUTE ? "absolute" : "relative",
 				bytecode[pc + 2] == TOY_OP_PARAM_JUMP_ALWAYS ? "" :
 					bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_TRUE ? " if true" :
@@ -278,7 +278,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 4;
 
 		case TOY_OPCODE_JUMP:
-			printf(MARKER  TOY_CC_DEBUG "JUMP %s%s (%s%d) (GOTO %u)\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
+			printf(MARKER  TOY_CC_NOTICE "JUMP %s%s (%s%d) (GOTO %u)\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
 				bytecode[pc + 1] == TOY_OP_PARAM_JUMP_ABSOLUTE ? "absolute" : "relative",
 				bytecode[pc + 2] == TOY_OP_PARAM_JUMP_ALWAYS ? "" :
 					bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_TRUE ? " if true" :
@@ -293,7 +293,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 8;
 
 		case TOY_OPCODE_ESCAPE:
-			printf(MARKER  TOY_CC_DEBUG "ESCAPE relative %s%d (GOTO %u) and pop %d scopes\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
+			printf(MARKER  TOY_CC_NOTICE "ESCAPE relative %s%d (GOTO %u) and pop %d scopes\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
 				(*(int*)(bytecode + pc + 4)) > 0 ? "+" : "", //show a + sign when positive
 				(*(int*)(bytecode + pc + 4)),
 				(*(int*)(bytecode + pc + 4)) + pc + 12,
