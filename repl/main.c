@@ -319,7 +319,10 @@ int repl(const char* filepath, bool verbose) {
 			printf("GC Report: %d -> %d\n", depthBeforeGC, depthAfterGC);
 		}
 
-		free(bytecode);
+		//BUG: Toy references the bytecode to avoid excess copying, but this means freeing the bytecode each loop will break the repl
+		//Therefore, the bytecode must persist for the duration of the program's runtime
+
+		//free(bytecode);
 
 		printf("%s> ", prompt); //shows the terminal prompt
 	}
