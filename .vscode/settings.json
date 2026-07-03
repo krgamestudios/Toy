@@ -24,43 +24,58 @@
 			"icon": "alert",
 			"type": "text",
 			"iconColour": "#FF0000",
-			"foreground": "#FF0000"
+			"foreground": "#FFFFFF",
+			"background": "#FF0000",
+			"fontWeight": "bold",
+			"opacity": 50,
 		},
 		"BUG": {
 			"icon": "bug",
 			"type": "text",
 			"iconColour": "#FF0000",
-			"foreground": "#FF0000"
+			"foreground": "#FFFFFF",
+			"background": "#FF0000",
+			"opacity": 20,
 		},
 		"TODO": {
 			"icon": "alert",
 			"type": "text",
-			"iconColour": "#FFFF00",
-			"foreground": "#FFFF00"
+			"iconColour": "#6caf00",
+			"foreground": "#FFFFFF",
+			"background": "#00FF00",
+			"opacity": 20,
 		},
 		"WARN": {
-			"icon": "alert",
+			"icon": "info",
 			"type": "text",
 			"iconColour": "#FFA500",
-			"foreground": "#FFA500"
+			"foreground": "#FFA500",
+			"background": "#FFA500",
+			"opacity": 0,
 		},
 		"BUGFIX": {
 			"icon": "bug",
 			"type": "text",
 			"iconColour": "#00A000",
-			"foreground": "#00A000"
+			"foreground": "#00A000",
+			"background": "#00A000",
+			"opacity": 0,
 		},
 		"WONTFIX": {
 			"icon": "bug",
 			"type": "text",
 			"iconColour": "#B64949",
-			"foreground": "#B64949"
+			"foreground": "#B64949",
+			"background": "#B64949",
+			"opacity": 0,
 		},
 		"NOTE": {
-			"icon": "alert",
+			"icon": "info",
 			"type": "text",
 			"iconColour": "#00A000",
-			"foreground": "#00A000"
+			"foreground": "#00A000",
+			"background": "#00A000",
+			"opacity": 0,
 		},
 	}
 }
