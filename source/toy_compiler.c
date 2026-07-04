@@ -530,7 +530,15 @@ static unsigned int writeInstructionGroup(Toy_Bytecode** mb, Toy_AstGroup ast) {
 }
 
 static unsigned int writeInstructionCompound(Toy_Bytecode** mb, Toy_AstCompound ast) {
-	unsigned int result = writeBytecodeFromAst(mb, ast.child);
+	unsigned int result = 0;
+
+	//I could add chained assign checks here, but I don't feel like thats a good idea for the lang
+	if (checkForChainedInvoke(ast.child)) {
+		result = writeInstructionFnInvoke(mb, ast.child->fnInvoke, true);
+	}
+	else {
+		result = writeBytecodeFromAst(mb, ast.child);
+	}
 
 	if (ast.flag == TOY_AST_FLAG_COMPOUND_ARRAY) {
 		//signal how many values to read in as array elements
@@ -568,6 +576,9 @@ static unsigned int writeInstructionCompound(Toy_Bytecode** mb, Toy_AstCompound 
 }
 
 static unsigned int writeInstructionAggregate(Toy_Bytecode** mb, Toy_AstAggregate ast) {
+	//BUG: `print [ rand(), rand() ];` -> []
+	//struggled for four hours, still no clue what's happening, brain is fried
+
 	unsigned int result = 0;
 
 	//left, then right

@@ -1,0 +1,37 @@
+//WARN: known bug disabled
+
+/*
+
+
+
+//the old standby
+fn makeCounter() {
+	var counter: Int = 0;
+
+	fn increment() {
+		return ++counter;
+	}
+
+	return increment;
+}
+
+//test on arrays
+{
+	var tally = makeCounter();
+
+	var single: Array = [ tally() ];
+	print single;
+	assert single == [1], "invoking single array failed";
+
+	var double: Array = [ tally(), tally() ];
+	print double == [2,3];
+	assert double == [2,3], "invoking double array failed";
+
+	var triple: Array = [ tally(), tally(), tally() ];
+	print triple;
+	assert triple == [4,5,6], "invoking triple array failed";
+}
+
+//TODO: test on tables
+
+*/
