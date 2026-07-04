@@ -140,6 +140,33 @@ static void std_ceil(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, value);
 }
 
+static void std_sign(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	Toy_Value value = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_INTEGER(value) && !TOY_VALUE_IS_FLOAT(value)) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid type '%s' found in 'sign()'", Toy_getValueTypeAsCString(Toy_unwrapValue(value).type));
+		Toy_error(buffer);
+
+		Toy_freeValue(value);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	int result = 1; //start with a positive
+
+	if (TOY_VALUE_IS_INTEGER(value) && TOY_VALUE_AS_INTEGER(value) < 0) {
+		result = -1;
+	}
+	if (TOY_VALUE_IS_FLOAT(value) && TOY_VALUE_AS_FLOAT(value) < 0) {
+		result = -1;
+	}
+
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(result));
+}
+
 static void std_sqrt(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)self;
 
@@ -214,13 +241,26 @@ static void std_range(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, result);
 }
 
+static void std_rand(Toy_VM* vm, Toy_FunctionNative* self) {
+	//quick and dirty RNG
+	if (self->meta1 == 0) {
+		self->meta1 = 69420;
+	}
+
+	self->meta1 = self->meta1 * 1664525 + 1013904223;
+
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(self->meta1));
+}
+
 CallbackPairs callbackPairs[] = {
 	{"min", std_min},
 	{"max", std_max},
 	{"floor", std_floor},
 	{"ceil", std_ceil},
+	{"sign", std_sign},
 	{"sqrt", std_sqrt},
 	{"range", std_range},
+	{"rand", std_rand},
 
 	{NULL, NULL},
 };
