@@ -1,9 +1,3 @@
-//WARN: known bug disabled
-
-/*
-
-
-
 //the old standby
 fn makeCounter() {
 	var counter: Int = 0;
@@ -24,7 +18,7 @@ fn makeCounter() {
 	assert single == [1], "invoking single array failed";
 
 	var double: Array = [ tally(), tally() ];
-	print double == [2,3];
+	print double;
 	assert double == [2,3], "invoking double array failed";
 
 	var triple: Array = [ tally(), tally(), tally() ];
@@ -32,6 +26,53 @@ fn makeCounter() {
 	assert triple == [4,5,6], "invoking triple array failed";
 }
 
-//TODO: test on tables
+//test on tables
+{
+	var tally = makeCounter();
 
-*/
+	var single: Table = [ tally() : tally() ];
+	print single;
+	assert single == [1:2], "invoking single table failed";
+
+	var double: Table = [ tally() : tally(), tally() : tally() ];
+	print double;
+	assert double == [3:4,5:6], "invoking double table failed";
+
+	var triple: Table = [ tally() : tally(), tally() : tally(), tally() : tally() ];
+	print triple;
+	assert triple == [7:8, 9:10, 11:12], "invoking triple table failed";
+}
+
+//test on arrays (with trailing commas)
+{
+	var tally = makeCounter();
+
+	var single: Array = [ tally(), ];
+	print single;
+	assert single == [1], "invoking single array failed";
+
+	var double: Array = [ tally(), tally(), ];
+	print double;
+	assert double == [2,3], "invoking double array failed";
+
+	var triple: Array = [ tally(), tally(), tally(), ];
+	print triple;
+	assert triple == [4,5,6], "invoking triple array failed";
+}
+
+//test on tables (with trailing commas)
+{
+	var tally = makeCounter();
+
+	var single: Table = [ tally() : tally(), ];
+	print single;
+	assert single == [1:2], "invoking single table failed";
+
+	var double: Table = [ tally() : tally(), tally() : tally(), ];
+	print double;
+	assert double == [3:4,5:6], "invoking double table failed";
+
+	var triple: Table = [ tally() : tally(), tally() : tally(), tally() : tally(), ];
+	print triple;
+	assert triple == [7:8, 9:10, 11:12], "invoking triple table failed";
+}

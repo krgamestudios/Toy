@@ -228,7 +228,7 @@ static void writeBytecodeBody(Toy_Bytecode* mb, Toy_Ast* ast);
 static unsigned char* collateBytecodeBody(Toy_Bytecode* mb);
 static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign ast, bool chainedAssignment); //forward declare for chaining of var declarations
 static unsigned int writeInstructionAccess(Toy_Bytecode** mb, Toy_AstVarAccess ast);
-static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke ast, bool chainedInvoke);
+static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke ast);
 
 static unsigned int writeInstructionValue(Toy_Bytecode** mb, Toy_AstValue ast) {
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
@@ -530,15 +530,7 @@ static unsigned int writeInstructionGroup(Toy_Bytecode** mb, Toy_AstGroup ast) {
 }
 
 static unsigned int writeInstructionCompound(Toy_Bytecode** mb, Toy_AstCompound ast) {
-	unsigned int result = 0;
-
-	//I could add chained assign checks here, but I don't feel like thats a good idea for the lang
-	if (checkForChainedInvoke(ast.child)) {
-		result = writeInstructionFnInvoke(mb, ast.child->fnInvoke, true);
-	}
-	else {
-		result = writeBytecodeFromAst(mb, ast.child);
-	}
+	unsigned int result = writeBytecodeFromAst(mb, ast.child);
 
 	if (ast.flag == TOY_AST_FLAG_COMPOUND_ARRAY) {
 		//signal how many values to read in as array elements
@@ -576,9 +568,6 @@ static unsigned int writeInstructionCompound(Toy_Bytecode** mb, Toy_AstCompound 
 }
 
 static unsigned int writeInstructionAggregate(Toy_Bytecode** mb, Toy_AstAggregate ast) {
-	//BUG: `print [ rand(), rand() ];` -> []
-	//struggled for four hours, still no clue what's happening, brain is fried
-
 	unsigned int result = 0;
 
 	//left, then right
@@ -926,7 +915,7 @@ static unsigned int writeInstructionReturn(Toy_Bytecode** mb, Toy_AstReturn ast)
 		retCount = writeInstructionAssign(mb, ast.child->varAssign, true);
 	}
 	else if (checkForChainedInvoke(ast.child)) {
-		retCount = writeInstructionFnInvoke(mb, ast.child->fnInvoke, true);
+		retCount = writeInstructionFnInvoke(mb, ast.child->fnInvoke);
 	}
 	else {
 		retCount = writeBytecodeFromAst(mb, ast.child); //default value
@@ -964,7 +953,7 @@ static unsigned int writeInstructionVarDeclare(Toy_Bytecode** mb, Toy_AstVarDecl
 		writeInstructionAssign(mb, ast.expr->varAssign, true);
 	}
 	else if (checkForChainedInvoke(ast.expr)) {
-		writeInstructionFnInvoke(mb, ast.expr->fnInvoke, true);
+		writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
 	}
 	else {
 		writeBytecodeFromAst(mb, ast.expr); //default value
@@ -1008,7 +997,7 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else if (checkForChainedInvoke(ast.expr)) {
-			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke, true);
+			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
 		}
 		else {
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
@@ -1036,7 +1025,7 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else if (checkForChainedInvoke(ast.expr)) {
-			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke, true);
+			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
 		}
 		else {
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
@@ -1058,7 +1047,7 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else if (checkForChainedInvoke(ast.expr)) {
-			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke, true);
+			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
 		}
 		else {
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
@@ -1080,7 +1069,7 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else if (checkForChainedInvoke(ast.expr)) {
-			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke, true);
+			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
 		}
 		else {
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
@@ -1102,7 +1091,7 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else if (checkForChainedInvoke(ast.expr)) {
-			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke, true);
+			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
 		}
 		else {
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
@@ -1124,7 +1113,7 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else if (checkForChainedInvoke(ast.expr)) {
-			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke, true);
+			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
 		}
 		else {
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
@@ -1146,7 +1135,7 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
 		}
 		else if (checkForChainedInvoke(ast.expr)) {
-			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke, true);
+			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
 		}
 		else {
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
@@ -1257,7 +1246,7 @@ static unsigned int writeInstructionFnDeclare(Toy_Bytecode** mb, Toy_AstFnDeclar
 	return 0;
 }
 
-static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke ast, bool chainedInvoke) {
+static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke ast) {
 	unsigned int argCount = writeBytecodeFromAst(mb, ast.args);
 
 	if (argCount > 255) {
@@ -1278,9 +1267,9 @@ static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke 
 	EMIT_BYTE(mb, code, TOY_OPCODE_INVOKE);
 	EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
 	EMIT_BYTE(mb, code, (unsigned char)argCount);
-	EMIT_BYTE(mb, code, 0); //BUG: IDK how many returns
+	EMIT_BYTE(mb, code, 1); //BUGFIX: Always return a value
 
-	return chainedInvoke ? 1 : 0;
+	return 1;
 }
 
 static unsigned int writeInstructionAttribute(Toy_Bytecode** mb, Toy_AstAttribute ast) {
@@ -1433,7 +1422,7 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 			break;
 
 		case TOY_AST_FN_INVOKE:
-			result += writeInstructionFnInvoke(mb, ast->fnInvoke, false);
+			result += writeInstructionFnInvoke(mb, ast->fnInvoke);
 			break;
 
 		case TOY_AST_ATTRIBUTE:

@@ -546,7 +546,7 @@ static void processIterate(Toy_VM* vm) {
 			processJump(vm);
 		}
 	}
-	//TODO: support closures in for-loops
+	//URGENT: support closures in for-loops
 	else {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown iterable type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(Toy_unwrapValue(compound).type));
 		exit(-1);
