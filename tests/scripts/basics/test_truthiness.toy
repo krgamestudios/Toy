@@ -86,5 +86,3 @@
 	if (identity) print "function";
 	else assert false, "function";
 }
-
-//TODO: test library as API, would be cleaner than using asserts

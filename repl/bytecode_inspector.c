@@ -191,7 +191,11 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 4;
 
 		case TOY_OPCODE_DUPLICATE:
-			printf(MARKER "DUPLICATE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] ? "and ACCESS" : "");
+			printf(MARKER "DUPLICATE %s\n", MARKER_VALUE(pc, unsigned char),
+				bytecode[pc + 1] == TOY_OPCODE_ACCESS ? "and ACCESS" :
+				bytecode[pc + 1] == TOY_OPCODE_INDEX ? "and INDEX" :
+				""
+			);
 			return 4;
 
 		case TOY_OPCODE_ELIMINATE:
@@ -214,23 +218,43 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 8;
 
 		case TOY_OPCODE_ADD:
-			printf(MARKER "ADD %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
+			printf(MARKER "ADD %s\n", MARKER_VALUE(pc, unsigned char),
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" :
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN_COMPOUND ? "and ASSIGN in COMPOUND" :
+				""
+			);
 			return 4;
 
 		case TOY_OPCODE_SUBTRACT:
-			printf(MARKER "SUBTRACT %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
+			printf(MARKER "SUBTRACT %s\n", MARKER_VALUE(pc, unsigned char),
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" :
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN_COMPOUND ? "and ASSIGN in COMPOUND" :
+				""
+			);
 			return 4;
 
 		case TOY_OPCODE_MULTIPLY:
-			printf(MARKER "MULTIPLY %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
+			printf(MARKER "MULTIPLY %s\n", MARKER_VALUE(pc, unsigned char),
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" :
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN_COMPOUND ? "and ASSIGN in COMPOUND" :
+				""
+			);
 			return 4;
 
 		case TOY_OPCODE_DIVIDE:
-			printf(MARKER "DIVIDE %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
+			printf(MARKER "DIVIDE %s\n", MARKER_VALUE(pc, unsigned char),
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" :
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN_COMPOUND ? "and ASSIGN in COMPOUND" :
+				""
+			);
 			return 4;
 
 		case TOY_OPCODE_MODULO:
-			printf(MARKER "MODULO %s\n", MARKER_VALUE(pc, unsigned char), bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" : "");
+			printf(MARKER "MODULO %s\n", MARKER_VALUE(pc, unsigned char),
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN ? "and ASSIGN" :
+				bytecode[pc + 1] == TOY_OPCODE_ASSIGN_COMPOUND ? "and ASSIGN in COMPOUND" :
+				""
+			);
 			return 4;
 
 		case TOY_OPCODE_INVERT:

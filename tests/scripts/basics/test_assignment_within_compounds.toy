@@ -1,0 +1,7 @@
+var array: Array = [1, 2, 3];
+array[0] += 1;
+assert array == [2,2,3], "Complex assignment to compound elements failed (array)";
+
+var table: Table = ["alpha": 1, "bravo": 2, "charlie": 3];
+table["bravo"] += 7;
+assert table == ["alpha": 1, "bravo": 9, "charlie": 3], "Complex assignment to compound elements failed (table)";

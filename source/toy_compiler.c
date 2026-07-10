@@ -277,7 +277,7 @@ static unsigned int writeInstructionValue(Toy_Bytecode** mb, Toy_AstValue ast) {
 	return 1;
 }
 
-static unsigned int writeInstructionUnary(Toy_Bytecode** mb, Toy_AstUnary ast) {
+static unsigned int writeInstructionUnary(Toy_Bytecode** mb, Toy_AstUnary ast) { //WIP: ++ and -- on compound elements
 	unsigned int result = 0;
 
 	if (ast.flag == TOY_AST_FLAG_NEGATE) {
@@ -972,6 +972,8 @@ static unsigned int writeInstructionVarDeclare(Toy_Bytecode** mb, Toy_AstVarDecl
 
 static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign ast, bool chainedAssignment) {
 	unsigned int result = 0;
+	Toy_OpcodeType accessedTargetType;
+	Toy_OpcodeType assignedTargetType;
 
 	//target is a variable name
 	if (ast.target->type == TOY_AST_VALUE && TOY_VALUE_IS_STRING(ast.target->value.value)) {
@@ -985,34 +987,18 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 		EMIT_BYTE(mb, code, target->info.length); //store the length (max 255)
 
 		emitString(mb, target);
+		accessedTargetType = TOY_OPCODE_ACCESS;
+		assignedTargetType = TOY_OPCODE_ASSIGN;
 	}
-
 	//target is an indexing of some compound value
 	else if (ast.target->type == TOY_AST_AGGREGATE && ast.target->aggregate.flag == TOY_AST_FLAG_INDEX) {
 		writeBytecodeFromAst(mb, ast.target->aggregate.left); //any deeper indexing will just work, using reference values
 		writeBytecodeFromAst(mb, ast.target->aggregate.right); //key
-
-		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
-		if (checkForChainedAssign(ast.expr)) {
-			result += writeInstructionAssign(mb, ast.expr->varAssign, true);
-		}
-		else if (checkForChainedInvoke(ast.expr)) {
-			result += writeInstructionFnInvoke(mb, ast.expr->fnInvoke);
-		}
-		else {
-			result += writeBytecodeFromAst(mb, ast.expr); //default value
-		}
-
-		EMIT_BYTE(mb, code, TOY_OPCODE_ASSIGN_COMPOUND); //uses the top three values on the stack
-		EMIT_BYTE(mb, code, chainedAssignment);
-		EMIT_BYTE(mb, code,0);
-		EMIT_BYTE(mb, code,0);
-
-		return result + (chainedAssignment ? 1 : 0);
+		accessedTargetType = TOY_OPCODE_INDEX;
+		assignedTargetType = TOY_OPCODE_ASSIGN_COMPOUND;
 	}
-
+	//unknown target
 	else {
-		//unknown target
 		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Malformed assignment target\n" TOY_CC_RESET);
 		(*mb)->panic = true;
 		return 0;
@@ -1031,16 +1017,16 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
 		}
 
-		EMIT_BYTE(mb, code, TOY_OPCODE_ASSIGN);
+		EMIT_BYTE(mb, code, assignedTargetType);
 		EMIT_BYTE(mb, code, chainedAssignment);
-		EMIT_BYTE(mb, code,0);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, 0);
+		EMIT_BYTE(mb, code, 0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_ADD_ASSIGN) {
-		EMIT_BYTE(mb, code,TOY_OPCODE_DUPLICATE);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ACCESS); //squeezed
-		EMIT_BYTE(mb, code,0);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, TOY_OPCODE_DUPLICATE);
+		EMIT_BYTE(mb, code, accessedTargetType); //squeezed
+		EMIT_BYTE(mb, code, 2); //only used by TOY_OPCODE_INDEX
+		EMIT_BYTE(mb, code, 0);
 
 		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
 		if (checkForChainedAssign(ast.expr)) {
@@ -1053,16 +1039,16 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
 		}
 
-		EMIT_BYTE(mb, code,TOY_OPCODE_ADD);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(mb, code, TOY_OPCODE_ADD);
+		EMIT_BYTE(mb, code, assignedTargetType); //squeezed
 		EMIT_BYTE(mb, code, chainedAssignment);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, 0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_SUBTRACT_ASSIGN) {
-		EMIT_BYTE(mb, code,TOY_OPCODE_DUPLICATE);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ACCESS); //squeezed
-		EMIT_BYTE(mb, code,0);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, TOY_OPCODE_DUPLICATE);
+		EMIT_BYTE(mb, code, accessedTargetType); //squeezed
+		EMIT_BYTE(mb, code, 2); //only used by TOY_OPCODE_INDEX
+		EMIT_BYTE(mb, code, 0);
 
 		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
 		if (checkForChainedAssign(ast.expr)) {
@@ -1075,16 +1061,16 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
 		}
 
-		EMIT_BYTE(mb, code,TOY_OPCODE_SUBTRACT);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(mb, code, TOY_OPCODE_SUBTRACT);
+		EMIT_BYTE(mb, code, assignedTargetType); //squeezed
 		EMIT_BYTE(mb, code, chainedAssignment);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, 0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_MULTIPLY_ASSIGN) {
-		EMIT_BYTE(mb, code,TOY_OPCODE_DUPLICATE);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ACCESS); //squeezed
-		EMIT_BYTE(mb, code,0);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, TOY_OPCODE_DUPLICATE);
+		EMIT_BYTE(mb, code, accessedTargetType); //squeezed
+		EMIT_BYTE(mb, code, 2); //only used by TOY_OPCODE_INDEX
+		EMIT_BYTE(mb, code, 0);
 
 		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
 		if (checkForChainedAssign(ast.expr)) {
@@ -1097,16 +1083,16 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
 		}
 
-		EMIT_BYTE(mb, code,TOY_OPCODE_MULTIPLY);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(mb, code, TOY_OPCODE_MULTIPLY);
+		EMIT_BYTE(mb, code, assignedTargetType); //squeezed
 		EMIT_BYTE(mb, code, chainedAssignment);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, 0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_DIVIDE_ASSIGN) {
-		EMIT_BYTE(mb, code,TOY_OPCODE_DUPLICATE);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ACCESS); //squeezed
-		EMIT_BYTE(mb, code,0);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, TOY_OPCODE_DUPLICATE);
+		EMIT_BYTE(mb, code, accessedTargetType); //squeezed
+		EMIT_BYTE(mb, code, 2); //only used by TOY_OPCODE_INDEX
+		EMIT_BYTE(mb, code, 0);
 
 		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
 		if (checkForChainedAssign(ast.expr)) {
@@ -1119,16 +1105,16 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
 		}
 
-		EMIT_BYTE(mb, code,TOY_OPCODE_DIVIDE);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(mb, code, TOY_OPCODE_DIVIDE);
+		EMIT_BYTE(mb, code, assignedTargetType); //squeezed
 		EMIT_BYTE(mb, code, chainedAssignment);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, 0);
 	}
 	else if (ast.flag == TOY_AST_FLAG_MODULO_ASSIGN) {
-		EMIT_BYTE(mb, code,TOY_OPCODE_DUPLICATE);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ACCESS); //squeezed
-		EMIT_BYTE(mb, code,0);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, TOY_OPCODE_DUPLICATE);
+		EMIT_BYTE(mb, code, accessedTargetType); //squeezed
+		EMIT_BYTE(mb, code, 2); //only used by TOY_OPCODE_INDEX
+		EMIT_BYTE(mb, code, 0);
 
 		//if we're dealing with chained assignments, hijack the next assignment with 'chainedAssignment' set to true
 		if (checkForChainedAssign(ast.expr)) {
@@ -1141,10 +1127,10 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 			result += writeBytecodeFromAst(mb, ast.expr); //default value
 		}
 
-		EMIT_BYTE(mb, code,TOY_OPCODE_MODULO);
-		EMIT_BYTE(mb, code,TOY_OPCODE_ASSIGN); //squeezed
+		EMIT_BYTE(mb, code, TOY_OPCODE_MODULO);
+		EMIT_BYTE(mb, code, assignedTargetType); //squeezed
 		EMIT_BYTE(mb, code, chainedAssignment);
-		EMIT_BYTE(mb, code,0);
+		EMIT_BYTE(mb, code, 0);
 	}
 
 	else {

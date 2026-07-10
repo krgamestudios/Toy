@@ -463,17 +463,6 @@ static void processAttribute(Toy_VM* vm) {
 	Toy_freeValue(attribute);
 }
 
-static void processDuplicate(Toy_VM* vm) {
-	Toy_Value value = Toy_copyValue(&vm->memoryBucket, Toy_peekStack(&vm->stack));
-	Toy_pushStack(&vm->stack, value);
-
-	//check for compound assignments
-	Toy_OpcodeType squeezed = READ_BYTE(vm);
-	if (squeezed == TOY_OPCODE_ACCESS) {
-		processAccess(vm);
-	}
-}
-
 static void processEliminate(Toy_VM* vm) {
 	//discard the stack top, X times
 	unsigned int x = (unsigned int)READ_BYTE(vm);
@@ -484,6 +473,7 @@ static void processEliminate(Toy_VM* vm) {
 }
 
 static void processIterate(Toy_VM* vm) {
+	//URGENT: iteration with for-loops feels badly done
 	//ITERATE on [-2] based on type, with [-1] as counter
 	//then delegate to processJump
 
@@ -643,10 +633,13 @@ static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 	//finally
 	Toy_pushStack(&vm->stack, result);
 
-	//check for compound assignments
+	//check for compounded operators
 	Toy_OpcodeType squeezed = READ_BYTE(vm);
 	if (squeezed == TOY_OPCODE_ASSIGN) {
 		processAssign(vm);
+	}
+	else if (squeezed == TOY_OPCODE_ASSIGN_COMPOUND) {
+		processAssignCompound(vm);
 	}
 }
 
@@ -895,9 +888,9 @@ static void processConcat(Toy_VM* vm) {
 static void processIndex(Toy_VM* vm) {
 	unsigned char count = READ_BYTE(vm); //value[index, length] ; 1[2, 3]
 
-	Toy_Value value = TOY_VALUE_FROM_NULL();
-	Toy_Value index = TOY_VALUE_FROM_NULL();
 	Toy_Value length = TOY_VALUE_FROM_NULL();
+	Toy_Value index = TOY_VALUE_FROM_NULL();
+	Toy_Value value = TOY_VALUE_FROM_NULL();
 
 	if (count == 3) {
 		length = Toy_popStack(&vm->stack);
@@ -909,7 +902,9 @@ static void processIndex(Toy_VM* vm) {
 		value = Toy_popStack(&vm->stack);
 	}
 	else {
-		Toy_error("Incorrect number of elements found in index");
+		char buffer[256];
+		sprintf(buffer, "Incorrect number of elements found in index, expected 2 or 3, found %d", count);
+		Toy_error(buffer);
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
 	}
@@ -1092,6 +1087,32 @@ static void processIndex(Toy_VM* vm) {
 	Toy_freeValue(value);
 	Toy_freeValue(index);
 	Toy_freeValue(length);
+}
+
+static void processDuplicate(Toy_VM* vm) {
+	//check for compound assignments/indexing
+	Toy_OpcodeType squeezed = READ_BYTE(vm);
+	if (squeezed == TOY_OPCODE_ACCESS) {
+		Toy_Value value = Toy_copyValue(&vm->memoryBucket, Toy_peekStack(&vm->stack));
+		Toy_pushStack(&vm->stack, value);
+		processAccess(vm);
+	}
+	else if (squeezed == TOY_OPCODE_INDEX) {
+		Toy_Value index = Toy_popStack(&vm->stack);
+		Toy_Value value = Toy_peekStack(&vm->stack); //will implicitly copy the reference
+		Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, index)); //use a copy to ensure strings are handled correctly
+
+		//duplicate refs to work on
+		Toy_pushStack(&vm->stack, value);
+		Toy_pushStack(&vm->stack, index);
+
+		processIndex(vm);
+	}
+	else {
+		//simple duplication
+		Toy_Value value = Toy_copyValue(&vm->memoryBucket, Toy_peekStack(&vm->stack));
+		Toy_pushStack(&vm->stack, value);
+	}
 }
 
 static unsigned int process(Toy_VM* vm) {

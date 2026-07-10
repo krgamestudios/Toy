@@ -287,7 +287,6 @@ int repl(const char* filepath, bool verbose) {
 			inspect_bytecode(bytecode);
 		}
 
-		//WARN: Hacky debugging
 		if (vm.scope == NULL) {
 			Toy_bindVM(&vm, bytecode, NULL);
 			initStandardLibrary(&vm);
@@ -419,7 +418,7 @@ int main(int argc, const char* argv[]) {
 		Toy_VM vm;
 		Toy_initVM(&vm);
 		Toy_bindVM(&vm, bytecode, NULL);
-		initStandardLibrary(&vm); //WARN: Hacky debugging
+		initStandardLibrary(&vm);
 
 		Toy_runVM(&vm);
 
