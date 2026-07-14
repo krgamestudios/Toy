@@ -98,6 +98,71 @@ static void attr_arrayPopBack(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, element);
 }
 
+static void attr_arrayFillWith(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	//check parameter count
+	if (vm->stack->count < 3) {
+		char buffer[256];
+		snprintf(buffer, 256, "Not enough parameters found in 'Array.fillWith(amount, value)'");
+		Toy_error(buffer);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	Toy_Value compound = Toy_popStack(&vm->stack);
+	Toy_Value value = Toy_popStack(&vm->stack); //NOTE: the args are still backwards, except compound
+	Toy_Value length = Toy_popStack(&vm->stack);
+
+	//check types
+	if (!TOY_VALUE_IS_INTEGER(length) || TOY_VALUE_AS_INTEGER(length) <= 0) {
+		char buffer[256];
+		snprintf(buffer, 256, "Bad parameter found in 'fillWith'");
+		Toy_error(buffer);
+		Toy_freeValue(value);
+		Toy_freeValue(length);
+		Toy_freeValue(compound);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
+
+	if (array->count != 0) {
+		char buffer[256];
+		snprintf(buffer, 256, "Can't fill a non-empty array, as it would override %u values with %d copies of the given default", array->count, TOY_VALUE_AS_INTEGER(length));
+		Toy_error(buffer);
+		Toy_freeValue(value);
+		Toy_freeValue(length);
+		Toy_freeValue(compound);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	//The DOOM hack, neat trick to find the next power of two, inclusive (restriction of the array system)
+	unsigned int capacity = TOY_VALUE_AS_INTEGER(length);
+	capacity--;
+	capacity |= capacity >> 1;
+	capacity |= capacity >> 2;
+	capacity |= capacity >> 4;
+	capacity |= capacity >> 8;
+	capacity |= capacity >> 16;
+	capacity++;
+
+	//correct the source value's pointer
+	array = Toy_resizeArray(array, capacity);
+	if (TOY_VALUE_IS_REFERENCE(compound) && compound.as.reference->type == TOY_VALUE_ARRAY) {
+		compound.as.reference->as.array = array;
+	}
+
+	//finally, actually fill the array with the desired values
+	for (int i = 0; i < TOY_VALUE_AS_INTEGER(length); i++) {
+		array->data[array->count++] = Toy_copyValue(&vm->memoryBucket, value);
+	}
+
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_ARRAY(array));
+}
+
 static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)vm;
 	(void)self;
@@ -122,6 +187,10 @@ Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 	}
 	else if (MATCH_VALUE_AND_CSTRING(attribute, "popBack")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayPopBack);
+		return TOY_VALUE_FROM_FUNCTION(fn);
+	}
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "fillWith")) {
+		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayFillWith);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
 	else if (false && MATCH_VALUE_AND_CSTRING(attribute, "sort")) {

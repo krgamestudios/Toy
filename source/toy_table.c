@@ -79,7 +79,7 @@ Toy_Table* Toy_private_adjustTableCapacity(Toy_Table* oldTable, unsigned int new
 Toy_Table* Toy_allocateTable(unsigned int minCapacity) {
 	minCapacity = minCapacity > TOY_TABLE_INITIAL_CAPACITY ? minCapacity : TOY_TABLE_INITIAL_CAPACITY;
 
-	//neat trick to find the next power of two, inclusive
+	//The DOOM hack, neat trick to find the next power of two, inclusive
 	minCapacity--;
 	minCapacity |= minCapacity >> 1;
 	minCapacity |= minCapacity >> 2;

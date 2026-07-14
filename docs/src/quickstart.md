@@ -192,6 +192,7 @@ var array = [1,2,3];
 array.pushBack(4); //array = [1,2,3,4]
 var element = array.popBack(); //element = 4
 var emptyArray = [];
+var defaultArray = [].fillWith(400, 0); //400 copies of '0'
 
 var table = ["alpha": 1, "beta":2];
 print table.length; //2

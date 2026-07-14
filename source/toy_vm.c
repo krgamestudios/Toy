@@ -96,7 +96,7 @@ static void processRead(Toy_VM* vm) {
 			unsigned int count = (unsigned int)READ_INT(vm);
 			unsigned int capacity = count > TOY_ARRAY_INITIAL_CAPACITY ? count : TOY_ARRAY_INITIAL_CAPACITY;
 
-			//neat trick to find the next power of two, inclusive (restriction of the array system)
+			//The DOOM hack, neat trick to find the next power of two, inclusive (restriction of the array system)
 			capacity--;
 			capacity |= capacity >> 1;
 			capacity |= capacity >> 2;

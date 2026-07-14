@@ -29,6 +29,9 @@
 	array.popBack();
 	array.popBack();
 	assert array.popBack() == 8, "Array popBack attribute failed";
+
+	var defaultArray = [].fillWith(400, 0);
+	assert defaultArray.length == 400, "Array fillWith attribute failed";
 }
 
 //index
