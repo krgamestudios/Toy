@@ -142,8 +142,8 @@ var string = "Hello World";
 var greeting: String = string[0:5];
 var parting: String = "Goodbye " .. string[6:5];
 
-//indexing works backwards too
-print greeting .. " Beautiful " .. string[-5:5]; //Hello Beautiful World
+//indexing works backwards too, and can be unbounded by omitting the length
+print greeting .. " Beautiful " .. string[-5:]; //Hello Beautiful World
 ```
 
 ## Arrays and Tables
