@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 //utilities
 #define READ_BYTE(vm) \
@@ -935,8 +936,6 @@ static void processIndex(Toy_VM* vm) {
 		int l = TOY_VALUE_IS_INTEGER(length) ? TOY_VALUE_AS_INTEGER(length) : 1;
 		Toy_String* str = TOY_VALUE_AS_STRING(value);
 
-		//URGENT: unbounded slicing is needed
-
 		//reorient negative index
 		if (i < 0) {
 			i = str->info.length + i;
@@ -950,6 +949,11 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(length);
 			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
+		}
+
+		//handle unbounded slicing
+		if (l == INT_MAX) {
+			l = str->info.length - i;
 		}
 
 		//check length is within bounds
@@ -1022,6 +1026,11 @@ static void processIndex(Toy_VM* vm) {
 			Toy_freeValue(length);
 			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 			return;
+		}
+
+		//handle unbounded slicing
+		if (l == INT_MAX) {
+			l = array->count - i;
 		}
 
 		//check length is within bounds

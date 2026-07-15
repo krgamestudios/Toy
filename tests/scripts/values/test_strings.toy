@@ -7,13 +7,12 @@
 	assert greeting == "Hello", "String slicing failed";
 
 	var parting: String = "Goodbye " .. string[6:5];
-	print parting;
 	assert parting == "Goodbye World", "String concat from an index failed";
 
 	var simple: String = parting[-5:5];
 	assert simple == "World", "String negative index failed";
 
-	//TODO: Unbounded slices not yet implemented
+	assert string[6:] == "World", "Unbounded slicing failed";
 }
 
 //String attributes

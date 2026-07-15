@@ -5,6 +5,7 @@
 #include "toy_string.h"
 
 #include <stdio.h>
+#include <limits.h>
 
 //utilities
 static void printError(Toy_Parser* parser, Toy_Token token, const char* errorMsg) {
@@ -654,6 +655,12 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 		return TOY_AST_FLAG_COLLECTION;
 	}
 	if (parser->previous.type == TOY_TOKEN_OPERATOR_COLON) {
+		//NOTE: allow unbounded slicing
+		if (parser->current.type == TOY_TOKEN_OPERATOR_BRACKET_RIGHT) {
+			Toy_Value max = TOY_VALUE_FROM_INTEGER(INT_MAX);
+			Toy_private_emitAstValue(bucketHandle, rootHandle, max);
+			return TOY_AST_FLAG_PAIR;
+		}
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //NOT +1, as compounds are right-recursive
 		return TOY_AST_FLAG_PAIR;
 	}
