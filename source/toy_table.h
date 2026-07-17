@@ -3,12 +3,14 @@
 #include "toy_common.h"
 #include "toy_value.h"
 
+//WONTFIX: If 'psl' was moved to be within 'key', I could save 8 bytes for each entry, but efficiency vs. complexity isn't worth it.
+
 //key-value entry, and probe sequence length - https://programming.guide/robin-hood-hashing.html
 typedef struct Toy_TableEntry { //32 | 64 BITNESS
-	Toy_Value key;              //8  | 8
-	Toy_Value value;            //8  | 8
+	Toy_Value key;              //8  | 16
+	Toy_Value value;            //8  | 16
 	unsigned int psl;			//4  | 4
-} Toy_TableEntry;               //20 | 20
+} Toy_TableEntry;               //20 | 40
 
 //key-value table
 typedef struct Toy_Table { //32 | 64 BITNESS

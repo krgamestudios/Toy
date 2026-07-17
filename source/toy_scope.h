@@ -8,18 +8,18 @@
 
 //keys are leaf-only strings
 typedef struct Toy_ScopeEntry {
-	Toy_String* key;
 	Toy_Value value;
+	Toy_String* key;
 	Toy_ValueType type;
-	unsigned int psl; //psl '0' means empty
+	unsigned short psl; //this uses a short, so the bool below fits into the same 4 bytes
 	bool constant;
 } Toy_ScopeEntry;
 
 //holds a table-like collection of variables TODO: check bitness
 typedef struct Toy_Scope {
 	struct Toy_Scope* next;
-	unsigned int refCount;
 	Toy_ScopeEntry* data;
+	unsigned int refCount;
 	unsigned int capacity;
 	unsigned int count;
 	unsigned int maxPsl;

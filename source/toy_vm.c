@@ -1269,7 +1269,7 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 	}
 
 	if (!preserveStack) {
-		Toy_resetStack(&vm->stack); //WARN: has a realloc()
+		Toy_resetStack(&vm->stack); //WARN: tweaks memory, don't over use this line
 	}
 
 	//not sure how often to call teh GC
