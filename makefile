@@ -1,10 +1,7 @@
 #compiler settings reference
 #CC=gcc
-#CFLAGS+=-std=c17 -g -Wall -Werror -Wextra -Wpedantic -Wformat=2 -Wno-newline-eof
+#CFLAGS+=-std=c17 -g -Wall -Werror -Wextra -Wpedantic -Wformat=2
 #LIBS+=-lm
-#LDFLAGS+=
-
-#TODO: release builds should define the NDEBUG flag; double check it works
 
 #directories
 export TOY_SOURCEDIR=source
@@ -22,6 +19,11 @@ source:
 .PHONY: repl
 repl: source
 	$(MAKE) -C repl -k
+
+.PHONY: release
+release: clean
+	$(MAKE) -C source RELEASE=true
+	$(MAKE) -C repl RELEASE=true
 
 .PHONY: tests tests-ci
 tests: clean
