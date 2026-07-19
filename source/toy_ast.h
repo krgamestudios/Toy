@@ -6,6 +6,8 @@
 #include "toy_value.h"
 #include "toy_string.h"
 
+//TODO: write a tree-shaker to remove excess nodes and such
+
 //each major type
 typedef enum Toy_AstType {
 	TOY_AST_BLOCK,
@@ -96,7 +98,7 @@ typedef enum Toy_AstFlag {
 //the root AST type
 typedef union Toy_Ast Toy_Ast;
 
-typedef struct Toy_AstBlock { //TODO: optimize away single-line blocks in the AST
+typedef struct Toy_AstBlock {
 	Toy_AstType type;
 	bool innerScope;
 	Toy_Ast* child; //begin encoding the line

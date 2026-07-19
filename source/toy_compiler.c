@@ -782,12 +782,22 @@ static unsigned int writeInstructionForCondThen(Toy_Bytecode** mb, Toy_AstForCon
 	//bottom of the loop
 	unsigned int endAddr = CURRENT_ADDRESS(mb, code);
 
-	//append post-branch
-	unsigned int post = writeBytecodeFromAst(mb, ast.postBranch);
-	if (post > 0) {
+	//append post-branch, compensating for chained assigns if needed
+	unsigned int postResult = 0;
+	if (checkForChainedAssign(ast.postBranch)) {
+		postResult += writeInstructionAssign(mb, ast.postBranch->varAssign, true);
+	}
+	else if (checkForChainedInvoke(ast.postBranch)) {
+		postResult += writeInstructionFnInvoke(mb, ast.postBranch->fnInvoke);
+	}
+	else {
+		postResult += writeBytecodeFromAst(mb, ast.postBranch); //default value
+	}
+
+	if (postResult > 0) {
 		//BUGFIX: don't flood the stack with this expr
 		EMIT_BYTE(mb, code,TOY_OPCODE_ELIMINATE);
-		EMIT_BYTE(mb, code, post);
+		EMIT_BYTE(mb, code, postResult);
 		EMIT_BYTE(mb, code, 0);
 		EMIT_BYTE(mb, code, 0);
 	}

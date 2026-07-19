@@ -1,0 +1,11 @@
+//is 'n' a leap year
+fn isLeapYear(n: Int) {
+	if (n % 400 == 0) return true;
+	if (n % 100 == 0) return false;
+	return n % 4 == 0;
+}
+
+assert isLeapYear(1999) == false, "1999 is not a leap year";
+assert isLeapYear(2000) == true, "2000 is a leap year";
+assert isLeapYear(2004) == true, "2004 is a leap year";
+
