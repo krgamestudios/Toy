@@ -153,7 +153,7 @@ static void processRead(Toy_VM* vm) {
 			unsigned int addr = (unsigned int)READ_INT(vm);
 
 			//create and push the function value
-			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr, vm->scope); //BUG: functions don't have the jumpTable indirection?
+			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr, vm->scope);
 			value = TOY_VALUE_FROM_FUNCTION(function);
 
 			break;

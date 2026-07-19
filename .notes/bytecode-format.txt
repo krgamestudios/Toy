@@ -18,16 +18,15 @@ Bytecode Format Structure
 	[TOY_OPCODE_READ, TOY_VALUE_STRING, Toy_StringType, stringLength] [jumpIndex]
 
 .jumps:
-	# a layer of indirection for quickly looking up values in .data and .subs
-	0 -> {string, 0x00}
-	4 -> {fn, 0xFF}
+	# a layer of indirection for quickly looking up values in .data
+	0 -> {"Hello world\0"}
 
 .param:
-	# a list of names, stored in .data, to be used for arguments (if applicable)
+	# a list of names, stored in .data, to be used as arguments (if applicable)
 
 .data:
 	# data that can't be cleanly embedded into .code, such as strings
 	"Hello world\0"
 
 .subs:
-	# an extension of .data, used exclusively for subroutines (they also follow this spec, recursively)
+	# used exclusively for subroutines (they also follow this spec, recursively)

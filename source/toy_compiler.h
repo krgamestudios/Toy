@@ -32,11 +32,11 @@ typedef struct Toy_Bytecode {
 	unsigned int codeCapacity;
 	unsigned int codeCount;
 
-	unsigned char* jumps; //each 'jump' is the starting address of an element within 'data'
+	unsigned char* jumps; //each 'jump' is the starting address of a c-string within 'data'
 	unsigned int jumpsCapacity;
-	unsigned int jumpsCount;
+	unsigned int jumpsCount; //WONTFIX: The jump table probably isn't needed, but removing it is risky
 
-	unsigned char* param; //each 'param' is the starting address of a name string within 'data'
+	unsigned char* param; //each 'param' is the starting address of a c-string within 'data'
 	unsigned int paramCapacity;
 	unsigned int paramCount;
 

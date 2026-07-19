@@ -5,7 +5,7 @@
 #include "toy_value.h"
 #include "toy_vm.h"
 
-//BUG: some planned attributes are missing or incomplete
+//URGENT: some planned attributes are missing or incomplete
 // [x] string.length
 // [x] string.asUpper
 // [x] string.asLower

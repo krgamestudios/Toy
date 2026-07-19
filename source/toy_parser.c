@@ -1099,11 +1099,13 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//for
+	//for-cond-then
 	else if (match(parser, TOY_TOKEN_KEYWORD_FOR)) {
 		makeForStmt(bucketHandle, parser, rootHandle);
 		return;
 	}
+
+	//URGENT: foreach keyword not yet implemented
 
 	//break
 	else if (match(parser, TOY_TOKEN_KEYWORD_BREAK)) {
@@ -1123,7 +1125,7 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//import?
+	//URGENT: import keyword not yet implemented
 
 	//print
 	else if (match(parser, TOY_TOKEN_KEYWORD_PRINT)) {
@@ -1133,7 +1135,7 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 
 	//empty lines, or pass statements
 	else if (match(parser, TOY_TOKEN_OPERATOR_SEMICOLON) || match(parser, TOY_TOKEN_KEYWORD_PASS)) {
-		Toy_private_emitAstPass(bucketHandle, rootHandle);
+		Toy_private_emitAstPass(bucketHandle, rootHandle); //TODO: should 'pass' be removed?
 		return;
 	}
 
