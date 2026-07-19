@@ -230,43 +230,6 @@ static void std_sqrt(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_FLOAT((float)d));
 }
 
-static void next(Toy_VM* vm, Toy_FunctionNative* self) {
-	//used by 'std_range'
-	if (self->meta2 < self->meta1) {
-		Toy_Value result = TOY_VALUE_FROM_INTEGER(self->meta2);
-		Toy_pushStack(&vm->stack, result);
-		self->meta2++;
-	}
-	else {
-		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
-	}
-}
-
-static void std_range(Toy_VM* vm, Toy_FunctionNative* self) {
-	(void)self;
-
-	//one arg to represent the number of iterations
-	Toy_Value value = Toy_popStack(&vm->stack);
-
-	//check types
-	if (!TOY_VALUE_IS_INTEGER(value)) {
-		char buffer[256];
-		snprintf(buffer, 256, "Expected Integer argument in 'range', found '%s'", Toy_getValueTypeAsCString(value.type));
-		Toy_error(buffer);
-		Toy_freeValue(value);
-		return;
-	}
-
-	//make the callback
-	Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, next);
-	fn->native.meta1 = TOY_VALUE_AS_INTEGER(value); //fake a closure
-	fn->native.meta2 = 0; //counter
-
-	Toy_Value result = TOY_VALUE_FROM_FUNCTION(fn);
-
-	Toy_pushStack(&vm->stack, result);
-}
-
 static void std_rand(Toy_VM* vm, Toy_FunctionNative* self) {
 	//quick and dirty RNG
 	if (self->meta1 == 0) {
@@ -286,7 +249,6 @@ CallbackPairs callbackPairs[] = {
 	{"abs", std_abs},
 	{"sign", std_sign},
 	{"sqrt", std_sqrt},
-	{"range", std_range},
 	{"rand", std_rand},
 
 	{NULL, NULL},
