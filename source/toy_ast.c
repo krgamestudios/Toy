@@ -147,12 +147,14 @@ void Toy_private_emitAstWhileThen(Toy_Bucket** bucketHandle, Toy_Ast** astHandle
 	(*astHandle) = tmp;
 }
 
-void Toy_private_emitAstForThen(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* condBranch, Toy_Ast* thenBranch) {
+void Toy_private_emitAstForCondThen(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* initBranch, Toy_Ast* condBranch, Toy_Ast* postBranch, Toy_Ast* thenBranch) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 
-	tmp->type = TOY_AST_FOR_THEN;
-	tmp->forThen.condBranch = condBranch;
-	tmp->forThen.thenBranch = thenBranch;
+	tmp->type = TOY_AST_FOR_COND_THEN;
+	tmp->forCondThen.initBranch = initBranch;
+	tmp->forCondThen.condBranch = condBranch;
+	tmp->forCondThen.postBranch = postBranch;
+	tmp->forCondThen.thenBranch = thenBranch;
 
 	(*astHandle) = tmp;
 }
@@ -254,16 +256,6 @@ void Toy_private_emitAstAttribute(Toy_Bucket** bucketHandle, Toy_Ast** astHandle
 	(*astHandle) = tmp;
 }
 
-void Toy_private_emitAstIterable(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* expr) {
-	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
-
-	tmp->type = TOY_AST_ITERABLE;
-	tmp->iterable.left = (*astHandle);
-	tmp->iterable.right = expr;
-
-	(*astHandle) = tmp;
-}
-
 void Toy_private_emitAstStackPop(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 
@@ -313,7 +305,7 @@ const char* Toy_private_getAstTypeAsCString(Toy_AstType type) {
 		case TOY_AST_ASSERT: return "ASSERT";
 		case TOY_AST_IF_THEN_ELSE: return "IF_THEN_ELSE";
 		case TOY_AST_WHILE_THEN: return "WHILE_THEN";
-		case TOY_AST_FOR_THEN: return "FOR_THEN";
+		case TOY_AST_FOR_COND_THEN: return "FOR_COND_THEN";
 		case TOY_AST_BREAK: return "BREAK";
 		case TOY_AST_CONTINUE: return "CONTINUE";
 		case TOY_AST_RETURN: return "RETURN";
@@ -326,7 +318,6 @@ const char* Toy_private_getAstTypeAsCString(Toy_AstType type) {
 		case TOY_AST_FN_DECLARE: return "FN_DECLARE";
 		case TOY_AST_FN_INVOKE: return "FN_INVOKE";
 		case TOY_AST_ATTRIBUTE: return "ATTRIBUTE";
-		case TOY_AST_ITERABLE: return "ITERABLE";
 
 		case TOY_AST_STACK_POP: return "STACK_POP";
 

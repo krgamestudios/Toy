@@ -44,7 +44,6 @@ Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy
 		free(buffer);
 		return TOY_VALUE_FROM_STRING(str);
 	}
-	//TODO: string.split?
 	else {
 		char buffer[256];
 		snprintf(buffer, 256, "Unknown attribute '%s' of type '%s'", TOY_VALUE_AS_STRING(attribute)->leaf.data, Toy_getValueTypeAsCString(compound.type));
@@ -166,15 +165,11 @@ static void attr_arrayFillWith(Toy_VM* vm, Toy_FunctionNative* self) {
 static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)vm;
 	(void)self;
-
-	//URGENT: attr_arraySort
 }
 
 static void attr_arrayFlatten(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)vm;
 	(void)self;
-
-	//URGENT: attr_arrayFlatten
 }
 
 Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {

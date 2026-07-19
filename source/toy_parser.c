@@ -899,52 +899,25 @@ static void makeWhileStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 }
 
 static void makeForStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
-	Toy_Ast* declBranch = NULL;
+	Toy_Ast* initBranch = NULL;
 	Toy_Ast* condBranch = NULL;
+	Toy_Ast* postBranch = NULL;
 	Toy_Ast* thenBranch = NULL;
 
-	//for (condBranch)
+	//for (initializer; conditional; post) { then }
+
 	consume(parser, TOY_TOKEN_OPERATOR_PAREN_LEFT, "Expected '(' after 'for' keyword");
-	consume(parser, TOY_TOKEN_KEYWORD_VAR, "Expected 'var' in 'for' conditional");
-
-	//WARN: duped from var declare
-	consume(parser, TOY_TOKEN_NAME, "Expected variable name after 'var' keyword");
-
-	if (parser->previous.length > 255) {
-		printError(parser, parser->previous, "Can't have a variable name longer than 255 characters");
-		Toy_private_emitAstError(bucketHandle, rootHandle);
-		return;
-	}
-
-	Toy_Token nameToken = parser->previous;
-
-	//read the type specifier if present
-	Toy_ValueType varType = TOY_VALUE_ANY;
-	bool constant = false;
-
-	if (match(parser, TOY_TOKEN_OPERATOR_COLON)) {
-		varType = readType(parser);
-		if (match(parser, TOY_TOKEN_KEYWORD_CONST)) {
-			constant = true;
-		}
-	}
-
-	//build the name string & emit a var declare
-	Toy_String* nameStr = Toy_toStringLength(bucketHandle, nameToken.lexeme, nameToken.length);
-	Toy_private_emitAstVariableDeclaration(bucketHandle, &declBranch, nameStr, varType, constant, NULL);
-
-	//continue to the 'in' keyword
-	consume(parser, TOY_TOKEN_KEYWORD_IN, "Expected 'in' inside 'for' condition");
-	parsePrecedence(bucketHandle, parser, &condBranch, PREC_CALL);
-
-	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'for' condition");
+	makeDeclarationStmt(bucketHandle, parser, &initBranch, false);
+	makeExpr(bucketHandle, parser, &condBranch);
+	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' within 'for' conditional");
+	makeExpr(bucketHandle, parser, &postBranch);
+	consume(parser, TOY_TOKEN_OPERATOR_PAREN_RIGHT, "Expected ')' after 'for' clause");
 
 	//{ thenBranch }
 	makeDeclarationStmt(bucketHandle, parser, &thenBranch, true);
 
 	//finalize everything
-	Toy_private_emitAstIterable(bucketHandle, &declBranch, condBranch);
-	Toy_private_emitAstForThen(bucketHandle, rootHandle, declBranch, thenBranch);
+	Toy_private_emitAstForCondThen(bucketHandle, rootHandle, initBranch, condBranch, postBranch, thenBranch);
 }
 
 static void makeBreakStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {

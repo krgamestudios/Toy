@@ -30,6 +30,8 @@
 int test_sizeof_ast(void) {
 	int err = 0;
 
+	//NOTE: use compiler explorer to check for bit sizes if you're limited on hardware
+
 	//run for each type
 	TEST_SIZEOF(Toy_AstType,                    4   , 4);
 	TEST_SIZEOF(Toy_AstBlock,                   20  , 32);
@@ -44,19 +46,22 @@ int test_sizeof_ast(void) {
 	TEST_SIZEOF(Toy_AstAssert,                  12  , 24);
 	TEST_SIZEOF(Toy_AstIfThenElse,              16  , 32);
 	TEST_SIZEOF(Toy_AstWhileThen,               12  , 24);
+	TEST_SIZEOF(Toy_AstForCondThen,             20  , 40);
 	TEST_SIZEOF(Toy_AstBreak,                   4   , 4);
 	TEST_SIZEOF(Toy_AstContinue,                4   , 4);
 	TEST_SIZEOF(Toy_AstReturn,                  8   , 16);
 	TEST_SIZEOF(Toy_AstPrint,                   8   , 16);
-	TEST_SIZEOF(Toy_AstVarDeclare,              16  , 32);
+	TEST_SIZEOF(Toy_AstVarDeclare,              20  , 32);
 	TEST_SIZEOF(Toy_AstVarAssign,               16  , 24);
 	TEST_SIZEOF(Toy_AstVarAccess,               8   , 16);
 	TEST_SIZEOF(Toy_AstFnDeclare,               16  , 32);
 	TEST_SIZEOF(Toy_AstFnInvoke,                12  , 24);
+	TEST_SIZEOF(Toy_AstAttribute,               12  , 24);
 	TEST_SIZEOF(Toy_AstPass,                    4   , 4);
+	TEST_SIZEOF(Toy_AstStackPop,                8   , 16);
 	TEST_SIZEOF(Toy_AstError,                   4   , 4);
 	TEST_SIZEOF(Toy_AstEnd,                     4   , 4);
-	TEST_SIZEOF(Toy_Ast,                        20  , 32);
+	TEST_SIZEOF(Toy_Ast,                        20  , 40);
 
 	return -err;
 }

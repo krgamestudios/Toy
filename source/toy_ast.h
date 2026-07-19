@@ -22,7 +22,7 @@ typedef enum Toy_AstType {
 	TOY_AST_ASSERT,
 	TOY_AST_IF_THEN_ELSE,
 	TOY_AST_WHILE_THEN,
-	TOY_AST_FOR_THEN,
+	TOY_AST_FOR_COND_THEN,
 	TOY_AST_BREAK,
 	TOY_AST_CONTINUE,
 	TOY_AST_RETURN,
@@ -35,7 +35,6 @@ typedef enum Toy_AstType {
 	TOY_AST_FN_DECLARE,
 	TOY_AST_FN_INVOKE,
 	TOY_AST_ATTRIBUTE,
-	TOY_AST_ITERABLE,
 
 	TOY_AST_STACK_POP, //BUGFIX: force a single stack pop for expression statements
 
@@ -174,11 +173,13 @@ typedef struct Toy_AstWhileThen {
 	Toy_Ast* thenBranch;
 } Toy_AstWhileThen;
 
-typedef struct Toy_AstForThen {
+typedef struct Toy_AstForCondThen {
 	Toy_AstType type;
+	Toy_Ast* initBranch;
 	Toy_Ast* condBranch;
+	Toy_Ast* postBranch;
 	Toy_Ast* thenBranch;
-} Toy_AstForThen;
+} Toy_AstForCondThen;
 
 typedef struct Toy_AstBreak {
 	Toy_AstType type;
@@ -237,12 +238,6 @@ typedef struct Toy_AstAttribute {
 	Toy_Ast* right;
 } Toy_AstAttribute;
 
-typedef struct Toy_AstIterable {
-	Toy_AstType type;
-	Toy_Ast* left;
-	Toy_Ast* right;
-} Toy_AstIterable;
-
 typedef struct Toy_AstStackPop {
 	Toy_AstType type;
 	Toy_Ast* child;
@@ -274,7 +269,7 @@ union Toy_Ast { //see 'test_ast.c' for bitness tests
 	Toy_AstAssert assert;
 	Toy_AstIfThenElse ifThenElse;
 	Toy_AstWhileThen whileThen;
-	Toy_AstForThen forThen;
+	Toy_AstForCondThen forCondThen;
 	Toy_AstBreak breakPoint;
 	Toy_AstContinue continuePoint;
 	Toy_AstReturn fnReturn;
@@ -285,7 +280,6 @@ union Toy_Ast { //see 'test_ast.c' for bitness tests
 	Toy_AstFnDeclare fnDeclare;
 	Toy_AstFnInvoke fnInvoke;
 	Toy_AstAttribute attribute;
-	Toy_AstIterable iterable;
 	Toy_AstStackPop stackPop;
 	Toy_AstPass pass;
 	Toy_AstError error;
@@ -307,7 +301,7 @@ void Toy_private_emitAstAggregate(Toy_Bucket** bucketHandle, Toy_Ast** astHandle
 void Toy_private_emitAstAssert(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* child, Toy_Ast* msg);
 void Toy_private_emitAstIfThenElse(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* condBranch, Toy_Ast* thenBranch, Toy_Ast* elseBranch);
 void Toy_private_emitAstWhileThen(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* condBranch, Toy_Ast* thenBranch);
-void Toy_private_emitAstForThen(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* condBranch, Toy_Ast* thenBranch);
+void Toy_private_emitAstForCondThen(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* initBranch, Toy_Ast* condBranch, Toy_Ast* postBranch, Toy_Ast* thenBranch);
 void Toy_private_emitAstBreak(Toy_Bucket** bucketHandle, Toy_Ast** rootHandle);
 void Toy_private_emitAstContinue(Toy_Bucket** bucketHandle, Toy_Ast** rootHandle);
 void Toy_private_emitAstReturn(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
@@ -320,7 +314,6 @@ void Toy_private_emitAstVariableAccess(Toy_Bucket** bucketHandle, Toy_Ast** astH
 void Toy_private_emitAstFunctionDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_Ast* params, Toy_Ast* body);
 void Toy_private_emitAstFunctionInvokation(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* params);
 void Toy_private_emitAstAttribute(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* expr);
-void Toy_private_emitAstIterable(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_Ast* expr);
 
 void Toy_private_emitAstStackPop(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 

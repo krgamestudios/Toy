@@ -202,20 +202,21 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			printf(MARKER "ELIMINATE %u\n", MARKER_VALUE(pc, unsigned char), (unsigned int)bytecode[pc + 1]);
 			return 4;
 
-		case TOY_OPCODE_ITERATE:
-			printf(MARKER  TOY_CC_NOTICE "ITERATE on [-2] based on type, with [-1] as counter, then delegate to: JUMP %s%s (%s%d) (GOTO %u)\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
-				bytecode[pc + 1] == TOY_OP_PARAM_JUMP_ABSOLUTE ? "absolute" : "relative",
-				bytecode[pc + 2] == TOY_OP_PARAM_JUMP_ALWAYS ? "" :
-					bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_TRUE ? " if true" :
-					bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_FALSE ? " if false" :
-					bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_NULL ? " if null" :
-						"if <unknown>"
-					,
-				(*(int*)(bytecode + pc + 4)) > 0 ? "+" : "", //show a + sign when positive
-				(*(int*)(bytecode + pc + 4)),
-				(*(int*)(bytecode + pc + 4)) + pc + 8
-			);
-			return 8;
+		//WARN: removed
+		// case TOY_OPCODE_ITERATE:
+		// 	printf(MARKER  TOY_CC_NOTICE "ITERATE on [-2] based on type, with [-1] as counter, then delegate to: JUMP %s%s (%s%d) (GOTO %u)\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char),
+		// 		bytecode[pc + 1] == TOY_OP_PARAM_JUMP_ABSOLUTE ? "absolute" : "relative",
+		// 		bytecode[pc + 2] == TOY_OP_PARAM_JUMP_ALWAYS ? "" :
+		// 			bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_TRUE ? " if true" :
+		// 			bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_FALSE ? " if false" :
+		// 			bytecode[pc + 2] == TOY_OP_PARAM_JUMP_IF_NULL ? " if null" :
+		// 				"if <unknown>"
+		// 			,
+		// 		(*(int*)(bytecode + pc + 4)) > 0 ? "+" : "", //show a + sign when positive
+		// 		(*(int*)(bytecode + pc + 4)),
+		// 		(*(int*)(bytecode + pc + 4)) + pc + 8
+		// 	);
+		// 	return 8;
 
 		case TOY_OPCODE_ADD:
 			printf(MARKER "ADD %s\n", MARKER_VALUE(pc, unsigned char),

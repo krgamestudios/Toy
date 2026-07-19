@@ -1,0 +1,43 @@
+/*lets copy Go's loops
+
+three components
+
+    for (i = 0; i < 10; i++)
+
+simple while condition
+
+    while (cond)
+
+forever
+
+    while (true)
+
+iterate on compounds
+    foreach (k, v in compound)
+
+*/
+
+//traditional three-piece  for loops
+
+//-------------------------
+
+for (var i = 0; i < 10; i++) {
+    print i;
+}
+
+//-------------------------
+
+//test break
+for (var i = 0; i < 10; i++) {
+    break;
+	assert false, "break failed";
+}
+
+//test continue
+for (var i = 0; i < 10; i++) {
+    if (i < 5) continue;
+    print i;
+}
+
+//-------------------------
+

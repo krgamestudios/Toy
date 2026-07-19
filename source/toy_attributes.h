@@ -5,9 +5,11 @@
 #include "toy_value.h"
 #include "toy_vm.h"
 
+//BUG: some planned attributes are missing or incomplete
 // [x] string.length
 // [x] string.asUpper
 // [x] string.asLower
+// [ ] string.split
 // [x] array.length
 // [x] array.pushBack(x)
 // [x] array.popBack()

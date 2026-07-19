@@ -473,77 +473,6 @@ static void processEliminate(Toy_VM* vm) {
 	}
 }
 
-static void processIterate(Toy_VM* vm) {
-	//URGENT: iteration with for-loops feels badly done
-	//ITERATE on [-2] based on type, with [-1] as counter
-	//then delegate to processJump
-
-	Toy_Value counter = Toy_popStack(&vm->stack);
-	Toy_Value compound = Toy_popStack(&vm->stack);
-
-	if (!TOY_VALUE_IS_INTEGER(counter)) {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown counter type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(Toy_unwrapValue(counter).type));
-		exit(-1);
-	}
-
-	if (TOY_VALUE_IS_ARRAY(compound)) {
-		Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
-		unsigned int index = (unsigned int)TOY_VALUE_AS_INTEGER(counter);
-
-		//check out-of-bounds
-		if (index >= array->count) {
-			//DON'T free the iterable & counter, that's embedded in the bytecode
-			Toy_pushStack(&vm->stack, compound);
-			Toy_pushStack(&vm->stack, counter);
-			//force a jump then exit
-			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
-			processJump(vm);
-			return;
-		}
-
-		//get the desired element
-		Toy_Value value = Toy_copyValue(&vm->memoryBucket, array->data[index]);
-
-		//push everything back onto the stack (iterating the counter)
-		Toy_pushStack(&vm->stack, compound);
-		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(index + 1));
-		Toy_pushStack(&vm->stack, value);
-	}
-	else if (TOY_VALUE_IS_TABLE(compound)) {
-		Toy_Table* table = TOY_VALUE_AS_TABLE(compound);
-		unsigned int index = (unsigned int)TOY_VALUE_AS_INTEGER(counter);
-
-		//loop to the next element
-		while(index < table->capacity) {
-			//is this a useable element
-			if (!TOY_VALUE_IS_NULL(table->data[index].key)) {
-				break;
-			}
-
-			index++;
-		}
-
-		//return the compound & counter to the stack
-		Toy_pushStack(&vm->stack, compound);
-		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(index + 1));
-
-		//if something was found, push it and return
-		if (index < table->capacity) {
-			Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, table->data[index].value));
-		}
-		else {
-			//otherwise force a jump then exit
-			Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
-			processJump(vm);
-		}
-	}
-	//URGENT: support closures in for-loops
-	else {
-		fprintf(stderr, TOY_CC_ERROR "ERROR: Unknown iterable type '%s' found in for loop, exiting\n" TOY_CC_RESET, Toy_getValueTypeAsCString(Toy_unwrapValue(compound).type));
-		exit(-1);
-	}
-}
-
 static void processArithmetic(Toy_VM* vm, Toy_OpcodeType opcode) {
 	//BUGFIX: handle negative variables
 	if (opcode == TOY_OPCODE_INVERT) {
@@ -1167,10 +1096,6 @@ static unsigned int process(Toy_VM* vm) {
 
 			case TOY_OPCODE_ELIMINATE:
 				processEliminate(vm);
-				break;
-
-			case TOY_OPCODE_ITERATE:
-				processIterate(vm);
 				break;
 
 			//arithmetic instructions

@@ -101,32 +101,11 @@ while (true) {
 }
 ```
 
-Alternatively, when iterating over an array or table, you can use the `for` keyword like this. While inside a for-loop, the iterable is inaccessible to prevent run-time modification (it's an ad-hoc bugfix, and will likely be improved later).
+Or you could use the much cleaner three-piece `for-loop`, which is more convenient and compact with regards to scoping.
 
 ```
-//Iterate on an array with a for-loop
-var array = ["foo", "bar", "buzz", "fizz"];
-
-for (var i in array) {
-    if (i == "buzz") break; //supports break and continue
+for (var i = 0; i < 10; i++) {
     print i;
-}
-```
-
-```
-//Also works when printing the values in a table
-//However, the order of the values is undefined
-var table = [
-	"Alpha": 1,
-	"Bravo": 2,
-	"Charlie": 3,
-	"Delta": 4,
-	"Echo": 5,
-];
-
-for (var i in table) {
-	print i; //this will print a number
-    print table; //this will print null
 }
 ```
 

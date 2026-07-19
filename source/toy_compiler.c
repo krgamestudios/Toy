@@ -743,74 +743,56 @@ static unsigned int writeInstructionWhileThen(Toy_Bytecode** mb, Toy_AstWhileThe
 	return 0;
 }
 
-static unsigned int writeInstructionForThen(Toy_Bytecode** mb, Toy_AstForThen ast) {
-	//check the operands
-	if (ast.condBranch->type != TOY_AST_ITERABLE || ast.condBranch->iterable.left->type != TOY_AST_VAR_DECLARE || ast.condBranch->iterable.right->type != TOY_AST_VAR_ACCESS) {
-		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid conditional found in a 'for' loop\n" TOY_CC_RESET);
-		(*mb)->panic = true;
-		return 0;
-	}
+static unsigned int writeInstructionForCondThen(Toy_Bytecode** mb, Toy_AstForCondThen ast) {
+	//for (init; cond; post) { then }
 
-	//set up the iterable, and the counter
-	writeInstructionAccess(mb, ast.condBranch->iterable.right->varAccess);
-
-	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
-	EMIT_BYTE(mb, code, TOY_VALUE_INTEGER);
-	EMIT_BYTE(mb, code, 0);
-	EMIT_BYTE(mb, code, 0);
-
-	EMIT_INT(mb, code, 0); //start from zero
-
-	unsigned int beginAddr = CURRENT_ADDRESS(mb, code);
-
-	//access [-1] from [-2], incrementing [-1] afterwards
-	//then delegate to JUMP
-	EMIT_BYTE(mb, code, TOY_OPCODE_ITERATE);
-	EMIT_BYTE(mb, code, TOY_OP_PARAM_JUMP_RELATIVE);
-	EMIT_BYTE(mb, code, TOY_OP_PARAM_JUMP_IF_NULL);
-	EMIT_BYTE(mb, code, 0);
-
-	unsigned int thenParamAddr = SKIP_INT(mb, code); //parameter to be written later
-
-	//push scope (built-into the keyword)
+	//push scope (built into the keyword b/c of the initBranch)
 	EMIT_BYTE(mb, code, TOY_OPCODE_SCOPE_PUSH);
 	EMIT_BYTE(mb, code, 0);
 	EMIT_BYTE(mb, code, 0);
 	EMIT_BYTE(mb, code, 0);
 	(*mb)->currentScopeDepth++;
 
-	//delcare the iterator with the given string
-	EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
-	EMIT_BYTE(mb, code, ast.condBranch->iterable.left->varDeclare.valueType);
-	EMIT_BYTE(mb, code, ast.condBranch->iterable.left->varDeclare.name->info.length); //quick optimisation to skip a 'strlen()' call
-	EMIT_BYTE(mb, code, ast.condBranch->iterable.left->varDeclare.constant); //check for constness
+	//init code
+	writeBytecodeFromAst(mb, ast.initBranch);
 
-	emitString(mb, ast.condBranch->iterable.left->varDeclare.name);
+	//top of the loop
+	unsigned int beginAddr = CURRENT_ADDRESS(mb, code);
 
-	//BUGFIX: shadow the iterable's name
-	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
-	EMIT_BYTE(mb, code, TOY_VALUE_NULL);
+	//cond-branch
+	writeBytecodeFromAst(mb, ast.condBranch);
+
+	//leave the assigned value on the stack when inside a condition
+	if (checkForChainedAssign(ast.condBranch)) {
+		Toy_AstVarAccess access = { .type = TOY_AST_VAR_ACCESS, .child = ast.condBranch->varAssign.target };
+		writeInstructionAccess(mb, access);
+	}
+
+	//emit the jump word (opcode, type, condition, padding)
+	EMIT_BYTE(mb, code, TOY_OPCODE_JUMP);
+	EMIT_BYTE(mb, code, TOY_OP_PARAM_JUMP_RELATIVE);
+	EMIT_BYTE(mb, code, TOY_OP_PARAM_JUMP_IF_FALSE);
 	EMIT_BYTE(mb, code, 0);
-	EMIT_BYTE(mb, code, 0);
 
-	EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
-	EMIT_BYTE(mb, code, TOY_VALUE_NULL);
-	EMIT_BYTE(mb, code, TOY_VALUE_AS_STRING(ast.condBranch->iterable.right->varAccess.child->value.value)->info.length);
-	EMIT_BYTE(mb, code, true); //check for constness
+	unsigned int paramAddr = SKIP_INT(mb, code); //parameter to be written later
 
-	emitString(mb, TOY_VALUE_AS_STRING(ast.condBranch->iterable.right->varAccess.child->value.value));
-
-	//write the body
+	//emit then-branch
 	writeBytecodeFromAst(mb, ast.thenBranch);
 
-	//pop scope after each iteration
-	EMIT_BYTE(mb, code, TOY_OPCODE_SCOPE_POP);
-	EMIT_BYTE(mb, code, 0);
-	EMIT_BYTE(mb, code, 0);
-	EMIT_BYTE(mb, code, 0);
-	(*mb)->currentScopeDepth--;
+	//bottom of the loop
+	unsigned int endAddr = CURRENT_ADDRESS(mb, code);
 
-	//jump to begin to repeat the conditional test
+	//append post-branch
+	unsigned int post = writeBytecodeFromAst(mb, ast.postBranch);
+	if (post > 0) {
+		//BUGFIX: don't flood the stack with this expr
+		EMIT_BYTE(mb, code,TOY_OPCODE_ELIMINATE);
+		EMIT_BYTE(mb, code, post);
+		EMIT_BYTE(mb, code, 0);
+		EMIT_BYTE(mb, code, 0);
+	}
+
+	//jump to beginAddr to repeat the conditional test
 	EMIT_BYTE(mb, code, TOY_OPCODE_JUMP);
 	EMIT_BYTE(mb, code, TOY_OP_PARAM_JUMP_RELATIVE);
 	EMIT_BYTE(mb, code, TOY_OP_PARAM_JUMP_ALWAYS);
@@ -818,8 +800,8 @@ static unsigned int writeInstructionForThen(Toy_Bytecode** mb, Toy_AstForThen as
 
 	EMIT_INT(mb, code, beginAddr - (CURRENT_ADDRESS(mb, code) + 4)); //this sets a negative value
 
-	//end of the loop, overwrite the parameter
-	OVERWRITE_INT(mb, code, thenParamAddr, CURRENT_ADDRESS(mb, code) - (thenParamAddr + 4));
+	//set the exit parameter for the cond
+	OVERWRITE_INT(mb, code, paramAddr, CURRENT_ADDRESS(mb, code) - (paramAddr + 4));
 
 	//set the break & continue data
 	while ((*mb)->breakEscapes->count > 0) {
@@ -843,18 +825,19 @@ static unsigned int writeInstructionForThen(Toy_Bytecode** mb, Toy_AstForThen as
 
 		unsigned int diff = depth - (*mb)->currentScopeDepth;
 
-		OVERWRITE_INT(mb, code, addr, beginAddr - (addr + 8)); //tell continue to return to the start AFTER reading the instruction
+		OVERWRITE_INT(mb, code, addr, endAddr - (addr + 8)); //tell continue to come here ('here' being prior to the postBranch)
 		OVERWRITE_INT(mb, code, addr, diff);
 
 		//tick down
 		(*mb)->continueEscapes->count--;
 	}
 
-	//eliminate the value & counter from within the bytecode, so they're cleaned up after breaks
-	EMIT_BYTE(mb, code,TOY_OPCODE_ELIMINATE);
-	EMIT_BYTE(mb, code, 2);
+	//pop scope after the keyword-level scope
+	EMIT_BYTE(mb, code, TOY_OPCODE_SCOPE_POP);
 	EMIT_BYTE(mb, code, 0);
 	EMIT_BYTE(mb, code, 0);
+	EMIT_BYTE(mb, code, 0);
+	(*mb)->currentScopeDepth--;
 
 	return 0;
 }
@@ -1371,8 +1354,8 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 			result += writeInstructionWhileThen(mb, ast->whileThen);
 			break;
 
-		case TOY_AST_FOR_THEN:
-			result += writeInstructionForThen(mb, ast->forThen);
+		case TOY_AST_FOR_COND_THEN:
+			result += writeInstructionForCondThen(mb, ast->forCondThen);
 			break;
 
 		case TOY_AST_BREAK:
@@ -1413,12 +1396,6 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 
 		case TOY_AST_ATTRIBUTE:
 			result += writeInstructionAttribute(mb, ast->attribute);
-			break;
-
-		case TOY_AST_ITERABLE:
-			//the 'in' keyword is only valid within a for-loop's condition
-			fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: the 'in' keyword is only valid within a for-loop's condition\n" TOY_CC_RESET);
-			(*mb)->panic = true;
 			break;
 
 		case TOY_AST_STACK_POP:
