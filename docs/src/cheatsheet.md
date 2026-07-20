@@ -149,12 +149,12 @@ The tools in `repl/` includes a standard library, which can be added to the root
 * `max(x, y)`
 * `floor(x)`
 * `ceil(x)`
+* `abs(x)`
+* `sign(x)`
 * `sqrt(x)`
-* `range(x)`
+* `rand()`
 
-It also offers an example of how to write an API.
-
-*Note: `range()` returns a closure intended for use in the `for` keyword, but the that keyword isn't done yet.*
+It also offers an example of how to write a library API.
 
 ## Inspector Tools
 
