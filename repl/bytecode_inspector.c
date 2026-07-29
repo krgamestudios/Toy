@@ -160,7 +160,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			unsigned int indexValue = *((unsigned int*)(bytecode + pc + 4));
 			unsigned int jumpValue = *((unsigned int*)(bytecode + jumps_addr + indexValue));
 			char* cstr = ((char*)(bytecode + data_addr + jumpValue));
-			printf(MARKER "DECLARE %s: %s%s\n", MARKER_VALUE(pc, unsigned char),
+			printf(MARKER "DECLARE '%s' : " TOY_CC_DEBUG "%s%s" TOY_CC_RESET "\n", MARKER_VALUE(pc, unsigned char),
 				cstr,
 				Toy_getValueTypeAsCString(bytecode[pc + 1]),
 				bytecode[pc + 3] ? " const" : ""
@@ -339,11 +339,11 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 4;
 
 		case TOY_OPCODE_PRINT:
-			printf(MARKER TOY_CC_NOTICE "Keyword PRINT\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char));
+			printf(MARKER TOY_CC_DEBUG "Keyword PRINT\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char));
 			return 4;
 
 		case TOY_OPCODE_CONCAT:
-			printf(MARKER "CONCATENATE strings\n", MARKER_VALUE(pc, unsigned char));
+			printf(MARKER "CONCATENATE\n", MARKER_VALUE(pc, unsigned char));
 			return 4;
 
 		case TOY_OPCODE_INDEX:

@@ -120,7 +120,7 @@ typedef struct Settings {
 	const char* script;
 	bool silentPrint;
 	bool silentAssert;
-	bool verbose;
+	unsigned char verbosity; //0 = None, 1 = simple, 2 = extra, 3 = all
 } Settings;
 
 void usageInfo(int argc, const char* argv[]) {
@@ -133,12 +133,14 @@ void helpInfo(int argc, const char* argv[]) {
 
 	printf("The Toy Programming Language, leave arguments blank for an interactive REPL.\n\n");
 
-	printf("  -h, --help\t\t\tShow this help then exit.\n");
-	printf("  -v, --version\t\t\tShow version and copyright information then exit.\n");
-	printf("  -f, --file script\t\tParse, compile and execute the file then exit.\n");
-	printf("      --silent-print\t\tSuppress output from the print keyword.\n");
-	printf("      --silent-assert\t\tSuppress output from the assert keyword.\n");
-	printf("  -d, --verbose\t\tPrint debugging information about Toy's internals.\n");
+	printf("  -h,\t--help\t\t\tShow this help then exit.\n");
+	printf("  -v,\t--version\t\tShow version and copyright information then exit.\n");
+	printf("  -f,\t--file script\t\tParse, compile and execute the file then exit.\n");
+	printf("  \t--silent-print\t\tSuppress output from the print keyword.\n");
+	printf("  \t--silent-assert\t\tSuppress output from the assert keyword.\n");
+	printf("  -d,\t--verbose\t\tPrint debugging information about the given code.\n");
+	printf("  -dd,\t--verbose-extra\t\tSame as above, but also prints information about the VM's internal state.\n");
+	printf("  -ddd,\t--verbose-all\t\tSame as above, but print all internal information, including incomplete or inaccurate tool data.\n");
 }
 
 void versionInfo(int argc, const char* argv[]) {
@@ -171,26 +173,29 @@ void versionInfo(int argc, const char* argv[]) {
 	printf("%s",license);
 }
 
+//util macro
+#define CSTR_MATCH(FIRST, SECOND) (strlen(FIRST) == strlen(SECOND) && strcmp(FIRST, SECOND) == 0)
+
 Settings parseSettings(int argc, const char* argv[]) {
 	Settings settings = {0};
 
 	for (int i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
+		if (CSTR_MATCH(argv[i], "-h") || CSTR_MATCH(argv[i], "--help")) {
 			settings.help = true;
 		}
 
-		else if (!strcmp(argv[i], "-v") || !strcmp(argv[i], "--version")) {
+		else if (CSTR_MATCH(argv[i], "-v") || CSTR_MATCH(argv[i], "--version")) {
 			settings.version = true;
 		}
 
-		else if (!strcmp(argv[i], "-f") || !strcmp(argv[i], "--file")) {
+		else if (CSTR_MATCH(argv[i], "-f") || CSTR_MATCH(argv[i], "--file")) {
 			if (argc <= i + 1) {
 				settings.error = true;
 				break;
 			}
 
 			if (settings.script != NULL) {
-				fprintf(stderr, TOY_CC_ERROR "ERROR: No more than one script file allowed\n" TOY_CC_RESET);
+				fprintf(stderr, TOY_CC_ERROR "ERROR: No more than one entry script file allowed\n" TOY_CC_RESET);
 				settings.error = true;
 				break;
 			}
@@ -199,16 +204,24 @@ Settings parseSettings(int argc, const char* argv[]) {
 			settings.script = argv[i];
 		}
 
-		else if (!strcmp(argv[i], "--silent-print")) {
+		else if (CSTR_MATCH(argv[i], "--silent-print")) {
 			settings.silentPrint = true;
 		}
 
-		else if (!strcmp(argv[i], "--silent-assert")) {
+		else if (CSTR_MATCH(argv[i], "--silent-assert")) {
 			settings.silentAssert = true;
 		}
 
-		else if (!strcmp(argv[i], "-d") || !strcmp(argv[i], "--verbose")) {
-			settings.verbose = true;
+		else if (CSTR_MATCH(argv[i], "-d") || CSTR_MATCH(argv[i], "--verbose")) {
+			settings.verbosity = 1;
+		}
+
+		else if (CSTR_MATCH(argv[i], "-dd") || CSTR_MATCH(argv[i], "--verbose-extra")) {
+			settings.verbosity = 2;
+		}
+
+		else if (CSTR_MATCH(argv[i], "-ddd") || CSTR_MATCH(argv[i], "--verbose-all")) {
+			settings.verbosity = 3;
 		}
 
 		else {
@@ -220,13 +233,13 @@ Settings parseSettings(int argc, const char* argv[]) {
 }
 
 //repl function
-int repl(const char* filepath, bool verbose) {
+int repl(const char* filepath, unsigned char verbosity) {
 	//output options
 	Toy_setPrintCallback(puts);
 	Toy_setErrorCallback(errorAndContinueCallback);
 	Toy_setAssertFailureCallback(assertFailureAndContinueCallback);
 
-	//vars to use
+	//stuff for user input
 	char prompt[256];
 	getFileName(prompt, filepath, 256);
 	unsigned int INPUT_BUFFER_SIZE = 4096;
@@ -246,13 +259,14 @@ int repl(const char* filepath, bool verbose) {
 			inputBuffer[--length] = '\0';
 		}
 
+		//check for empty input (or only whitespace)
 		if (length == 0 || inputBuffer[ strspn(inputBuffer, " \r\n\t") ] == '\0') {
 			printf("%s> ", prompt); //shows the terminal prompt and restart
 			continue;
 		}
 
-		//end
-		if (strlen(inputBuffer) == 4 && (strncmp(inputBuffer, "exit", 4) == 0 || strncmp(inputBuffer, "quit", 4) == 0)) {
+		//exit the repl
+		if (CSTR_MATCH(inputBuffer, "exit") || CSTR_MATCH(inputBuffer, "quit")) {
 			break;
 		}
 
@@ -271,7 +285,7 @@ int repl(const char* filepath, bool verbose) {
 			continue;
 		}
 
-		if (verbose) {
+		if (verbosity >= 3) { //only shows for 3 because its incomplete
 			inspect_ast(ast);
 		}
 
@@ -283,7 +297,8 @@ int repl(const char* filepath, bool verbose) {
 			continue;
 		}
 
-		if (verbose) {
+		//show the bytecode layout
+		if (verbosity >= 1) {
 			inspect_bytecode(bytecode);
 		}
 
@@ -301,18 +316,23 @@ int repl(const char* filepath, bool verbose) {
 		int depthBeforeGC = 0;
 		int depthAfterGC = 0;
 
-		//print the debug info
-		if (verbose) {
+		//show the runtime state of the VM
+		if (verbosity >= 1) {
 			inspect_stack(vm.stack);
 			inspect_scope(vm.scope, 0);
 
 			depthBeforeGC = inspect_bucket(&vm.memoryBucket);
 		}
 
+		//show the memory info, which is hard to parse manually
+		if (verbosity >= 2) {
+			depthBeforeGC = inspect_bucket(&vm.memoryBucket);
+		}
+
 		//free the memory, and leave the VM ready for the next loop
 		Toy_resetVM(&vm, true, true);
 
-		if (verbose) {
+		if (verbosity >= 2) {
 			depthAfterGC = inspect_bucket(&vm.memoryBucket);
 
 			printf("GC Report: %d -> %d\n", depthBeforeGC, depthAfterGC);
@@ -341,16 +361,10 @@ int main(int argc, const char* argv[]) {
 		return 1;
 	}
 
-	//setup the output options
-	Toy_setPrintCallback(puts);
+	//configure the output options
+	Toy_setPrintCallback(settings.silentPrint ? noOpCallback : puts);
 	Toy_setErrorCallback(errorAndExitCallback);
-	Toy_setAssertFailureCallback(assertFailureAndExitCallback);
-	if (settings.silentPrint) {
-		Toy_setPrintCallback(noOpCallback);
-	}
-	if (settings.silentAssert) {
-		Toy_setAssertFailureCallback(silentExitCallback);
-	}
+	Toy_setAssertFailureCallback(settings.silentAssert ? silentExitCallback : assertFailureAndExitCallback);
 
 	//process
 	if (settings.help) {
@@ -398,7 +412,8 @@ int main(int argc, const char* argv[]) {
 			return -1;
 		}
 
-		if (settings.verbose) {
+		//incomplete AST info
+		if (settings.verbosity >= 3) {
 			inspect_ast(ast);
 		}
 
@@ -410,7 +425,7 @@ int main(int argc, const char* argv[]) {
 			return -1;
 		}
 
-		if (settings.verbose) {
+		if (settings.verbosity >= 1) {
 			inspect_bytecode(bytecode);
 		}
 
@@ -423,9 +438,14 @@ int main(int argc, const char* argv[]) {
 		Toy_runVM(&vm);
 
 		//print the debug info
-		if (settings.verbose) {
+		if (settings.verbosity >= 1) {
 			inspect_stack(vm.stack);
 			inspect_scope(vm.scope, 0);
+		}
+
+		//extra bucket info
+		if (settings.verbosity >= 2) {
+			inspect_bucket(&vm.memoryBucket);
 		}
 
 		//cleanup
@@ -433,7 +453,7 @@ int main(int argc, const char* argv[]) {
 		free(bytecode);
 	}
 	else {
-		repl(argv[0], settings.verbose);
+		repl(argv[0], settings.verbosity);
 	}
 
 	return 0;

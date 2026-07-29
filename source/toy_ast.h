@@ -6,7 +6,7 @@
 #include "toy_value.h"
 #include "toy_string.h"
 
-//TODO: write a tree-shaker to remove excess nodes and such
+//URGENT: Semantic analysis needed
 
 //each major type
 typedef enum Toy_AstType {
