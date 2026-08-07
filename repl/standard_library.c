@@ -230,6 +230,8 @@ static void std_sqrt(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_FLOAT((float)d));
 }
 
+//NOTE: 'srand()' alters the 'rand()' only within its own VM environment, so ensure the key is the same
+#define RAND_NAME "rand"
 static void std_rand(Toy_VM* vm, Toy_FunctionNative* self) {
 	//quick and dirty RNG
 	if (self->meta1 == 0) {
@@ -241,6 +243,39 @@ static void std_rand(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(self->meta1));
 }
 
+static void std_srand(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	Toy_Value seed = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_INTEGER(seed)) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid argument type '%s' found in 'srand()'", Toy_getValueTypeAsCString(Toy_unwrapValue(seed).type));
+		Toy_error(buffer);
+		Toy_freeValue(seed);
+		return;
+	}
+
+	//make the key
+	Toy_String* key = Toy_createStringLength(&vm->memoryBucket, RAND_NAME, strlen(RAND_NAME));
+	Toy_Value* value = Toy_accessScopeAsPointer(vm->scope, key);
+
+	if (!TOY_VALUE_IS_FUNCTION(*value) || TOY_VALUE_AS_FUNCTION(*value)->type != TOY_FUNCTION_NATIVE) {
+		char buffer[256];
+		snprintf(buffer, 256, "Variable name '%s' is not a native function, so the seed can't be set", RAND_NAME);
+		Toy_error(buffer);
+		Toy_freeString(key);
+		Toy_freeValue(seed);
+		return;
+	}
+
+	//get the function and set the seed
+	Toy_FunctionNative* nativePtr = &(TOY_VALUE_AS_FUNCTION(*value)->native);
+	nativePtr->meta1 = TOY_VALUE_AS_INTEGER(seed);
+
+	Toy_freeString(key);
+}
+
 CallbackPairs callbackPairs[] = {
 	{"min", std_min},
 	{"max", std_max},
@@ -249,7 +284,8 @@ CallbackPairs callbackPairs[] = {
 	{"abs", std_abs},
 	{"sign", std_sign},
 	{"sqrt", std_sqrt},
-	{"rand", std_rand},
+	{RAND_NAME, std_rand},
+	{"srand", std_srand},
 
 	{NULL, NULL},
 };
