@@ -153,6 +153,7 @@ The tools in `repl/` includes a standard library, which can be added to the root
 * `sign(x)`
 * `sqrt(x)`
 * `rand()`
+* `srand(x)`
 
 It also offers an example of how to write a library API.
 
