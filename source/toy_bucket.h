@@ -24,35 +24,23 @@ TOY_API void Toy_freeBucket(Toy_Bucket** bucketHandle);
 TOY_API void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle);
 
 //standard capacity sizes
-#ifndef TOY_BUCKET_1KB
-#define TOY_BUCKET_1KB (1 << 10)
-#endif
-
-#ifndef TOY_BUCKET_2KB
-#define TOY_BUCKET_2KB (1 << 11)
-#endif
-
-#ifndef TOY_BUCKET_4KB
-#define TOY_BUCKET_4KB (1 << 12)
-#endif
-
-#ifndef TOY_BUCKET_8KB
-#define TOY_BUCKET_8KB (1 << 13)
-#endif
-
-#ifndef TOY_BUCKET_16KB
-#define TOY_BUCKET_16KB (1 << 14)
-#endif
-
-#ifndef TOY_BUCKET_32KB
-#define TOY_BUCKET_32KB (1 << 15)
-#endif
-
 #ifndef TOY_BUCKET_64KB
 #define TOY_BUCKET_64KB (1 << 16)
 #endif
 
+#ifndef TOY_BUCKET_256KB
+#define TOY_BUCKET_256KB (1 << 18)
+#endif
+
+#ifndef TOY_BUCKET_1MB
+#define TOY_BUCKET_1MB (1 << 20)
+#endif
+
+#ifndef TOY_BUCKET_4MB
+#define TOY_BUCKET_4MB (1 << 22)
+#endif
+
 //CPU L1 caches tend to be 64kb, but that's far from guaranteed
 #ifndef TOY_BUCKET_IDEAL
-#define TOY_BUCKET_IDEAL (TOY_BUCKET_64KB - sizeof(Toy_Bucket))
+#define TOY_BUCKET_IDEAL (TOY_BUCKET_256KB - sizeof(Toy_Bucket))
 #endif
