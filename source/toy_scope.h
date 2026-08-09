@@ -15,7 +15,7 @@ typedef struct Toy_ScopeEntry {
 	bool constant;
 } Toy_ScopeEntry;
 
-//holds a table-like collection of variables TODO: check bitness
+//holds a table-like collection of variables
 typedef struct Toy_Scope {
 	struct Toy_Scope* next;
 	Toy_ScopeEntry* data;
@@ -30,7 +30,7 @@ TOY_API Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope);
 TOY_API Toy_Scope* Toy_popScope(Toy_Scope* scope);
 
 //manage the contents
-TOY_API void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy_Value value, bool constant);
+TOY_API void Toy_declareScope(Toy_Bucket** bucketHandle, Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy_Value value, bool constant);
 TOY_API void Toy_assignScope(Toy_Scope* scope, Toy_String* key, Toy_Value value);
 TOY_API Toy_Value* Toy_accessScopeAsPointer(Toy_Scope* scope, Toy_String* key);
 

@@ -268,7 +268,7 @@ int test_scope_elements(void) {
 		}
 
 		//declare and access values
-		Toy_declareScope(scope, hello1, TOY_VALUE_ANY, TOY_VALUE_FROM_INTEGER(42), false);
+		Toy_declareScope(&bucket, scope, hello1, TOY_VALUE_ANY, TOY_VALUE_FROM_INTEGER(42), false);
 
 		if (!Toy_isDeclaredScope(scope, hello2)) {
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected missing entry in Toy_Scope\n" TOY_CC_RESET);
@@ -342,7 +342,7 @@ int test_scope_elements(void) {
 		Toy_String* hello = Toy_createStringLength(&bucket, "hello", 5);
 
 		//declare and push
-		Toy_declareScope(scope, hello, TOY_VALUE_ANY, TOY_VALUE_FROM_INTEGER(42), false);
+		Toy_declareScope(&bucket, scope, hello, TOY_VALUE_ANY, TOY_VALUE_FROM_INTEGER(42), false);
 
 		scope = Toy_pushScope(&bucket, scope);
 		scope = Toy_pushScope(&bucket, scope);
@@ -362,7 +362,7 @@ int test_scope_elements(void) {
 			}
 		}
 
-		Toy_declareScope(scope, hello, TOY_VALUE_ANY, TOY_VALUE_FROM_FLOAT(3.1415f), false);
+		Toy_declareScope(&bucket, scope, hello, TOY_VALUE_ANY, TOY_VALUE_FROM_FLOAT(3.1415f), false);
 
 		{
 			//check it's shadowed correctly

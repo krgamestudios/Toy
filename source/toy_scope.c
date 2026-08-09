@@ -69,9 +69,9 @@ static void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, T
 	}
 }
 
-static Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapacity) {
-	//allocate and zero a new Toy_ScopeEntry array in memory
-	Toy_ScopeEntry* newEntries = malloc(newCapacity * sizeof(Toy_ScopeEntry));
+static Toy_ScopeEntry* adjustScopeEntries(Toy_Bucket** bucketHandle, Toy_Scope* scope, unsigned int newCapacity) {
+	//allocate and zero a new Toy_ScopeEntry array in the bucket
+	Toy_ScopeEntry* newEntries = (Toy_ScopeEntry*)Toy_partitionBucket(bucketHandle, newCapacity * sizeof(Toy_ScopeEntry));
 
 	if (newEntries == NULL) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Failed to allocate space for 'Toy_Scope' entries\n" TOY_CC_RESET);
@@ -100,7 +100,7 @@ static Toy_ScopeEntry* adjustScopeEntries(Toy_Scope* scope, unsigned int newCapa
 	}
 
 	//clean up and return
-	free(oldEntries);
+	Toy_releaseBucketPartition((unsigned char*)oldEntries);
 	return newEntries;
 }
 
@@ -114,11 +114,12 @@ Toy_Value coerceValueTypesIfAble(Toy_ValueType type, Toy_Value value) {
 
 //exposed functions
 Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
+	//scopes are declared separately from their entries so the pointer to scopes don't become invalid
 	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
 
 	newScope->next = scope;
 	newScope->refCount = 0;
-	newScope->data = adjustScopeEntries(NULL, TOY_SCOPE_INITIAL_CAPACITY);
+	newScope->data = adjustScopeEntries(bucketHandle, NULL, TOY_SCOPE_INITIAL_CAPACITY);
 	newScope->capacity = TOY_SCOPE_INITIAL_CAPACITY;
 	newScope->count = 0;
 	newScope->maxPsl = 0;
@@ -140,7 +141,7 @@ Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 	return next;
 }
 
-void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy_Value value, bool constant) {
+void Toy_declareScope(Toy_Bucket** bucketHandle, Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy_Value value, bool constant) {
 	Toy_ScopeEntry* entryPtr = lookupScopeEntryPtr(scope, key, Toy_hashString(key), false);
 
 	if (entryPtr != NULL) {
@@ -152,7 +153,7 @@ void Toy_declareScope(Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy
 
 	//expand the table capacity if needed
 	if (scope->count >= scope->capacity * TOY_SCOPE_EXPANSION_THRESHOLD) {
-		scope->data = adjustScopeEntries(scope, scope->capacity * TOY_SCOPE_EXPANSION_RATE);
+		scope->data = adjustScopeEntries(bucketHandle, scope, scope->capacity * TOY_SCOPE_EXPANSION_RATE);
 	}
 
 	value = coerceValueTypesIfAble(type, value);
@@ -245,7 +246,7 @@ void Toy_private_decrementScopeRefCount(Toy_Scope* scope) {
 						Toy_freeValue(iter->data[i].value);
 					}
 				}
-				free(iter->data);
+				Toy_releaseBucketPartition((unsigned char*)iter->data);
 			}
 		}
 	}

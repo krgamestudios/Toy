@@ -79,7 +79,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 TOY_API Toy_Value Toy_unwrapValue(Toy_Value value);
 TOY_API unsigned int Toy_hashValue(Toy_Value value);
 
-TOY_API Toy_Value Toy_copyValue(struct Toy_Bucket** bucketHandle, Toy_Value value);
+TOY_API Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value);
 TOY_API void Toy_freeValue(Toy_Value value);
 
 TOY_API bool Toy_checkValueIsTruthy(Toy_Value value);
@@ -88,7 +88,7 @@ TOY_API bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right);
 TOY_API int Toy_compareValues(Toy_Value left, Toy_Value right);
 
 //convert the value to a string - values that *are* strings are simply copied
-TOY_API union Toy_String_t* Toy_stringifyValue(struct Toy_Bucket** bucketHandle, Toy_Value value);
+TOY_API union Toy_String_t* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value);
 
 //for error messages
 TOY_API const char* Toy_getValueTypeAsCString(Toy_ValueType type);

@@ -204,7 +204,7 @@ static void processDeclare(Toy_VM* vm) {
 	Toy_Value value = Toy_popStack(&vm->stack);
 
 	//declare it
-	Toy_declareScope(vm->scope, name, type, value, constant);
+	Toy_declareScope(&vm->memoryBucket, vm->scope, name, type, value, constant);
 
 	//cleanup
 	Toy_freeString(name);
@@ -390,7 +390,7 @@ static void processInvoke(Toy_VM* vm) {
 				//as a name string
 				Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
 
-				Toy_declareScope(subVM.scope, name, paramType, argValue, true);
+				Toy_declareScope(&vm->memoryBucket, subVM.scope, name, paramType, argValue, true);
 
 				Toy_freeString(name);
 			}
