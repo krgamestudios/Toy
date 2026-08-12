@@ -62,6 +62,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 #define TOY_VALUE_AS_TABLE(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.table)
 #define TOY_VALUE_AS_FUNCTION(value)			((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.function)
 #define TOY_VALUE_AS_OPAQUE(value)				((TOY_VALUE_IS_REFERENCE(value) ? Toy_unwrapValue(value) : value).as.opaque)
+#define TOY_VALUE_AS_REFERENCE(value)			((value).as.reference)
 
 #define TOY_VALUE_FROM_NULL()					((Toy_Value){{ .integer = 0 }, TOY_VALUE_NULL})
 #define TOY_VALUE_FROM_BOOLEAN(value)			((Toy_Value){{ .boolean = value }, TOY_VALUE_BOOLEAN})

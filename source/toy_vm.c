@@ -325,7 +325,7 @@ static void processAccess(Toy_VM* vm) {
 	}
 
 	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-	if (TOY_VALUE_IS_REFERENCE(*valuePtr) || TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr) || TOY_VALUE_IS_FUNCTION(*valuePtr)) {
+	if (TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr) || TOY_VALUE_IS_FUNCTION(*valuePtr) || TOY_VALUE_IS_OPAQUE(*valuePtr) || TOY_VALUE_IS_REFERENCE(*valuePtr)) {
 		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
 		Toy_pushStack(&vm->stack, ref);
 	}
