@@ -53,6 +53,7 @@
 	#define TOY_BITNESS -1
 #endif
 
+//TODO: Version information not implemented
 //version specifiers, embedded as the header
 #define TOY_VERSION_MAJOR 2
 #define TOY_VERSION_MINOR 0
@@ -66,9 +67,9 @@ const char* Toy_private_versionBuild(void);
 
 Version validation rules:
 
- * Under no circumstance, should you ever run code whose major version is different from the interpreter’s major version
- * Under no circumstance, should you ever run code whose minor version is above the interpreter’s minor version
- * You may, at your own risk, attempt to run code whose patch version is different from the interpreter’s patch version
- * You may, at your own risk, attempt to run code whose build version is different from the interpreter’s build version
+* Under no circumstance, should you ever run code whose major version is different from the interpreter's major version
+* Under no circumstance, should you ever run code whose minor version is above the interpreter's minor version
+* You may, at your own risk, attempt to run code whose patch version is different from the interpreter's patch version
+* You may, at your own risk, attempt to run code whose build version is different from the interpreter's build version
 
 */

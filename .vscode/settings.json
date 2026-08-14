@@ -1,4 +1,5 @@
 {
+	"editor.insertSpaces": false,
 	"better-todo-tree.filtering.includeGlobs": [
 		"**/repl/**",
 		"**/examples/**",

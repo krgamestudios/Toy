@@ -3,7 +3,7 @@ This folder is full of development notes, and are probably out of date. Check th
 # ToDo
 
 - Improve tool support:
-  - Editors:
-    - [x] nano (`.nanorc` syntax file)
-    - [x] vim/Neovim (`.vim` syntax file)
-    - [ ] VSCode (extension)
+	- Editors:
+		- [x] nano (`.nanorc` syntax file)
+		- [x] vim/Neovim (`.vim` syntax file)
+		- [ ] VSCode (extension)

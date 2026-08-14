@@ -1,23 +1,23 @@
-//traditional three-piece  for loops
+//traditional three-piece for loops
 
 //-------------------------
 
 for (var i = 0; i < 10; i++) {
-    print i;
+	print i;
 }
 
 //-------------------------
 
 //test break
 for (var i = 0; i < 10; i++) {
-    break;
+	break;
 	assert false, "break failed";
 }
 
 //test continue
 for (var i = 0; i < 10; i++) {
-    if (i < 5) continue;
-    print i;
+	if (i < 5) continue;
+	print i;
 }
 
 //-------------------------
@@ -25,25 +25,25 @@ for (var i = 0; i < 10; i++) {
 //test the scopes
 
 {
-    var counter = 42;
+	var counter = 42;
 
-    //no declaration
-    for (counter = 0; counter < 10; counter++) {
-        assert counter < 20, "Scopes failed";
-    }
+	//no declaration
+	for (counter = 0; counter < 10; counter++) {
+		assert counter < 20, "Scopes failed";
+	}
 
-    assert counter == 10, "Scopes failed";
+	assert counter == 10, "Scopes failed";
 }
 
 {
-    var counter = 42;
+	var counter = 42;
 
-    //shadow declaration
-    for (var counter = 0; counter < 10; counter++) {
-        assert counter < 20, "Scopes failed";
-    }
+	//shadow declaration
+	for (var counter = 0; counter < 10; counter++) {
+		assert counter < 20, "Scopes failed";
+	}
 
-    assert counter == 42, "Scopes failed";
+	assert counter == 42, "Scopes failed";
 }
 
 //-------------------------
@@ -51,9 +51,9 @@ for (var i = 0; i < 10; i++) {
 //test array indexing
 
 {
-    var array: Array = ["alpha", "bravo", "charlie"];
+	var array: Array = ["alpha", "bravo", "charlie"];
 
-    for (var i = 0; i < 3; i++) {
-        print array[i];
-    }
+	for (var i = 0; i < 3; i++) {
+		print array[i];
+	}
 }

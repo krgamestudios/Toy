@@ -13,10 +13,10 @@
 
 //utils
 static unsigned int hashUInt(unsigned int x) {
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = ((x >> 16) ^ x) * 0x45d9f3b;
-    x = (x >> 16) ^ x;
-    return x;
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = ((x >> 16) ^ x) * 0x45d9f3b;
+	x = (x >> 16) ^ x;
+	return x;
 }
 
 #define MAYBE_UNWRAP(value) if (TOY_VALUE_IS_REFERENCE(value)) { value = Toy_unwrapValue(value); }

@@ -6,7 +6,7 @@ This file provides a number of macros that can set the color of text in a consol
 window. These are used for convenience only. They are supposed to be dropped into
 a printf()'s first argument, like so:
 
-    printf(TOY_CC_NOTICE "Hello world" TOY_CC_RESET);
+	printf(TOY_CC_NOTICE "Hello world" TOY_CC_RESET);
 
 reference: https://stackoverflow.com/questions/4842424/list-of-ansi-color-escape-sequences
 

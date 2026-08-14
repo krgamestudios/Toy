@@ -60,10 +60,10 @@ Making a decision, or repeating a chunk of code multiple times, is essential for
 var answer = 42;
 
 if (answer < 56) {
-    print "Cod dang it!";
+	print "Cod dang it!";
 }
 else {
-    print "Something's fishy here...";
+	print "Something's fishy here...";
 }
 ```
 
@@ -71,7 +71,7 @@ else {
 var challenge = "hard";
 
 if (challenge == "hard") {
-    print "I choose to build a scripting language, not because it's easy, but because it's hard!";
+	print "I choose to build a scripting language, not because it's easy, but because it's hard!";
 }
 
 //the else-branch is optional
@@ -83,7 +83,7 @@ To repeat a certain action, use the `while-then` loop, which repeats the body as
 var loops = 0;
 
 while (loops++ < 8) {
-    print "These episodes are endless.";
+	print "These episodes are endless.";
 }
 ```
 
@@ -93,11 +93,11 @@ To break out of a loop, you can use the `break` keyword. Alternatively, to resta
 var loops = 0;
 
 while (true) {
-    if (++loops < 15532) {
-        continue;
-    }
+	if (++loops < 15532) {
+		continue;
+	}
 
-    break; //poor yuki ;_;
+	break; //poor yuki ;_;
 }
 ```
 
@@ -105,7 +105,7 @@ Or you could use the much cleaner three-piece `for-loop`, which is more convenie
 
 ```
 for (var i = 0; i < 10; i++) {
-    print i;
+	print i;
 }
 ```
 
