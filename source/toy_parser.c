@@ -941,6 +941,41 @@ static void makeReturnStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 	}
 }
 
+static void makeImportStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
+	//NOTE: import "file" as function;
+
+	//build the file name
+	consume(parser, TOY_TOKEN_LITERAL_STRING, "Expected 'file name' in import clause");
+
+	if (parser->previous.length > 255) {
+		printError(parser, parser->previous, "Can't have a file name name longer than 255 characters in import statement");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return;
+	}
+
+	Toy_Token fileToken = parser->previous;
+	Toy_String* fileStr = Toy_toStringLength(bucketHandle, fileToken.lexeme, fileToken.length);
+
+	//build the function name
+	consume(parser, TOY_TOKEN_KEYWORD_AS, "Expected 'as' after import clause");
+	consume(parser, TOY_TOKEN_NAME, "Expected function name after 'as' in import statement");
+
+	if (parser->previous.length > 255) {
+		printError(parser, parser->previous, "Can't have a function name longer than 255 characters");
+		Toy_private_emitAstError(bucketHandle, rootHandle);
+		return;
+	}
+
+	//build the name string
+	Toy_Token nameToken = parser->previous;
+	Toy_String* nameStr = Toy_toStringLength(bucketHandle, nameToken.lexeme, nameToken.length);
+
+	//finalize the import AST
+	consume(parser, TOY_TOKEN_OPERATOR_SEMICOLON, "Expected ';' at the end of import statement");
+
+	Toy_private_emitAstImport(bucketHandle, rootHandle, fileStr, nameStr);
+}
+
 static void makePrintStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** rootHandle) {
 	makeExpr(bucketHandle, parser, rootHandle);
 	Toy_private_emitAstPrint(bucketHandle, rootHandle);
@@ -1125,7 +1160,11 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//URGENT: import keyword not yet implemented
+	//import
+	else if (match(parser, TOY_TOKEN_KEYWORD_IMPORT)) {
+		makeImportStmt(bucketHandle, parser, rootHandle);
+		return;
+	}
 
 	//print
 	else if (match(parser, TOY_TOKEN_KEYWORD_PRINT)) {

@@ -184,6 +184,16 @@ void Toy_private_emitAstReturn(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 	(*astHandle) = tmp;
 }
 
+void Toy_private_emitAstImport(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* file, Toy_String* name) {
+	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
+
+	tmp->type = TOY_AST_IMPORT;
+	tmp->fnImport.file = file;
+	tmp->fnImport.name = name;
+
+	(*astHandle) = tmp;
+}
+
 void Toy_private_emitAstPrint(Toy_Bucket** bucketHandle, Toy_Ast** astHandle) {
 	Toy_Ast* tmp = (Toy_Ast*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Ast));
 
@@ -309,6 +319,7 @@ const char* Toy_private_getAstTypeAsCString(Toy_AstType type) {
 		case TOY_AST_BREAK: return "BREAK";
 		case TOY_AST_CONTINUE: return "CONTINUE";
 		case TOY_AST_RETURN: return "RETURN";
+		case TOY_AST_IMPORT: return "IMPORT";
 		case TOY_AST_PRINT: return "PRINT";
 
 		case TOY_AST_VAR_DECLARE: return "DECLARE";

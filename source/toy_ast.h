@@ -28,6 +28,7 @@ typedef enum Toy_AstType {
 	TOY_AST_BREAK,
 	TOY_AST_CONTINUE,
 	TOY_AST_RETURN,
+	TOY_AST_IMPORT,
 	TOY_AST_PRINT,
 
 	TOY_AST_VAR_DECLARE,
@@ -196,6 +197,12 @@ typedef struct Toy_AstReturn {
 	Toy_Ast* child;
 } Toy_AstReturn;
 
+typedef struct Toy_AstImport {
+	Toy_AstType type;
+	Toy_String* file;
+	Toy_String* name;
+} Toy_AstImport;
+
 typedef struct Toy_AstPrint {
 	Toy_AstType type;
 	Toy_Ast* child;
@@ -275,6 +282,7 @@ union Toy_Ast { //see 'test_ast.c' for bitness tests
 	Toy_AstBreak breakPoint;
 	Toy_AstContinue continuePoint;
 	Toy_AstReturn fnReturn;
+	Toy_AstImport fnImport;
 	Toy_AstPrint print;
 	Toy_AstVarDeclare varDeclare;
 	Toy_AstVarAssign varAssign;
@@ -307,6 +315,7 @@ void Toy_private_emitAstForCondThen(Toy_Bucket** bucketHandle, Toy_Ast** astHand
 void Toy_private_emitAstBreak(Toy_Bucket** bucketHandle, Toy_Ast** rootHandle);
 void Toy_private_emitAstContinue(Toy_Bucket** bucketHandle, Toy_Ast** rootHandle);
 void Toy_private_emitAstReturn(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
+void Toy_private_emitAstImport(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* file, Toy_String* name);
 void Toy_private_emitAstPrint(Toy_Bucket** bucketHandle, Toy_Ast** astHandle);
 
 void Toy_private_emitAstVariableDeclaration(Toy_Bucket** bucketHandle, Toy_Ast** astHandle, Toy_String* name, Toy_ValueType valueType, bool constant, Toy_Ast* expr);

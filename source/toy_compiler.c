@@ -4,12 +4,49 @@
 #include "toy_opcodes.h"
 #include "toy_value.h"
 #include "toy_string.h"
+#include "toy_lexer.h"
+#include "toy_parser.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 //misc. utils
+char* readFile(const char* path, int* size) {
+	//open the file
+	FILE* file = fopen(path, "rb");
+	if (file == NULL) {
+		*size = -1; //missing file error
+		return NULL;
+	}
+
+	//determine the file's length
+	fseek(file, 0L, SEEK_END);
+	*size = (int)ftell(file);
+	rewind(file);
+
+	//make some space
+	char* buffer = malloc(*size + 1);
+	if (buffer == NULL) {
+		fclose(file);
+		return NULL;
+	}
+
+	//read the file
+	if (fread(buffer, sizeof(char), *size, file) < (unsigned int)(*size)) {
+		fclose(file);
+		free(buffer);
+		*size = -2; //singal a read error
+		return NULL;
+	}
+
+	buffer[(*size)] = '\0';
+
+	//clean up and return
+	fclose(file);
+	return buffer;
+}
+
 static bool checkForChainedAssign(Toy_Ast* ptr) {
 	if (ptr == NULL) {
 		return false;
@@ -223,6 +260,7 @@ static unsigned int emitParameters(Toy_Bytecode* mb, Toy_Ast* ast) {
 	return 1;
 }
 
+//forward declarations
 static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast); //forward declare for recursion
 static void writeBytecodeBody(Toy_Bytecode* mb, Toy_Ast* ast);
 static unsigned char* collateBytecodeBody(Toy_Bytecode* mb);
@@ -230,6 +268,44 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 static unsigned int writeInstructionAccess(Toy_Bytecode** mb, Toy_AstVarAccess ast);
 static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke ast);
 
+//used internally
+unsigned char* compileSourceToSubroutine(const char* source) {
+	//NOTE: this is a customized internal version of 'compileSource' to handle circular references
+	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+
+	Toy_Lexer lexer;
+	Toy_bindLexer(&lexer, source);
+
+	Toy_Parser parser;
+	Toy_bindParser(&parser, &lexer);
+
+	Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
+
+	Toy_Bytecode compiler = { 0 };
+
+	compiler.breakEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
+	compiler.continueEscapes = Toy_private_resizeEscapeArray(NULL, TOY_ESCAPE_INITIAL_CAPACITY);
+
+	//compile the ast to memory
+	writeBytecodeBody(&compiler, ast);
+	unsigned char* buffer = collateBytecodeBody(&compiler);
+
+	//cleanup
+	Toy_private_resizeEscapeArray(compiler.breakEscapes, 0);
+	Toy_private_resizeEscapeArray(compiler.continueEscapes, 0);
+
+	free(compiler.param);
+	free(compiler.code);
+	free(compiler.jumps);
+	free(compiler.data);
+	free(compiler.subs);
+
+	Toy_freeBucket(&bucket);
+
+	return buffer;
+}
+
+//write the instructions
 static unsigned int writeInstructionValue(Toy_Bytecode** mb, Toy_AstValue ast) {
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
 	EMIT_BYTE(mb, code, ast.value.type);
@@ -925,6 +1001,50 @@ static unsigned int writeInstructionReturn(Toy_Bytecode** mb, Toy_AstReturn ast)
 	return retCount;
 }
 
+static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast) {
+	//extract the path, because reasons
+	char path[256];
+	snprintf(path, 256, "%.*s", ast.file->info.length, ast.file->leaf.data);
+
+	//read the source
+	int size = 0;
+	char* source = readFile(path, &size);
+
+	if (!source || size <= 0) {
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Failed to import the script '%s' (errcode %d)\n" TOY_CC_RESET, path, size);
+		(*mb)->panic = true;
+		return 0;
+	}
+
+	//compile the file
+	unsigned char* subroutine = compileSourceToSubroutine(source);
+	free(source);
+
+	//write the subroutine to the subs section
+	unsigned int subsAddr = (*mb)->subsCount;
+	emitBuffer(&((*mb)->subs), &((*mb)->subsCapacity), &((*mb)->subsCount), subroutine, *((unsigned int*)subroutine));
+	free(subroutine);
+
+	//read the function as a value, with the address as a parameter
+	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
+	EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+	EMIT_BYTE(mb, code, 0); //no parameters
+	EMIT_BYTE(mb, code, 0);
+
+	EMIT_INT(mb, code, subsAddr);
+
+	//delcare the function
+	EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
+	EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+	EMIT_BYTE(mb, code, ast.name->info.length); //quick optimisation to skip a 'strlen()' call
+	EMIT_BYTE(mb, code, true); //functions are const for now
+
+	//time to write to the actual function name
+	emitString(mb, ast.name);
+
+	return 0;
+}
+
 static unsigned int writeInstructionPrint(Toy_Bytecode** mb, Toy_AstPrint ast) {
 	//the thing to print
 	writeBytecodeFromAst(mb, ast.child);
@@ -1378,6 +1498,10 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 
 		case TOY_AST_RETURN:
 			result += writeInstructionReturn(mb, ast->fnReturn);
+			break;
+
+		case TOY_AST_IMPORT:
+			result += writeInstructionImport(mb, ast->fnImport);
 			break;
 
 		case TOY_AST_PRINT:

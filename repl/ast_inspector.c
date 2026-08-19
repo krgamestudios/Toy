@@ -47,6 +47,7 @@ void inspect_by_type(Toy_Ast* ast, int depth) {
 		// case TOY_AST_BREAK:
 		// case TOY_AST_CONTINUE:
 		// case TOY_AST_RETURN:
+		// case TOY_AST_IMPORT:
 		case TOY_AST_PRINT:
 			inspect_print(ast, depth);
 			return;

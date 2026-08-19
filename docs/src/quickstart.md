@@ -204,6 +204,26 @@ fn isLeapYear(n: Int) {
 }
 ```
 
+## Imports
+
+External files can be imported as functions, like so:
+
+```toy
+//hello_world.toy
+print "Hello world!";
+```
+
+```toy
+//test_hello.toy
+import "hello_world.toy" as hello;
+
+hello();
+```
+
+Once imported, they act just like any other function.
+
+*Note: the `import` keyword is still in testing, and has a couple issues. Avoid circular imports if possible.*
+
 ## External API and Extending Toy
 
 *Note: Watch this space, docs for the C API are coming soon. For now, the [Cheat Sheet](/cheatsheet) can get you started.*
