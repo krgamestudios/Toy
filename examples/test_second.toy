@@ -1,0 +1,4 @@
+//test_second.toy
+import "dir/test_third.toy" as third;
+
+third();

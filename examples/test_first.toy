@@ -1,0 +1,7 @@
+//test_first.toy
+import "test_second.toy" as test_second;
+
+test_second();
+
+//BUG: circular imports
+

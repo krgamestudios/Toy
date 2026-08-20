@@ -73,3 +73,6 @@ Version validation rules:
 * You may, at your own risk, attempt to run code whose build version is different from the interpreter's build version
 
 */
+
+TOY_API int Toy_private_getWorkingDir(char* dest, const char* src, size_t destLength);
+TOY_API int Toy_private_getFileName(char* dest, const char* src, size_t destLength);

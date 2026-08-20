@@ -5,6 +5,7 @@
 #include "toy_string.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <limits.h>
 
 //utilities
@@ -956,6 +957,15 @@ static void makeImportStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 	Toy_Token fileToken = parser->previous;
 	Toy_String* fileStr = Toy_toStringLength(bucketHandle, fileToken.lexeme, fileToken.length);
 
+	//prepend a working directory, if present
+	if (parser->workingDir) {
+		Toy_String* pathStr = Toy_createStringLength(bucketHandle, parser->workingDir, strlen(parser->workingDir));
+		Toy_String* fullPathStr = Toy_concatStrings(bucketHandle, pathStr, fileStr);
+		Toy_freeString(pathStr);
+		Toy_freeString(fileStr);
+		fileStr = fullPathStr;
+	}
+
 	//build the function name
 	consume(parser, TOY_TOKEN_KEYWORD_AS, "Expected 'as' after import clause");
 	consume(parser, TOY_TOKEN_NAME, "Expected function name after 'as' in import statement");
@@ -1266,6 +1276,12 @@ void Toy_resetParser(Toy_Parser* parser) {
 	parser->current = ((Toy_Token){TOY_TOKEN_NULL, 0, 0, NULL});
 	parser->previous = ((Toy_Token){TOY_TOKEN_NULL, 0, 0, NULL});
 
+	parser->workingDir = NULL;
+
 	parser->error = false;
 	parser->panic = false;
+}
+
+void Toy_adjustParserWorkingDirectory(Toy_Parser* parser, const char* dir) {
+	parser->workingDir = dir;
 }

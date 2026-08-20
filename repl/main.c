@@ -52,35 +52,6 @@ unsigned char* readFile(const char* path, int* size) {
 	return buffer;
 }
 
-int getFileName(char* dest, const char* src, size_t destLength) {
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-	char* p = NULL;
-
-	//find the last slash, regardless of platform
-	p = strrchr(src, '\\');
-	if (p == NULL) {
-		p = strrchr(src, '/');
-	}
-	if (p == NULL) {
-		int len = MIN(strlen(src), destLength-1);
-		strncpy(dest, src, len);
-		dest[len] = '\0';
-		return len;
-	}
-
-	p++; //skip the slash
-
-	//determine length of the file name
-	int len = MIN(strlen(src), destLength-1);
-
-	//copy to the dest
-	strncpy(dest, p, len);
-	dest[len] = '\0';
-
-	return len;
-#undef MIN
-}
-
 //error callbacks
 static int errorAndExitCallback(const char* msg) {
 	fprintf(stderr, TOY_CC_ERROR "Error: %s" TOY_CC_RESET "\n", msg);
@@ -241,7 +212,7 @@ int repl(const char* filepath, unsigned char verbosity) {
 
 	//stuff for user input
 	char prompt[256];
-	getFileName(prompt, filepath, 256);
+	Toy_private_getFileName(prompt, filepath, 256);
 	unsigned int INPUT_BUFFER_SIZE = 4096;
 	char inputBuffer[INPUT_BUFFER_SIZE];
 	memset(inputBuffer, 0, INPUT_BUFFER_SIZE);
@@ -396,12 +367,16 @@ int main(int argc, const char* argv[]) {
 			}
 		}
 
+		char workingDir[256];
+		Toy_private_getWorkingDir(workingDir, settings.script, 256);
+
 		//compile the source code
 		Toy_Lexer lexer;
 		Toy_bindLexer(&lexer, (char*)source);
 
 		Toy_Parser parser;
 		Toy_bindParser(&parser, &lexer);
+		Toy_adjustParserWorkingDirectory(&parser, workingDir);
 
 		Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 		Toy_Ast* ast = Toy_scanParser(&bucket, &parser);

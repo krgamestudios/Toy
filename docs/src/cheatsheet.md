@@ -63,6 +63,26 @@ unsigned char* compileSource(const char* source) {
 }
 ```
 
+## Importing From File Directories
+
+If you use the `import` keyword, be sure to provide the parser the correct working directory to search. Usually, just passing the directory of the current script will work.
+
+```c
+	//load the file
+	unsigned char* source = readFile(filename, &size);
+
+	//bind the source
+	Toy_Lexer lexer;
+	Toy_bindLexer(&lexer, (char*)source);
+	Toy_Parser parser;
+	Toy_bindParser(&parser, &lexer);
+
+	//assign the working directory
+	char workingDir[256];
+	Toy_private_getWorkingDir(workingDir, filename, 256);
+	Toy_adjustParserWorkingDirectory(&parser, workingDir);
+```
+
 ## API Functions
 
 This is a rough outline of all API functions declared in Toy's headers. As a rule, functions that begin with `TOY_API` are useable and begin with `Toy_`, while functions that begin with `Toy_private_` are generally not intended for use, and only exposed for technical reasons.
@@ -86,6 +106,7 @@ TOY_API void Toy_bindLexer(Toy_Lexer* lexer, const char* source);
 TOY_API void Toy_bindParser(Toy_Parser* parser, Toy_Lexer* lexer);
 TOY_API Toy_Ast* Toy_scanParser(Toy_Bucket** bucketHandle, Toy_Parser* parser);
 TOY_API void Toy_resetParser(Toy_Parser* parser);
+TOY_API void Toy_adjustParserWorkingDirectory(Toy_Parser* parser, const char* dir);
 TOY_API void Toy_print(const char* msg);
 TOY_API void Toy_error(const char* msg);
 TOY_API void Toy_assertFailure(const char* msg);

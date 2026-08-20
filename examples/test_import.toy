@@ -1,7 +1,0 @@
-import "examples/hello_world.toy" as hello;
-
-hello();
-
-//BUG: circular imports
-//BUG: file paths are relative to the working directory
-

@@ -269,7 +269,7 @@ static unsigned int writeInstructionAccess(Toy_Bytecode** mb, Toy_AstVarAccess a
 static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke ast);
 
 //used internally
-unsigned char* compileSourceToSubroutine(const char* source) {
+unsigned char* compileSourceToSubroutine(const char* source, const char* workingDir) {
 	//NOTE: this is a customized internal version of 'compileSource' to handle circular references
 	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
@@ -278,6 +278,7 @@ unsigned char* compileSourceToSubroutine(const char* source) {
 
 	Toy_Parser parser;
 	Toy_bindParser(&parser, &lexer);
+	Toy_adjustParserWorkingDirectory(&parser, workingDir);
 
 	Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
 
@@ -1003,8 +1004,7 @@ static unsigned int writeInstructionReturn(Toy_Bytecode** mb, Toy_AstReturn ast)
 
 static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast) {
 	//extract the path, because reasons
-	char path[256];
-	snprintf(path, 256, "%.*s", ast.file->info.length, ast.file->leaf.data);
+	char* path = Toy_getStringRaw(ast.file);
 
 	//read the source
 	int size = 0;
@@ -1016,9 +1016,14 @@ static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast)
 		return 0;
 	}
 
+	//grab the working dir
+	char workingDir[256];
+	Toy_private_getWorkingDir(workingDir, path, 256);
+
 	//compile the file
-	unsigned char* subroutine = compileSourceToSubroutine(source);
+	unsigned char* subroutine = compileSourceToSubroutine(source, workingDir);
 	free(source);
+	free(path);
 
 	//write the subroutine to the subs section
 	unsigned int subsAddr = (*mb)->subsCount;
