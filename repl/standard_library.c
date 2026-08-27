@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 typedef struct CallbackPairs {
 	const char* name;
@@ -276,6 +277,14 @@ static void std_srand(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_freeString(key);
 }
 
+static void std_time(Toy_VM* vm, Toy_FunctionNative* self) {
+	//TODO: Fix the datatype in about 11 years.
+	(void)self;
+
+	int seconds = (int)time(NULL);
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(seconds));
+}
+
 CallbackPairs callbackPairs[] = {
 	{"min", std_min},
 	{"max", std_max},
@@ -286,6 +295,7 @@ CallbackPairs callbackPairs[] = {
 	{"sqrt", std_sqrt},
 	{RAND_NAME, std_rand},
 	{"srand", std_srand},
+	{"time", std_time},
 
 	{NULL, NULL},
 };

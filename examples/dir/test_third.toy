@@ -1,6 +1,0 @@
-//test_third.toy
-print "finally...";
-
-import "../hello_world.toy" as hello;
-
-hello();

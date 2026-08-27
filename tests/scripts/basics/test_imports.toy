@@ -1,0 +1,6 @@
+import "imports/other.toy" as other;
+
+assert other() == 42, "Import returned an incorrect value";
+
+//TODO: parameters for submodules?
+//BUG: circular imports
