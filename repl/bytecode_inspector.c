@@ -322,7 +322,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 				(*(int*)(bytecode + pc + 4)) > 0 ? "+" : "", //show a + sign when positive
 				(*(int*)(bytecode + pc + 4)),
 				(*(int*)(bytecode + pc + 4)) + pc + 12,
-				bytecode[pc + 8]
+				(*(int*)(bytecode + pc + 8))
 			);
 			return 12;
 
@@ -339,7 +339,7 @@ int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int j
 			return 4;
 
 		case TOY_OPCODE_PRINT:
-			printf(MARKER TOY_CC_DEBUG "Keyword PRINT\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char));
+			printf(MARKER TOY_CC_WARN "Keyword PRINT\n" TOY_CC_RESET, MARKER_VALUE(pc, unsigned char));
 			return 4;
 
 		case TOY_OPCODE_CONCAT:
@@ -375,7 +375,7 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 				printf(MARKER "READ BOOL true\n", MARKER_VALUE(pc, unsigned char));
 			}
 			else {
-				
+				printf(MARKER "READ BOOL false\n", MARKER_VALUE(pc, unsigned char));
 			}
 			return 4;
 		}

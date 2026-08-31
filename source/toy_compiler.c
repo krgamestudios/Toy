@@ -671,16 +671,7 @@ static unsigned int writeInstructionAggregate(Toy_Bytecode** mb, Toy_AstAggregat
 		return 1; //leaves only 1 value on the stack
 	}
 	else if (ast.flag == TOY_AST_FLAG_FN_ARGUMENTS) {
-		//BUGFIX: invoking a function as an argument gets messy, so re-count the aggregate elements and discard 'result'
-		int count = ast.left != NULL ? 2 : 1;
-		Toy_Ast* iter = ast.right;
-
-		while (iter != NULL && iter->type == TOY_AST_AGGREGATE) {
-			iter = iter->aggregate.right;
-			count++;
-		}
-
-		return count;
+		return result;
 	}
 	else {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Invalid AST aggregate flag found\n" TOY_CC_RESET);
@@ -789,7 +780,7 @@ static unsigned int writeInstructionWhileThen(Toy_Bytecode** mb, Toy_AstWhileThe
 	OVERWRITE_INT(mb, code, paramAddr, CURRENT_ADDRESS(mb, code) - (paramAddr + 4));
 
 	//set the break & continue data
-	while ((*mb)->breakEscapes->count > 0) {
+	while ((*mb)->breakEscapes->count > 0 && (*mb)->breakEscapes->data[(*mb)->breakEscapes->count - 1].depth >= (*mb)->currentScopeDepth) { //BUGFIX: also checking the depth of the keyword to avoid clashing loops
 		//extract
 		unsigned int addr = (*mb)->breakEscapes->data[(*mb)->breakEscapes->count - 1].addr;
 		unsigned int depth = (*mb)->breakEscapes->data[(*mb)->breakEscapes->count - 1].depth;
@@ -803,7 +794,7 @@ static unsigned int writeInstructionWhileThen(Toy_Bytecode** mb, Toy_AstWhileThe
 		(*mb)->breakEscapes->count--;
 	}
 
-	while ((*mb)->continueEscapes->count > 0) {
+	while ((*mb)->continueEscapes->count > 0 && (*mb)->continueEscapes->data[(*mb)->continueEscapes->count - 1].depth >= (*mb)->currentScopeDepth) { //BUGFIX: also checking the depth of the keyword to avoid clashing loops
 		//extract
 		unsigned int addr = (*mb)->continueEscapes->data[(*mb)->continueEscapes->count - 1].addr;
 		unsigned int depth = (*mb)->continueEscapes->data[(*mb)->continueEscapes->count - 1].depth;
@@ -856,7 +847,7 @@ static unsigned int writeInstructionForCondThen(Toy_Bytecode** mb, Toy_AstForCon
 	//emit then-branch
 	writeBytecodeFromAst(mb, ast.thenBranch);
 
-	//bottom of the loop
+	//used by 'continue'
 	unsigned int endAddr = CURRENT_ADDRESS(mb, code);
 
 	//append post-branch, compensating for chained assigns if needed
@@ -891,7 +882,7 @@ static unsigned int writeInstructionForCondThen(Toy_Bytecode** mb, Toy_AstForCon
 	OVERWRITE_INT(mb, code, paramAddr, CURRENT_ADDRESS(mb, code) - (paramAddr + 4));
 
 	//set the break & continue data
-	while ((*mb)->breakEscapes->count > 0) {
+	while ((*mb)->breakEscapes->count > 0 && (*mb)->breakEscapes->data[(*mb)->breakEscapes->count - 1].depth >= (*mb)->currentScopeDepth) { //BUGFIX: also checking the depth of the keyword to avoid clashing loops
 		//extract
 		unsigned int addr = (*mb)->breakEscapes->data[(*mb)->breakEscapes->count - 1].addr;
 		unsigned int depth = (*mb)->breakEscapes->data[(*mb)->breakEscapes->count - 1].depth;
@@ -905,7 +896,7 @@ static unsigned int writeInstructionForCondThen(Toy_Bytecode** mb, Toy_AstForCon
 		(*mb)->breakEscapes->count--;
 	}
 
-	while ((*mb)->continueEscapes->count > 0) {
+	while ((*mb)->continueEscapes->count > 0 && (*mb)->continueEscapes->data[(*mb)->continueEscapes->count - 1].depth >= (*mb)->currentScopeDepth) { //BUGFIX: also checking the depth of the keyword to avoid clashing loops
 		//extract
 		unsigned int addr = (*mb)->continueEscapes->data[(*mb)->continueEscapes->count - 1].addr;
 		unsigned int depth = (*mb)->continueEscapes->data[(*mb)->continueEscapes->count - 1].depth;

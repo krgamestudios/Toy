@@ -367,7 +367,9 @@ static void processInvoke(Toy_VM* vm) {
 
 			//check args count
 			if (argCount * 8 != subVM.paramCount) {
-				Toy_error("Incorrect number of parameters specified for function call");
+				char buffer[256];
+				snprintf(buffer, 256, "Incorrect number of parameters specified for function call (expected %d, found %d)", subVM.paramCount / 8, argCount);
+				Toy_error(buffer);
 				break;
 			}
 
