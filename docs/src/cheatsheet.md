@@ -175,6 +175,7 @@ The tools in `repl/` includes a standard library, which can be added to the root
 * `sqrt(x)`
 * `rand()`
 * `srand(x)`
+* `time()`
 
 It also offers an example of how to write a library API.
 
