@@ -102,7 +102,7 @@ void usageInfo(int argc, const char* argv[]) {
 void helpInfo(int argc, const char* argv[]) {
 	usageInfo(argc, argv);
 
-	printf("The Toy Programming Language, leave arguments blank for an interactive REPL.\n\n");
+	printf("The Toy Scripting Language, leave arguments blank for an interactive REPL.\n\n");
 
 	printf("  -h,\t--help\t\t\tShow this help then exit.\n");
 	printf("  -v,\t--version\t\tShow version and copyright information then exit.\n");
@@ -117,7 +117,7 @@ void helpInfo(int argc, const char* argv[]) {
 void versionInfo(int argc, const char* argv[]) {
 	(void)argc;
 	(void)argv;
-	printf("The Toy Programming Language, Version %d.%d.%d %s\n\n", TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, TOY_VERSION_BUILD);
+	printf("The Toy Scripting Language, Version %d.%d.%d %s\n\n", TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, TOY_VERSION_BUILD);
 
 	//copy/pasted from the license file - there's a way to include it directly, but it's too finnicky to bother
 	const char* license = 
