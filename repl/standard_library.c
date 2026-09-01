@@ -241,7 +241,7 @@ static void std_rand(Toy_VM* vm, Toy_FunctionNative* self) {
 
 	self->meta1 = self->meta1 * 1664525 + 1013904223;
 
-	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(self->meta1));
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_INTEGER(self->meta1 > 0 ? self->meta1 : -self->meta1));
 }
 
 static void std_srand(Toy_VM* vm, Toy_FunctionNative* self) {
