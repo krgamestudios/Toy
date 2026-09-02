@@ -31,15 +31,11 @@ fn makeCounter() {
 	return increment;
 }
 
+//'tally' holds internal state
 var tally = makeCounter();
 
-var result = 0;
-while (result = tally()) {
+for (var result = 0; result < 10; result = tally()) {
 	print result;
-
-	if (result >= 10) {
-		break;
-	}
 }
 ```
 

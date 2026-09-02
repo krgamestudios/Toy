@@ -27,23 +27,23 @@ fn makeCounter() {
 	return increment;
 }
 
+//'tally' holds internal state
 var tally = makeCounter();
 
-var result = 0;
-while (result = tally()) {
+for (var result = 0; result < 10; result = tally()) {
 	print result;
-
-	if (result >= 10) {
-		break;
-	}
 }
 ```
+
+## Toy In Action
+
+I'm currently developing a game using Toy as a primary component, which can be found here:
+
+[https://gitea.krgamestudios.com/krgamestudios/ToyBox](https://gitea.krgamestudios.com/krgamestudios/ToyBox)
 
 ## Further Reading
 
 This website is a work in progress - for further info, see the official repository: [https://gitea.krgamestudios.com/krgamestudios/Toy](https://gitea.krgamestudios.com/krgamestudios/Toy), or the GitHub mirror: [https://github.com/krgamestudios/Toy](https://github.com/krgamestudios/Toy).
-
-An example of Toy in action: [ToyBox](https://gitea.krgamestudios.com/krgamestudios/ToyBox) - IDK what it is, I'll figure it out on the way.
 
 <p align="center">
 	<image src="img/noai.png" alt="No AI" width="200px" />

@@ -8,7 +8,7 @@ fn makeCounter() {
 	return increment;
 }
 
-//'tally' becomes a closure
+//'tally' holds internal state
 var tally = makeCounter();
 
 for (var result = 0; result < 10; result = tally()) {
