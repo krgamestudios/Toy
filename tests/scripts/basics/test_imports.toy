@@ -1,6 +1,15 @@
-import "imports/other.toy" as other;
-
+//check the basics work
+import "normal_imports/answer.toy" as other;
 assert other() == 42, "Import returned an incorrect value";
 
+//run it to make sure it will at least run correctly
+import "diamond_imports/main.toy" as diamond;
+diamond();
+
+//URGENT: this will lock up the compiler if encountered
+//import "circular_imports/alpha.toy" as circular;
+//circular();
+
 //TODO: parameters for submodules?
-//BUG: circular imports
+//BUG: circular imports make the compiler hang
+//BUG: diamond-shaped imports duplicate the submodules

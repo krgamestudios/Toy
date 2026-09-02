@@ -53,7 +53,7 @@
 	#define TOY_BITNESS -1
 #endif
 
-//TODO: Version information not implemented
+//WARN: Version information not implemented
 //version specifiers, embedded as the header
 #define TOY_VERSION_MAJOR 2
 #define TOY_VERSION_MINOR 0

@@ -21,7 +21,7 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 
 //exposed functions
 int inspect_bytecode(unsigned char* bytecode) {
-	//TODO: handle version info
+	//TODO: handle version info?
 
 	unsigned int const bytecodeSize = ((unsigned int*)(bytecode))[0];
 	unsigned int const jumpsSize = ((unsigned int*)(bytecode))[1];

@@ -331,7 +331,7 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 				return false;
 			}
 
-		case TOY_VALUE_OPAQUE: //BUG: Need a way to check if a variable is an opaque
+		case TOY_VALUE_OPAQUE: //BUG: Need a way to check if a variable is an opaque (i.e. a 'typeof' keyword?)
 			return false;
 
 		case TOY_VALUE_ANY:

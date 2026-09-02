@@ -115,7 +115,7 @@ static void emitByte(unsigned char** handle, unsigned int* capacity, unsigned in
 	((unsigned char*)(*handle))[(*count)++] = byte;
 }
 
-//BUG: There might be issues here when compiled on big-endian platforms
+//BUG: There might be issues here when compiled on big-endian platforms?
 static void emitInt(unsigned char** handle, unsigned int* capacity, unsigned int* count, unsigned int bytes) {
 	char* ptr = (char*)&bytes;
 	emitByte(handle, capacity, count, *(ptr++));

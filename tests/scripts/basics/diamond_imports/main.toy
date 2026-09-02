@@ -1,0 +1,5 @@
+import "alpha.toy" as alpha;
+import "beta.toy" as beta;
+
+alpha();
+beta();

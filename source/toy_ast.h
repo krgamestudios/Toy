@@ -6,7 +6,7 @@
 #include "toy_value.h"
 #include "toy_string.h"
 
-//URGENT: Semantic analysis needed
+//URGENT: Semantic analysis needed (i.e. optimisation passes)
 
 //each major type
 typedef enum Toy_AstType {

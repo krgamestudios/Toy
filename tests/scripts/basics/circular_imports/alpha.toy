@@ -1,0 +1,3 @@
+import "beta.toy" as beta;
+
+beta();

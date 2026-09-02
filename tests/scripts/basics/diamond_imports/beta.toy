@@ -1,0 +1,5 @@
+print "hello beta!";
+
+import "gamma.toy" as gamma;
+
+gamma();

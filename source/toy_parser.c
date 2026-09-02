@@ -1150,7 +1150,7 @@ static void makeStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast** ro
 		return;
 	}
 
-	//URGENT: foreach keyword not yet implemented
+	//URGENT: foreach keyword not yet implemented (iterates over arrays, tables & functions, until the function returns null)
 
 	//break
 	else if (match(parser, TOY_TOKEN_KEYWORD_BREAK)) {
