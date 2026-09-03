@@ -352,7 +352,9 @@ static void processInvoke(Toy_VM* vm) {
 	//function to call
 	Toy_Value value = Toy_popStack(&vm->stack);
 	if (TOY_VALUE_IS_FUNCTION(value) != true) {
-		Toy_error("Can't call a non-function value");
+		char buffer[256];
+		snprintf(buffer, 256, "Can't call a non-function value (found type %s)", Toy_getValueTypeAsCString(value.type));
+		Toy_error(buffer);
 		return;
 	}
 
