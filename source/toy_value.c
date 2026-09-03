@@ -110,7 +110,7 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 			Toy_Array* result = Toy_resizeArray(NULL, ptr->capacity);
 
 			for (unsigned int i = 0; i < ptr->count; i++) {
-				result->data[i] = Toy_copyValue(bucketHandle, ptr->data[i]);
+				result->data[i] = Toy_copyValue(bucketHandle, Toy_unwrapValue(ptr->data[i]));
 			}
 
 			result->capacity = ptr->capacity;
@@ -126,8 +126,8 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 			for (unsigned int i = 0; i < ptr->capacity; i++) {
 				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {
-					result->data[i].key = Toy_copyValue(bucketHandle, ptr->data[i].key);
-					result->data[i].value = Toy_copyValue(bucketHandle, ptr->data[i].value);
+					result->data[i].key = Toy_copyValue(bucketHandle, Toy_unwrapValue(ptr->data[i].key));
+					result->data[i].value = Toy_copyValue(bucketHandle, Toy_unwrapValue(ptr->data[i].value));
 				}
 			}
 

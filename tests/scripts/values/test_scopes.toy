@@ -1,0 +1,17 @@
+//This script once caused an error due to the order scopes were popped w/r to functions
+fn makeArray() {
+    var x = [1,2,3];
+    var y = [4,5,6];
+    return [x,y];
+}
+
+var alpha = makeArray();
+
+var beta = alpha[0];
+var gamma = alpha[1];
+
+alpha = null;
+
+print alpha;
+print beta;
+print gamma;

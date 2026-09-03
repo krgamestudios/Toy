@@ -83,7 +83,7 @@ int test_functions_from_bytecodes(void) {
 		//run beta
 		unsigned char* beta = makeCodeFromSource(&bucket, sourceBeta);
 		Toy_bindVM(&vm, beta, NULL);
-		Toy_declareScope(&bucket, vm.scope, makeCounterString, TOY_VALUE_ANY, fnValue, true);
+		Toy_declareScope(&bucket, vm.scope, makeCounterString, TOY_VALUE_ANY, Toy_copyValue(&vm.memoryBucket, fnValue), true);
 		Toy_runVM(&vm);
 
 		//examine the results

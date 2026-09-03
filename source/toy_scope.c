@@ -70,6 +70,7 @@ static void probeAndInsert(Toy_Scope* scope, Toy_String* key, Toy_Value value, T
 }
 
 static Toy_ScopeEntry* adjustScopeEntries(Toy_Bucket** bucketHandle, Toy_Scope* scope, unsigned int newCapacity) {
+	//WARN: doesn't delete existing scope entries
 	//allocate and zero a new Toy_ScopeEntry array in the bucket
 	Toy_ScopeEntry* newEntries = (Toy_ScopeEntry*)Toy_partitionBucket(bucketHandle, newCapacity * sizeof(Toy_ScopeEntry));
 
@@ -136,6 +137,16 @@ Toy_Scope* Toy_popScope(Toy_Scope* scope) {
 
 	Toy_private_decrementScopeRefCount(scope);
 
+	//clean up this scope's members
+	for (unsigned int i = 0; i < scope->capacity; i++) {
+		if (scope->data[i].key != NULL) {
+			Toy_freeString(scope->data[i].key);
+			Toy_freeValue(scope->data[i].value);
+		}
+	}
+	Toy_releaseBucketPartition((unsigned char*)scope->data);
+
+	//release this scope and return
 	Toy_Scope* next = scope->next;
 	Toy_releaseBucketPartition((void*)scope);
 	return next;
@@ -223,8 +234,8 @@ bool Toy_isDeclaredScope(Toy_Scope* scope, Toy_String* key) {
 void Toy_private_incrementScopeRefCount(Toy_Scope* scope) {
 	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
 		//check for issues
-		if (iter->next != NULL && iter->next->refCount == 0) {
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0'\n" TOY_CC_RESET);
+		if (iter->next != NULL && iter->next->refCount <= 0) {
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0 or below'\n" TOY_CC_RESET);
 			exit(-1);
 		}
 
@@ -236,18 +247,10 @@ void Toy_private_decrementScopeRefCount(Toy_Scope* scope) {
 	for (Toy_Scope* iter = scope; iter != NULL; iter = iter->next) {
 		iter->refCount--;
 
-		//clean up our insides if needed
-		if (iter->refCount == 0) {
-			//free the data
-			if (iter->data != NULL) {
-				for (unsigned int i = 0; i < iter->capacity; i++) {
-					if (iter->data[i].key != NULL) {
-						Toy_freeString(iter->data[i].key);
-						Toy_freeValue(iter->data[i].value);
-					}
-				}
-				Toy_releaseBucketPartition((unsigned char*)iter->data);
-			}
+		//check for issues
+		if (iter->next != NULL && iter->next->refCount <= 0) {
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0 or below'\n" TOY_CC_RESET);
+			exit(-1);
 		}
 	}
 }

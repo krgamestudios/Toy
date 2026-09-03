@@ -3,7 +3,7 @@ CC=gcc
 ifdef RELEASE
 	CFLAGS+=-std=c17 -DNDEBUG -O2 -Wall -Werror -Wextra -Wpedantic -Wformat=2 -Wno-strict-aliasing
 else
-	CFLAGS+=-std=c17 -g -Wall -Werror -Wextra -Wpedantic -Wformat=2
+	CFLAGS+=-std=c17 -g -O0 -Wall -Werror -Wextra -Wpedantic -Wformat=2
 endif
 LIBS+=-lm
 LDFLAGS+=
