@@ -181,6 +181,13 @@ table.remove("alpha"); //table = ["beta":2,"key":4]
 var emptyTable = [:];
 ```
 
+Other attributes are shared by all built-in types.
+
+```
+var one: Int = 1;
+print one.asString; //returns a new string value
+```
+
 Opaques can also be given attributes, but this requires some in-depth understanding of the API, so won't be covered here.
 
 ## Functions

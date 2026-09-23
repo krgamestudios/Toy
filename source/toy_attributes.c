@@ -14,6 +14,8 @@ static Toy_OpaqueAttributeHandler opaqueAttributeCallback = NULL;
 	((TOY_VALUE_AS_STRING(value)->info.length == strlen(cstring)) && \
 	(strncmp(cstring, TOY_VALUE_AS_STRING(value)->leaf.data, TOY_VALUE_AS_STRING(value)->info.length) == 0))
 
+#define MAYBE_UNWRAP(value) if (TOY_VALUE_IS_REFERENCE(value)) { value = Toy_unwrapValue(value); }
+
 //NOTE: there is no need to call 'Toy_freeValue' on the arguments, as the VM assumes you don't
 Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
 	if (MATCH_VALUE_AND_CSTRING(attribute, "length")) {
@@ -290,4 +292,15 @@ Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy
 
 void Toy_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb) {
 	opaqueAttributeCallback = cb;
+}
+
+Toy_Value Toy_private_handleGlobalAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
+	MAYBE_UNWRAP(compound);
+
+	if (MATCH_VALUE_AND_CSTRING(attribute, "asString")) {
+		Toy_String* str = Toy_stringifyValue(&vm->memoryBucket, compound);
+		return TOY_VALUE_FROM_STRING(str);
+	}
+
+	return TOY_VALUE_FROM_NULL();
 }

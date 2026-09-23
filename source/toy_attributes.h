@@ -29,3 +29,6 @@ Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy
 //plug-and-play attributes for custom objects
 typedef Toy_Value (*Toy_OpaqueAttributeHandler)(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 TOY_API void Toy_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb);
+
+//operates on all built-in types
+Toy_Value Toy_private_handleGlobalAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);

@@ -436,8 +436,13 @@ static void processAttribute(Toy_VM* vm) {
 
 	Toy_Value result = TOY_VALUE_FROM_NULL();
 
+	//delegate based on the attribute's value as a string
+	if (TOY_VALUE_IS_STRING(attribute)) {
+		result = Toy_private_handleGlobalAttributes(vm, compound, attribute);
+	}
+
 	//type-based attributes
-	if (TOY_VALUE_IS_STRING(compound)) {
+	else if (TOY_VALUE_IS_STRING(compound)) {
 		result = Toy_private_handleStringAttributes(vm, compound, attribute);
 	}
 	else if (TOY_VALUE_IS_ARRAY(compound)) {
@@ -449,9 +454,17 @@ static void processAttribute(Toy_VM* vm) {
 	else if (TOY_VALUE_IS_OPAQUE(compound)) {
 		result = Toy_private_handleOpaqueAttributes(vm, compound, attribute);
 	}
+
+	//handle other errors
 	else {
+		Toy_String* attrStr = Toy_stringifyValue(&vm->memoryBucket, attribute);
+		char* attrRaw = Toy_getStringRaw(attrStr);
+
 		char buffer[256];
-		snprintf(buffer, 256, "Can't access an attribute of type '%s'", Toy_getValueTypeAsCString(Toy_unwrapValue(compound).type));
+		snprintf(buffer, 256, "Can't access attribute '%s' of type '%s'", attrRaw, Toy_getValueTypeAsCString(Toy_unwrapValue(compound).type));
+		free(attrRaw);
+		Toy_freeString(attrStr);
+
 		Toy_error(buffer);
 		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
 		return;
