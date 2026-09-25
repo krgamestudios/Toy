@@ -25,6 +25,13 @@ TEST_SCRIPTDIRS=basics values keywords algorithms
 #file names
 TEST_SCRIPTFILES=$(foreach dir,$(TEST_SCRIPTDIRS), $(wildcard $(dir)/test_*.toy))
 
+#file extensions are dumb, thanks windows
+ifeq ($(OS),Windows_NT)
+	REPL=out/repl.exe
+else
+	REPL=out/repl.out
+endif
+
 #build the source and repl, copy to the local dir, and run
 all: source repl copy run
 
@@ -41,7 +48,7 @@ copy:
 run: $(TEST_SCRIPTFILES:.toy=.toy-run)
 
 %.toy-run: %.toy
-	out/repl.out --silent-print -f $<
+	$(REPL) --silent-print -f $<
 
 #using gdb
 gdb: source repl copy run-gdb
@@ -49,4 +56,4 @@ gdb: source repl copy run-gdb
 run-gdb: $(TEST_SCRIPTFILES:.toy=.toy-run-gdb)
 
 %.toy-run-gdb: %.toy
-	gdb $(TEST_OUTDIR)/$(TEST_REPLNAME) -ix gdb_init -ex=run --batch --return-child-result --args "out/repl.out" "-f" "$<"
+	gdb $(TEST_OUTDIR)/$(TEST_REPLNAME) -ix gdb_init -ex=run --batch --return-child-result --args "$(REPL)" "-f" "$<"
