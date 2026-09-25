@@ -437,8 +437,9 @@ static void processAttribute(Toy_VM* vm) {
 	Toy_Value result = TOY_VALUE_FROM_NULL();
 
 	//delegate based on the attribute's value as a string
-	if (TOY_VALUE_IS_STRING(attribute)) {
-		result = Toy_private_handleGlobalAttributes(vm, compound, attribute);
+	if (TOY_VALUE_IS_STRING(attribute) && Toy_private_handleGlobalAttributes(vm, compound, attribute, &result)) {
+		//'result' only changes if 'attribute' matched a narrow set of values
+		//this conditional is a no-op, as it's already been set
 	}
 
 	//type-based attributes

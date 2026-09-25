@@ -294,13 +294,15 @@ void Toy_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb) {
 	opaqueAttributeCallback = cb;
 }
 
-Toy_Value Toy_private_handleGlobalAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
+int Toy_private_handleGlobalAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute, Toy_Value* result) {
 	MAYBE_UNWRAP(compound);
 
 	if (MATCH_VALUE_AND_CSTRING(attribute, "asString")) {
 		Toy_String* str = Toy_stringifyValue(&vm->memoryBucket, compound);
-		return TOY_VALUE_FROM_STRING(str);
+		*result = TOY_VALUE_FROM_STRING(str);
+		return 1;
 	}
 
-	return TOY_VALUE_FROM_NULL();
+	//no matches
+	return 0;
 }
