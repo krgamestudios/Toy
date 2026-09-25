@@ -6,6 +6,7 @@
 #include "toy_vm.h"
 
 //URGENT: some planned attributes are missing or incomplete
+// [x] *.asString
 // [x] string.length
 // [x] string.asUpper
 // [x] string.asLower

@@ -16,3 +16,7 @@ fn isLeapYear(n: Int) {
 {
 	print isLeapYear(2004);
 }
+
+{
+	print isLeapYear(2100);
+}
