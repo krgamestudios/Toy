@@ -41,7 +41,7 @@ copy:
 run: $(TEST_SCRIPTFILES:.toy=.toy-run)
 
 %.toy-run: %.toy
-	find . -name repl* -type f -exec {} --silent-print -f $< \;
+	out/repl.out --silent-print -f $<
 
 #using gdb
 gdb: source repl copy run-gdb
