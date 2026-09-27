@@ -173,6 +173,7 @@ The tools in `repl/` includes a standard library, which can be added to the root
 * `abs(x)`
 * `sign(x)`
 * `sqrt(x)`
+* `pow(base, exp)`
 * `rand()`
 * `srand(x)`
 * `time()`
