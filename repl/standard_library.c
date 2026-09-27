@@ -231,6 +231,47 @@ static void std_sqrt(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_FLOAT((float)d));
 }
 
+static void std_pow(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	Toy_Value expValue = Toy_popStack(&vm->stack);
+	Toy_Value baseValue = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_INTEGER(baseValue) && !TOY_VALUE_IS_FLOAT(baseValue)) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid base type '%s' found in 'pow()'", Toy_getValueTypeAsCString(Toy_unwrapValue(baseValue).type));
+		Toy_error(buffer);
+
+		Toy_freeValue(baseValue);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	if (!TOY_VALUE_IS_INTEGER(expValue) && !TOY_VALUE_IS_FLOAT(expValue)) {
+		char buffer[256];
+		snprintf(buffer, 256, "Invalid exponent type '%s' found in 'pow()'", Toy_getValueTypeAsCString(Toy_unwrapValue(expValue).type));
+		Toy_error(buffer);
+
+		Toy_freeValue(expValue);
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		return;
+	}
+
+	double b = 0;
+	double e = 0;
+
+	if (TOY_VALUE_IS_INTEGER(baseValue)) b = (double)TOY_VALUE_AS_INTEGER(baseValue);
+	else if (TOY_VALUE_IS_FLOAT(baseValue)) b = (double)TOY_VALUE_AS_FLOAT(baseValue);
+
+	if (TOY_VALUE_IS_INTEGER(expValue)) e = (double)TOY_VALUE_AS_INTEGER(expValue);
+	else if (TOY_VALUE_IS_FLOAT(expValue)) e = (double)TOY_VALUE_AS_FLOAT(expValue);
+
+	//do the thing and push the result
+	double r = pow(b, e);
+
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_FLOAT((float)r));
+}
+
 //NOTE: 'srand()' alters the 'rand()' only within its own VM environment, so ensure the key is the same
 #define RAND_NAME "rand"
 static void std_rand(Toy_VM* vm, Toy_FunctionNative* self) {
@@ -293,6 +334,7 @@ CallbackPairs callbackPairs[] = {
 	{"abs", std_abs},
 	{"sign", std_sign},
 	{"sqrt", std_sqrt},
+	{"pow", std_pow},
 	{RAND_NAME, std_rand},
 	{"srand", std_srand},
 	{"time", std_time},
@@ -306,6 +348,8 @@ void initStandardLibrary(Toy_VM* vm) {
 		fprintf(stderr, TOY_CC_ERROR "ERROR: Can't initialize standard library, exiting\n" TOY_CC_RESET);
 		exit(-1);
 	}
+
+	//TODO: It might be useful to preallocate enough space in the scope before declaring these
 
 	//declare each pair
 	for (int i = 0; callbackPairs[i].name; i++) {

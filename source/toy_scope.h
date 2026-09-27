@@ -42,7 +42,7 @@ void Toy_private_decrementScopeRefCount(Toy_Scope* scope);
 
 //some useful sizes, could be swapped out as needed
 #ifndef TOY_SCOPE_INITIAL_CAPACITY
-#define TOY_SCOPE_INITIAL_CAPACITY 8
+#define TOY_SCOPE_INITIAL_CAPACITY 32
 #endif
 
 //NOTE: The DOOM hack needs a power of 2
