@@ -29,7 +29,7 @@ TEST_SCRIPTFILES=$(foreach dir,$(TEST_SCRIPTDIRS), $(wildcard $(dir)/test_*.toy)
 ifeq ($(OS),Windows_NT)
 	REPL=out/repl.exe
 else
-	REPL=out/repl.out
+	REPL=out/repl
 endif
 
 #build the source and repl, copy to the local dir, and run
@@ -56,4 +56,12 @@ gdb: source repl copy run-gdb
 run-gdb: $(TEST_SCRIPTFILES:.toy=.toy-run-gdb)
 
 %.toy-run-gdb: %.toy
-	gdb $(TEST_OUTDIR)/$(TEST_REPLNAME) -ix gdb_init -ex=run --batch --return-child-result --args "$(REPL)" "-f" "$<"
+	gdb -ix gdb_init -ex=run --batch --return-child-result --args "$(REPL)" "--silent-print" "-f" "$<"
+
+#using valgrind
+valgrind: source repl copy run-valgrind
+
+run-valgrind: $(TEST_SCRIPTFILES:.toy=.toy-run-valgrind)
+
+%.toy-run-valgrind: %.toy
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(REPL) -f $<

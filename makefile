@@ -32,7 +32,8 @@ tests: clean
 tests-gdb: clean
 	$(MAKE) -C tests -k gdb
 
-#TODO: re-add valgrind option
+tests-valgrind: clean
+	$(MAKE) -C tests -k valgrind
 
 #util targets
 $(TOY_OUTDIR):
@@ -45,9 +46,9 @@ $(TOY_OBJDIR):
 .PHONY: clean
 clean:
 ifeq ($(shell uname),Linux)
+	find . -type f -name '*repl' -delete
 	find . -type f -name '*.o' -delete
 	find . -type f -name '*.a' -delete
-	find . -type f -name '*.out' -delete
 	find . -type f -name '*.exe' -delete
 	find . -type f -name '*.dll' -delete
 	find . -type f -name '*.lib' -delete
@@ -56,9 +57,9 @@ ifeq ($(shell uname),Linux)
 	find . -type d -name 'out' -delete
 	find . -type d -name 'obj' -delete
 else ifeq ($(shell uname),NetBSD)
+	find . -type f -name '*repl' -delete
 	find . -type f -name '*.o' -delete
 	find . -type f -name '*.a' -delete
-	find . -type f -name '*.out' -delete
 	find . -type f -name '*.exe' -delete
 	find . -type f -name '*.dll' -delete
 	find . -type f -name '*.lib' -delete
@@ -71,9 +72,9 @@ else ifeq ($(OS),Windows_NT)
 	$(RM) out
 	$(RM) obj
 else ifeq ($(shell uname),Darwin)
+	find . -type f -name '*repl' -delete
 	find . -type f -name '*.o' -delete
 	find . -type f -name '*.a' -delete
-	find . -type f -name '*.out' -delete
 	find . -type f -name '*.exe' -delete
 	find . -type f -name '*.dll' -delete
 	find . -type f -name '*.lib' -delete

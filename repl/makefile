@@ -30,7 +30,7 @@ REPL_TARGETNAME=repl
 ifeq ($(OS),Windows_NT)
 	REPL_TARGETEXT=.exe
 else
-	REPL_TARGETEXT=.out
+	REPL_TARGETEXT=
 endif
 
 #linker fix
