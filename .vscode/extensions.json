@@ -1,5 +1,6 @@
 {
 	"recommendations": [
-		"FanaticPythoner.better-todo-tree"
+		"FanaticPythoner.better-todo-tree",
+		"swyphcosmo.spellchecker"
 	]
 }

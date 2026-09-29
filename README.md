@@ -51,7 +51,7 @@ The contents of `docs/` is also available on the official website [toylang.com](
 
 # License
 
-This source code is covered by the Zlib license (see [LICENSE](LICENSE) for details).
+This source code is covered by the zlib license (see [LICENSE](LICENSE) for details).
 
 # Contributors and Special Thanks
 

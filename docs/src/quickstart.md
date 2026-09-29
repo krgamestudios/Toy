@@ -44,7 +44,7 @@ Toy's types are:
 | --- | --- | --- |
 | `Bool` | Boolean | Either `true` or `false`. |
 | `Int` | Integer | Any signed whole number (32-bits). |
-| `Float` | Float | Any signed decimal number (32-bits), using floating point arithmatic. |
+| `Float` | Float | Any signed decimal number (32-bits), using floating point arithmetic. |
 | `String` | String | Normal text, effectively utf-8. |
 | `Array` | Array | A series of values stored sequentially in memory. |
 | `Table` | Table | A series key-value pairs stored in a hash table. Booleans, functions, opaques and `null` can't be used as keys. |
