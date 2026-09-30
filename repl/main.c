@@ -91,7 +91,7 @@ typedef struct Settings {
 	const char* script;
 	bool silentPrint;
 	bool silentAssert;
-	unsigned char verbosity; //0 = None, 1 = simple, 2 = extra, 3 = all
+	unsigned char verbosity; //0 = None, 1 = simple, 2 = extra, 3 = all, 255 = suppress everything from the repl
 } Settings;
 
 void usageInfo(int argc, const char* argv[]) {
@@ -112,6 +112,7 @@ void helpInfo(int argc, const char* argv[]) {
 	printf("  -d,\t--verbose\t\tPrint debugging information about the given code.\n");
 	printf("  -dd,\t--verbose-extra\t\tSame as above, but also prints information about the VM's internal state.\n");
 	printf("  -ddd,\t--verbose-all\t\tSame as above, but print all internal information, including incomplete or inaccurate tool data.\n");
+	printf("  -q,\t--quiet\t\t\tSuppress all output from the repl (does not affect the language's outputs and errors).\n");
 }
 
 void versionInfo(int argc, const char* argv[]) {
@@ -195,6 +196,10 @@ Settings parseSettings(int argc, const char* argv[]) {
 			settings.verbosity = 3;
 		}
 
+		else if (CSTR_MATCH(argv[i], "-q") || CSTR_MATCH(argv[i], "--quiet")) {
+			settings.verbosity = 255;
+		}
+
 		else {
 			settings.error = true;
 		}
@@ -220,7 +225,9 @@ int repl(const char* filepath, unsigned char verbosity) {
 	Toy_VM vm;
 	Toy_initVM(&vm);
 
-	printf("%s> ", prompt); //shows the terminal prompt and begin
+	if (verbosity != 255) {
+		printf("%s> ", prompt); //shows the terminal prompt and begin
+	}
 
 	//read from the terminal
 	while(fgets(inputBuffer, INPUT_BUFFER_SIZE, stdin)) {
@@ -232,7 +239,9 @@ int repl(const char* filepath, unsigned char verbosity) {
 
 		//check for empty input (or only whitespace)
 		if (length == 0 || inputBuffer[ strspn(inputBuffer, " \r\n\t") ] == '\0') {
-			printf("%s> ", prompt); //shows the terminal prompt and restart
+			if (verbosity != 255) {
+				printf("%s> ", prompt); //shows the terminal prompt and restart
+			}
 			continue;
 		}
 
@@ -251,12 +260,13 @@ int repl(const char* filepath, unsigned char verbosity) {
 
 		//parsing error, retry
 		if (parser.error || ast == NULL) {
-			Toy_freeBucket(&bucket);
-			printf("%s> ", prompt); //shows the terminal prompt
+			if (verbosity != 255) {
+				printf("%s> ", prompt); //shows the terminal prompt
+			}
 			continue;
 		}
 
-		if (verbosity >= 3) { //only shows for 3 because its incomplete
+		if (verbosity >= 3 && verbosity < 100) { //only shows for 3 because its incomplete
 			inspect_ast(ast);
 		}
 
@@ -264,12 +274,14 @@ int repl(const char* filepath, unsigned char verbosity) {
 		Toy_freeBucket(&bucket); //no need to for the GC here
 
 		if (bytecode == NULL) {
-			printf("%s> ", prompt);
+			if (verbosity != 255) {
+				printf("%s> ", prompt);
+			}
 			continue;
 		}
 
 		//show the bytecode layout
-		if (verbosity >= 1) {
+		if (verbosity >= 1 && verbosity < 100) {
 			inspect_bytecode(bytecode);
 		}
 
@@ -288,7 +300,7 @@ int repl(const char* filepath, unsigned char verbosity) {
 		int depthAfterGC = 0;
 
 		//show the runtime state of the VM
-		if (verbosity >= 1) {
+		if (verbosity >= 1 && verbosity < 100) {
 			inspect_stack(vm.stack);
 			inspect_scope(vm.scope, 0);
 
@@ -296,14 +308,14 @@ int repl(const char* filepath, unsigned char verbosity) {
 		}
 
 		//show the memory info, which is hard to parse manually
-		if (verbosity >= 2) {
+		if (verbosity >= 2 && verbosity < 100) {
 			depthBeforeGC = inspect_bucket(&vm.memoryBucket);
 		}
 
 		//free the memory, and leave the VM ready for the next loop
 		Toy_resetVM(&vm, true, true);
 
-		if (verbosity >= 2) {
+		if (verbosity >= 2 && verbosity < 100) {
 			depthAfterGC = inspect_bucket(&vm.memoryBucket);
 
 			printf("GC Report: %d -> %d\n", depthBeforeGC, depthAfterGC);
@@ -314,7 +326,9 @@ int repl(const char* filepath, unsigned char verbosity) {
 
 		//free(bytecode);
 
-		printf("%s> ", prompt); //shows the terminal prompt
+		if (verbosity != 255) {
+			printf("%s> ", prompt); //shows the terminal prompt
+		}
 	}
 
 	//cleanup all memory
@@ -388,7 +402,7 @@ int main(int argc, const char* argv[]) {
 		}
 
 		//incomplete AST info
-		if (settings.verbosity >= 3) {
+		if (settings.verbosity >= 3 && settings.verbosity < 100) {
 			inspect_ast(ast);
 		}
 
@@ -400,7 +414,7 @@ int main(int argc, const char* argv[]) {
 			return -1;
 		}
 
-		if (settings.verbosity >= 1) {
+		if (settings.verbosity >= 1 && settings.verbosity < 100) {
 			inspect_bytecode(bytecode);
 		}
 
@@ -413,13 +427,13 @@ int main(int argc, const char* argv[]) {
 		Toy_runVM(&vm);
 
 		//print the debug info
-		if (settings.verbosity >= 1) {
+		if (settings.verbosity >= 1 && settings.verbosity < 100) {
 			inspect_stack(vm.stack);
 			inspect_scope(vm.scope, 0);
 		}
 
 		//extra bucket info
-		if (settings.verbosity >= 2) {
+		if (settings.verbosity >= 2 && settings.verbosity < 100) {
 			inspect_bucket(&vm.memoryBucket);
 		}
 
