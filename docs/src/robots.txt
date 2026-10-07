@@ -43,3 +43,8 @@ User-agent: Bingbot
 User-agent: DuckDuckBot
 User-agent: DuckDuckGo
 Allow: /
+
+
+User-agent: *
+Disallow: /repl
+
