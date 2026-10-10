@@ -14,7 +14,7 @@
 // [x] array.pushBack(x)
 // [x] array.popBack()
 // [x] array.fillWith(amount, value)
-// [ ] array.flatten()    //returns if and only if internal compounds are also arrays?
+// [x] array.flatten()
 // [ ] array.sort(fn)    // fn(a,b) -> int
 // [x] table.length
 // [x] table.insert(x, y)

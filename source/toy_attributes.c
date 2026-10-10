@@ -167,11 +167,73 @@ static void attr_arrayFillWith(Toy_VM* vm, Toy_FunctionNative* self) {
 static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
 	(void)vm;
 	(void)self;
+
+	//TODO: incomplete
+}
+
+static unsigned int arrayFlattenCounter(Toy_Array* array) {
+	unsigned int total = 0;
+	for (unsigned int i = 0; i < array->count; i++) {
+		if (TOY_VALUE_IS_ARRAY(array->data[i])) {
+			total += arrayFlattenCounter(TOY_VALUE_AS_ARRAY(array->data[i]));
+		}
+		else {
+			total++; //not an array to be removed
+		}
+	}
+	return total;
+}
+
+static void arrayFlattenMover(Toy_Array* oldArray, Toy_Array* newArray) {
+	for (unsigned int i = 0; i < oldArray->count; i++) {
+		if (TOY_VALUE_IS_ARRAY(oldArray->data[i])) {
+			arrayFlattenMover(TOY_VALUE_AS_ARRAY(oldArray->data[i]), newArray);
+
+			//also free the now-empty element
+			Toy_resizeArray(TOY_VALUE_AS_ARRAY(oldArray->data[i]), 0);
+			oldArray->data[i] = TOY_VALUE_FROM_NULL();
+		}
+		else {
+			//move from one array to another, and remove it from the former
+			newArray->data[newArray->count++] = oldArray->data[i];
+			oldArray->data[i] = TOY_VALUE_FROM_NULL();
+		}
+	}
 }
 
 static void attr_arrayFlatten(Toy_VM* vm, Toy_FunctionNative* self) {
-	(void)vm;
 	(void)self;
+
+	Toy_Value compound = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_REFERENCE(compound) || compound.as.reference->type != TOY_VALUE_ARRAY) {
+		char buffer[256];
+		snprintf(buffer, 256, "'Array.flatten()' does not work on non-variables");
+		Toy_error(buffer);
+		return;
+	}
+
+	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
+
+	//count how many top-level elements will end up in the flattened array
+	unsigned int capacity = arrayFlattenCounter(array);
+
+	//"WHAT DO YOU MEAN DOOM??" -Takanashi Kiara, final words
+	capacity--;
+	capacity |= capacity >> 1;
+	capacity |= capacity >> 2;
+	capacity |= capacity >> 4;
+	capacity |= capacity >> 8;
+	capacity |= capacity >> 16;
+	capacity++;
+
+	Toy_Array* newArray = Toy_resizeArray(NULL, capacity);
+
+	arrayFlattenMover(array, newArray);
+
+	Toy_resizeArray(array, 0);
+
+	compound.as.reference->as.array = newArray;
 }
 
 Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
@@ -194,7 +256,7 @@ Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arraySort);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (false && MATCH_VALUE_AND_CSTRING(attribute, "flatten")) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "flatten")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayFlatten);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}

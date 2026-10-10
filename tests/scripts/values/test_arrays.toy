@@ -32,6 +32,14 @@
 
 	var defaultArray = [].fillWith(400, 0);
 	assert defaultArray.length == 400, "Array fillWith attribute failed";
+
+	var fa = [
+		[1, 2, 3],
+		[4, 5, 6],
+		[7, 8, 9]
+	];
+	fa.flatten();
+	assert fa == [1, 2, 3, 4, 5, 6, 7, 8, 9], "Array.flatten() failed";
 }
 
 //index
