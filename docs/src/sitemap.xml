@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+       <loc>https://toylang.com/</loc>
+  </url>
+  <url>
+       <loc>https://toylang.com/quickstart</loc>
+  </url>
+  <url>
+       <loc>https://toylang.com/cheatsheet</loc>
+  </url>
+  <url>
+       <loc>https://toylang.com/index</loc>
+  </url>
+</urlset>
