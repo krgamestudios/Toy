@@ -862,7 +862,7 @@ static void processIndex(Toy_VM* vm) {
 	//process based on value's type
 	if (TOY_VALUE_IS_STRING(value)) {
 		//type checks
-		if (!TOY_VALUE_IS_INTEGER(index)) {
+		if (!TOY_VALUE_IS_INTEGER(index)) { //TODO: could give strings notation like 'str[:2]' for "get the first X characters"
 			Toy_error("Failed to index a string");
 			Toy_freeValue(value);
 			Toy_freeValue(index);

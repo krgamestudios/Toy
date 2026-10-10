@@ -10,7 +10,6 @@
 // [x] string.length
 // [x] string.asUpper
 // [x] string.asLower
-// [ ] string.split
 // [x] array.length
 // [x] array.pushBack(x)
 // [x] array.popBack()
