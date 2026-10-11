@@ -173,6 +173,11 @@ var element = array.popBack(); //element = 4
 var emptyArray = [];
 var defaultArray = [].fillWith(400, 0); //400 copies of '0'
 
+fn less(a, b) { return a - b; }
+defaultArray[200] = [21,7,95];
+defaultArray.flatten();
+defaultArray.sort(less);
+
 var table = ["alpha": 1, "beta":2];
 print table.length; //2
 table.insert("key",element); //table["key"] = 4

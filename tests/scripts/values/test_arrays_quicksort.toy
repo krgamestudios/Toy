@@ -2,9 +2,9 @@
 fn less(a, b) { return a - b; }
 
 fn validate(arr) {
-	var prev = 0;
+	var prev = arr[0];
 	for (var i = 0; i < arr.length; i++) {
-		//assert prev <= arr[i], "Validation failed";
+		assert prev <= arr[i], "Quicksort validation failed";
 		prev = arr[i];
 	}
 }
@@ -47,4 +47,15 @@ fn validate(arr) {
 	dupes.sort(less);
 	print dupes;
 	validate(dupes);
+}
+
+{
+	srand(time());
+	var rng = [];
+	for (var _ = 0; _ < 1000; _++) {
+		rng.pushBack(rand() % 1000 - 500);
+	}
+	rng.sort(less);
+	print rng;
+	validate(rng);
 }

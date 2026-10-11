@@ -183,18 +183,6 @@ static int quicksortRunCompare(Toy_VM* vm, int* out) {
 }
 
 static int quicksortRawData(Toy_Value* data, unsigned int count, unsigned int pivot, Toy_VM* vm, Toy_Value* lhs, Toy_Value* rhs) {
-	// //DEBUG
-	// printf("(%u, %u, at %d):\t", count, pivot, TOY_VALUE_AS_INTEGER(data[pivot]));
-	// for (unsigned int i = 0; i < count; i++) {
-	// 	if (TOY_VALUE_AS_INTEGER(data[i]) == 96) {
-	// 		printf(TOY_CC_WARN "\t%d" TOY_CC_RESET, TOY_VALUE_AS_INTEGER(data[i]));
-	// 	}
-	// 	else {
-	// 		printf("\t%d", TOY_VALUE_AS_INTEGER(data[i]));
-	// 	}
-	// }
-	// printf("\n");
-
 	//base case
 	if (count <= 1) return 0;
 	if (count == 2) {
@@ -294,7 +282,8 @@ static int quicksortRawData(Toy_Value* data, unsigned int count, unsigned int pi
 	}
 
 	//recursion
-	return quicksortRawData(data, pivot+1, (pivot+1)/2, vm, lhs, rhs) || quicksortRawData(data + pivot, count - pivot - 1, (count - pivot - 1)/2, vm, lhs, rhs);
+	return quicksortRawData(data, pivot, (pivot)/2, vm, lhs, rhs) ||
+		quicksortRawData(data + pivot, count - pivot, (count - pivot)/2, vm, lhs, rhs);
 }
 
 static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
@@ -324,8 +313,6 @@ static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
 	//the standard types
 	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
 	Toy_Function* fn = TOY_VALUE_AS_FUNCTION(compare);
-
-	//TODO: edge-case and degenerate checks (2 or less elements)
 
 	//build the VM that will run the comparisons
 	Toy_VM subVM;

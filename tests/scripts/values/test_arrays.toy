@@ -59,7 +59,4 @@
 	assert trailing == [1,2,3], "Trailing comma array failed";
 }
 
-//sorting algorithm
-{
-	//WARN: Array sorting algorithm not yet implemented
-}
+//NOTE: sorting is implemented in its own file
