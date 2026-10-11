@@ -118,7 +118,7 @@ static void attr_arrayFillWith(Toy_VM* vm, Toy_FunctionNative* self) {
 	//check types
 	if (!TOY_VALUE_IS_INTEGER(length) || TOY_VALUE_AS_INTEGER(length) <= 0) {
 		char buffer[256];
-		snprintf(buffer, 256, "Bad parameter found in 'fillWith'");
+		snprintf(buffer, 256, "Bad parameter found in 'Array.fillWith(amount, value)'");
 		Toy_error(buffer);
 		Toy_freeValue(value);
 		Toy_freeValue(length);
@@ -164,11 +164,210 @@ static void attr_arrayFillWith(Toy_VM* vm, Toy_FunctionNative* self) {
 	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_ARRAY(array));
 }
 
+static int quicksortRunCompare(Toy_VM* vm, int* out) {
+	unsigned int resultCount = Toy_runVM(vm);
+
+	if (resultCount != 1) {
+		return -1;
+	}
+
+	Toy_Value result = Toy_popStack(&vm->stack);
+
+	if (!TOY_VALUE_IS_INTEGER(result)) {
+		Toy_freeValue(result);
+		return -2;
+	}
+
+	*out = TOY_VALUE_AS_INTEGER(result);
+	return 0;
+}
+
+static int quicksortRawData(Toy_Value* data, unsigned int count, unsigned int pivot, Toy_VM* vm, Toy_Value* lhs, Toy_Value* rhs) {
+	// //DEBUG
+	// printf("(%u, %u, at %d):\t", count, pivot, TOY_VALUE_AS_INTEGER(data[pivot]));
+	// for (unsigned int i = 0; i < count; i++) {
+	// 	if (TOY_VALUE_AS_INTEGER(data[i]) == 96) {
+	// 		printf(TOY_CC_WARN "\t%d" TOY_CC_RESET, TOY_VALUE_AS_INTEGER(data[i]));
+	// 	}
+	// 	else {
+	// 		printf("\t%d", TOY_VALUE_AS_INTEGER(data[i]));
+	// 	}
+	// }
+	// printf("\n");
+
+	//base case
+	if (count <= 1) return 0;
+	if (count == 2) {
+		//a one-line check is all thats needed
+		int out = 0;
+
+		*lhs = TOY_REFERENCE_FROM_POINTER(&data[0]);
+		*rhs = TOY_REFERENCE_FROM_POINTER(&data[1]);
+
+		if (quicksortRunCompare(vm, &out) != 0) {
+			char buffer[256];
+			snprintf(buffer, 256, "Bad results given by 'compare' in 'Array.sort(compare)', unknown error");
+			Toy_error(buffer);
+			return -1; //failed, exit
+		}
+
+		if (out > 1) {
+			Toy_Value tmp = data[0];
+			data[0] = data[1];
+			data[1] = tmp;
+		}
+
+		return 0; //all good, terminate here
+	}
+
+	//iterators, following Tony Hoare's partition scheme
+	unsigned int left = 0;
+	unsigned int right = count - 1;
+
+	for (;;) {
+		int out = -1; //out param
+
+		//find the leftmost element not less than the pivot
+		while (out <= 0) {
+			*lhs = TOY_REFERENCE_FROM_POINTER(&data[left]);
+			*rhs = TOY_REFERENCE_FROM_POINTER(&data[pivot]);
+
+			if (quicksortRunCompare(vm, &out) != 0) {
+				char buffer[256];
+				snprintf(buffer, 256, "Bad results given by 'compare' in 'Array.sort(compare)', unknown error");
+				Toy_error(buffer);
+				return -1; //failed, exit
+			}
+
+			if (out <= 0) {
+				left++;
+			}
+
+			//BUGFIX
+			if (left >= pivot) break;
+		}
+
+		out = -1; //reset, since the checks are now pivot < right
+
+		//find the rightmost element not greater than the pivot
+		while (out <= 0) {
+			*lhs = TOY_REFERENCE_FROM_POINTER(&data[pivot]);
+			*rhs = TOY_REFERENCE_FROM_POINTER(&data[right]);
+
+			if (quicksortRunCompare(vm, &out) != 0) {
+				char buffer[256];
+				snprintf(buffer, 256, "Bad results given by 'compare' in 'Array.sort(compare)', unknown error");
+				Toy_error(buffer);
+				return -1; //failed, exit
+			}
+
+			if (out <= 0) {
+				right--;
+			}
+
+			//BUGFIX
+			if (right <= pivot) break;
+		}
+
+		//check for iterator crossing
+		if (left >= right) break;
+
+		//swap the left & right element positions (and the pivot, if needed)
+		Toy_Value tmp = data[left];
+		data[left] = data[right];
+		data[right] = tmp;
+
+		//NOTE: the pivot's value has moved, so move the index too
+		if (left == pivot) {
+			pivot = right;
+		}
+		else if (right == pivot) {
+			pivot = left;
+		}
+
+		//BUGFIX: the pivot has exhausted all values on one side, reset it
+		if (pivot == left || pivot == right) {
+			left = 0;
+			right = count - 1;
+			pivot = count / 2;
+		}
+	}
+
+	//recursion
+	return quicksortRawData(data, pivot+1, (pivot+1)/2, vm, lhs, rhs) || quicksortRawData(data + pivot, count - pivot - 1, (count - pivot - 1)/2, vm, lhs, rhs);
+}
+
 static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
-	(void)vm;
 	(void)self;
 
-	//TODO: incomplete
+	//check parameter count
+	if (vm->stack->count < 2) {
+		char buffer[256];
+		snprintf(buffer, 256, "Not enough parameters found in 'Array.sort(compare)'");
+		Toy_error(buffer);
+		return;
+	}
+
+	Toy_Value compound = Toy_popStack(&vm->stack);
+	Toy_Value compare = Toy_popStack(&vm->stack);
+
+	//check types
+	if (!TOY_VALUE_IS_FUNCTION(compare) || TOY_VALUE_AS_FUNCTION(compare)->type != TOY_FUNCTION_CUSTOM) {
+		char buffer[256];
+		snprintf(buffer, 256, "Bad parameter found in 'Array.sort(compare)'");
+		Toy_error(buffer);
+		Toy_freeValue(compare);
+		Toy_freeValue(compound);
+		return;
+	}
+
+	//the standard types
+	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
+	Toy_Function* fn = TOY_VALUE_AS_FUNCTION(compare);
+
+	//TODO: edge-case and degenerate checks (2 or less elements)
+
+	//build the VM that will run the comparisons
+	Toy_VM subVM;
+	Toy_inheritVM(vm, &subVM);
+	Toy_bindVM(&subVM, fn->bytecode.code, fn->bytecode.parentScope);
+
+	//check the functor's parameter count is 2
+	if (2 * 8 != subVM.paramCount) {
+		char buffer[256];
+		snprintf(buffer, 256, "Incorrect number of parameters specified for 'compare' in 'Array.sort(compare)' (expected 2, found %d)", subVM.paramCount / 8);
+		Toy_error(buffer);
+		Toy_freeVM(&subVM);
+		Toy_freeValue(compare);
+		Toy_freeValue(compound);
+		return;
+	}
+
+	//get the two parameters and declare them as references to values (which we can mess with for speed & efficiency)
+	Toy_Value lhs = TOY_VALUE_FROM_NULL(); //NOTE: yes, this means this quicksort can't be parallelized, but idc
+	{
+		const char* cstr = ((char*)(subVM.code + subVM.dataAddr)) + ((unsigned int*)(subVM.code + subVM.paramAddr))[0];
+		Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.code + subVM.paramAddr))[1]);
+		Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
+		Toy_declareScope(&vm->memoryBucket, subVM.scope, name, paramType, TOY_REFERENCE_FROM_POINTER(&lhs), true);
+		Toy_freeString(name);
+	}
+	Toy_Value rhs = TOY_VALUE_FROM_NULL();
+	{
+		const char* cstr = ((char*)(subVM.code + subVM.dataAddr)) + ((unsigned int*)(subVM.code + subVM.paramAddr))[2];
+		Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.code + subVM.paramAddr))[3]);
+		Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
+		Toy_declareScope(&vm->memoryBucket, subVM.scope, name, paramType, TOY_REFERENCE_FROM_POINTER(&rhs), true);
+		Toy_freeString(name);
+	}
+
+	//run the sorting algorithm
+	quicksortRawData(array->data, array->count, array->count / 2, &subVM, &lhs, &rhs);
+
+	//clean up
+	Toy_freeVM(&subVM);
+	Toy_freeValue(compare);
+	Toy_freeValue(compound);
 }
 
 static unsigned int arrayFlattenCounter(Toy_Array* array) {
@@ -208,7 +407,7 @@ static void attr_arrayFlatten(Toy_VM* vm, Toy_FunctionNative* self) {
 
 	if (!TOY_VALUE_IS_REFERENCE(compound) || compound.as.reference->type != TOY_VALUE_ARRAY) {
 		char buffer[256];
-		snprintf(buffer, 256, "'Array.flatten()' does not work on non-variables");
+		snprintf(buffer, 256, "'Array.flatten()' does not work on non-variable values");
 		Toy_error(buffer);
 		return;
 	}
@@ -252,7 +451,7 @@ Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayFillWith);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
-	else if (false && MATCH_VALUE_AND_CSTRING(attribute, "sort")) {
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "sort")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arraySort);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}

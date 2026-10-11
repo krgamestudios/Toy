@@ -20,6 +20,7 @@
 // [x] table.insert(x, y)
 // [x] table.hasKey(x)
 // [x] table.remove(x)
+// [ ] reverse?
 
 Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
