@@ -1,5 +1,5 @@
 <p align="center">
-	<image src="img/toypreview.png" alt="The Toy Scripting Language" />
+	<image src="../img/toypreview.png" alt="The Toy Scripting Language" />
 </p>
 
 ## About Toy
