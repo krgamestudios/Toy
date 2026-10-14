@@ -165,7 +165,7 @@ static void attr_arrayFillWith(Toy_VM* vm, Toy_FunctionNative* self) {
 }
 
 static int quicksortRunCompare(Toy_VM* vm, int* out) {
-	//TODO: should the scope be manually reset to fix the "purity" issue?
+	//BUG: Variables can't be declared in the comparator - could manually free & reset the scope contents?
 	unsigned int resultCount = Toy_runVM(vm);
 
 	if (resultCount != 1) {

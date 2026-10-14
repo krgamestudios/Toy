@@ -118,6 +118,7 @@ Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	//scopes are declared separately from their entries so the pointer to scopes don't become invalid
 	Toy_Scope* newScope = (Toy_Scope*)Toy_partitionBucket(bucketHandle, sizeof(Toy_Scope));
 
+	//WARN: You've tried lazily allocating scope memory in the past, it doesn't work and breaks a bunch of tests, so stop trying.
 	newScope->next = scope;
 	newScope->refCount = 0;
 	newScope->data = adjustScopeEntries(bucketHandle, NULL, TOY_SCOPE_INITIAL_CAPACITY);
