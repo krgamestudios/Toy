@@ -5,7 +5,6 @@
 #include "toy_value.h"
 #include "toy_vm.h"
 
-//URGENT: some planned attributes are missing or incomplete
 // [x] *.asString
 // [x] string.length
 // [x] string.asUpper
@@ -16,7 +15,7 @@
 // [x] array.fillWith(amount, value)
 // [x] array.flatten()
 // [x] array.sort(fn)    // fn(a,b) -> int
-// [ ] array.reverse()
+// [x] array.reverse()
 // [x] table.length
 // [x] table.insert(x, y)
 // [x] table.hasKey(x)

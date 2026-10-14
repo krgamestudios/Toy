@@ -40,6 +40,17 @@
 	];
 	fa.flatten();
 	assert fa == [1, 2, 3, 4, 5, 6, 7, 8, 9], "Array.flatten() failed";
+
+	//NOTE: sorting is implemented in its own file
+
+	var even = [1,2,3,4,5,6];
+	even.reverse();
+	assert even == [6,5,4,3,2,1], "Array.reverse() failed";
+
+	var odd = [1,2,3,4,5,6,7];
+	odd.reverse();
+	assert odd == [7,6,5,4,3,2,1], "Array.reverse() failed";
+
 }
 
 //index
@@ -47,7 +58,7 @@
 	var array = [1,2,3,4,5,6,7,8,9,10];
 	assert array[4] == 5, "Array index failed";
 	assert array[-2] == 9, "Array negative index failed";
-	//assert array[4:3] == [5,6,7], "Array index-length failed"; //WARN: Array slicing not yet implemented
+	//assert array[4:3] == [5,6,7], "Array index-length failed"; //WARN: Array slicing not implemented
 }
 
 //syntax
@@ -58,5 +69,3 @@
 	var trailing = [1, 2, 3, ];
 	assert trailing == [1,2,3], "Trailing comma array failed";
 }
-
-//NOTE: sorting is implemented in its own file

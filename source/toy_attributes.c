@@ -165,6 +165,7 @@ static void attr_arrayFillWith(Toy_VM* vm, Toy_FunctionNative* self) {
 }
 
 static int quicksortRunCompare(Toy_VM* vm, int* out) {
+	//TODO: should the scope be manually reset to fix the "purity" issue?
 	unsigned int resultCount = Toy_runVM(vm);
 
 	if (resultCount != 1) {
@@ -422,6 +423,20 @@ static void attr_arrayFlatten(Toy_VM* vm, Toy_FunctionNative* self) {
 	compound.as.reference->as.array = newArray;
 }
 
+static void attr_arrayReverse(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+
+	Toy_Value compound = Toy_popStack(&vm->stack);
+	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
+
+	//swap the elements in-place without altering the array as a whole
+	for (unsigned int i = 0; i < array->count / 2; i++) { //NOTE: integer division here means an odd-number of elements leaves the middle one untouched
+		Toy_Value tmp = array->data[i];
+		array->data[i] = array->data[array->count - i - 1];
+		array->data[array->count - i - 1] = tmp;
+	}
+}
+
 Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute) {
 	if (MATCH_VALUE_AND_CSTRING(attribute, "length")) {
 		return TOY_VALUE_FROM_INTEGER(TOY_VALUE_AS_ARRAY(compound)->count);
@@ -444,6 +459,10 @@ Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_
 	}
 	else if (MATCH_VALUE_AND_CSTRING(attribute, "flatten")) {
 		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayFlatten);
+		return TOY_VALUE_FROM_FUNCTION(fn);
+	}
+	else if (MATCH_VALUE_AND_CSTRING(attribute, "reverse")) {
+		Toy_Function* fn = Toy_createFunctionFromCallback(&vm->memoryBucket, attr_arrayReverse);
 		return TOY_VALUE_FROM_FUNCTION(fn);
 	}
 	else {

@@ -173,10 +173,11 @@ var element = array.popBack(); //element = 4
 var emptyArray = [];
 var defaultArray = [].fillWith(400, 0); //400 copies of '0'
 
-fn less(a, b) { return a - b; }
+fn less(a, b) { return a - b; } //see the warning below
 defaultArray[200] = [21,7,95];
 defaultArray.flatten();
 defaultArray.sort(less);
+defaultArray.reverse();
 
 var table = ["alpha": 1, "beta":2];
 print table.length; //2
@@ -185,6 +186,8 @@ print table.hasKey("alpha"); //true
 table.remove("alpha"); //table = ["beta":2,"key":4]
 var emptyTable = [:];
 ```
+
+*Warning: The function passed to 'Array.sort' needs to be 'pure', as it doesn't allocate a local scope on each call i.e. don't declare variables or it will break*
 
 Other attributes are shared by all built-in types.
 
