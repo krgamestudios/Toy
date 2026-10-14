@@ -467,15 +467,14 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 		case TOY_VALUE_INTEGER: {
 			char buffer[128];
-			sprintf(buffer, "%d", value.as.integer);
+			snprintf(buffer, 128, "%d", value.as.integer);
 			return Toy_createStringLength(bucketHandle, buffer, strlen(buffer));
 		}
 
 		case TOY_VALUE_FLOAT: {
 			char buffer[128];
-			sprintf(buffer, "%g", value.as.number);
-			unsigned int length = strlen(buffer);
-			return Toy_createStringLength(bucketHandle, buffer, length);
+			snprintf(buffer, 128, "%g", value.as.number);
+			return Toy_createStringLength(bucketHandle, buffer, strlen(buffer));
 		}
 
 		case TOY_VALUE_STRING:
@@ -634,7 +633,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 		case TOY_VALUE_FUNCTION:
 			//dummy
-			return Toy_createStringLength(bucketHandle, "<fn>", 4);
+			return Toy_createStringLength(bucketHandle, "<function>", 10);
 
 		case TOY_VALUE_OPAQUE:
 			//dummy

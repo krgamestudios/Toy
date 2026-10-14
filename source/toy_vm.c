@@ -417,6 +417,7 @@ static void processInvoke(Toy_VM* vm) {
 
 		case TOY_FUNCTION_NATIVE: {
 			//NOTE: arguments are on the stack, leave results on the stack
+			//BUG: native functions can't declare their parameter count, but the argument count *is* in the bytecode
 			fn->native.callback(vm, &fn->native);
 		}
 		break;
