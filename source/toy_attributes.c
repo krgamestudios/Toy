@@ -62,7 +62,6 @@ static void attr_arrayPushBack(Toy_VM* vm, Toy_FunctionNative* self) {
 
 	Toy_Array* array = TOY_VALUE_AS_ARRAY(compound);
 
-	//BUGFIX: check the capacity limit
 	if (array->count == array->capacity) {
 		//correct the source value's pointer
 		array = Toy_resizeArray(array, array->capacity * TOY_ARRAY_EXPANSION_RATE);
@@ -232,7 +231,7 @@ static int quicksortRawData(Toy_Value* data, unsigned int count, unsigned int pi
 				left++;
 			}
 
-			//BUGFIX
+			//base case
 			if (left >= pivot) break;
 		}
 
@@ -254,7 +253,7 @@ static int quicksortRawData(Toy_Value* data, unsigned int count, unsigned int pi
 				right--;
 			}
 
-			//BUGFIX
+			//base case
 			if (right <= pivot) break;
 		}
 

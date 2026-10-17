@@ -29,5 +29,15 @@
 	];
 
 	assert trailing == ["alpha": 1, "beta": 2, "gamma": 3], "Trailing comma table failed";
+
+	var nested = [
+		"grass": ["bulbasaur": 1, "ivysaur": 2, "venusaur": 3,],
+		"fire": ["charmander": 4, "charmelion": 5, "charizard": 6,],
+		"water": ["squirtle": 7, "wartortle": 8, "blastoise": 9,],
+	];
+
+	assert nested.length == 3, "Nested tables with trailing commas length failed";
+	assert nested == [ "grass": ["bulbasaur": 1, "ivysaur": 2, "venusaur": 3], "fire": ["charmander": 4, "charmelion": 5, "charizard": 6], "water": ["squirtle": 7, "wartortle": 8, "blastoise": 9] ], "Nested tables with trailing commas failed";
 }
 
+ 

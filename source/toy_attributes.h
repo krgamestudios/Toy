@@ -5,6 +5,7 @@
 #include "toy_value.h"
 #include "toy_vm.h"
 
+// NOTE: Standard Attributes
 // [x] *.asString
 // [x] string.length
 // [x] string.asUpper

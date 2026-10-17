@@ -41,7 +41,7 @@
 	fa.flatten();
 	assert fa == [1, 2, 3, 4, 5, 6, 7, 8, 9], "Array.flatten() failed";
 
-	//NOTE: sorting is implemented in its own file
+	//NOTE: sorting tests are implemented in a different file
 
 	var even = [1,2,3,4,5,6];
 	even.reverse();
@@ -68,4 +68,12 @@
 
 	var trailing = [1, 2, 3, ];
 	assert trailing == [1,2,3], "Trailing comma array failed";
+
+	var nested = [
+		[1,2,3,],
+		[4,5,6,],
+	];
+
+	assert nested.length == 2, "Nested arrays with trailing commas length failed";
+	assert nested == [[1,2,3],[4,5,6]], "Nested arrays with trailing commas failed";
 }

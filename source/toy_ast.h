@@ -6,8 +6,6 @@
 #include "toy_value.h"
 #include "toy_string.h"
 
-//TODO: Semantic analysis needed (i.e. optimisation passes)
-
 //each major type
 typedef enum Toy_AstType {
 	TOY_AST_BLOCK,

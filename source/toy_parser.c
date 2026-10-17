@@ -623,12 +623,6 @@ static Toy_AstFlag compound(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_A
 			}
 		}
 
-		//BUGFIX: special case for trailing commas
-		if (parser->previous.type == TOY_TOKEN_OPERATOR_BRACKET_RIGHT && parser->current.type != TOY_TOKEN_OPERATOR_BRACKET_RIGHT) {
-			Toy_private_emitAstCompound(bucketHandle, rootHandle, flag == TOY_AST_FLAG_PAIR ? TOY_AST_FLAG_COMPOUND_TABLE : TOY_AST_FLAG_COMPOUND_ARRAY);
-			return TOY_AST_FLAG_NONE;
-		}
-
 		consume(parser, TOY_TOKEN_OPERATOR_BRACKET_RIGHT, "Expected ']' at the end of compound expression");
 		Toy_private_emitAstCompound(bucketHandle, rootHandle, flag == TOY_AST_FLAG_PAIR ? TOY_AST_FLAG_COMPOUND_TABLE : TOY_AST_FLAG_COMPOUND_ARRAY);
 
@@ -652,6 +646,11 @@ static Toy_AstFlag aggregate(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 
 	//aggregates are a collection of parts, expressing a larger idea
 	if (parser->previous.type == TOY_TOKEN_OPERATOR_COMMA) {
+		//BUGFIX: handle trailing commas
+		if (parser->current.type == TOY_TOKEN_OPERATOR_BRACKET_RIGHT) {
+			Toy_private_emitAstPass(bucketHandle, rootHandle);
+			return TOY_AST_FLAG_COLLECTION;
+		}
 		parsePrecedence(bucketHandle, parser, rootHandle, PREC_GROUP); //NOT +1, as compounds are right-recursive
 		return TOY_AST_FLAG_COLLECTION;
 	}

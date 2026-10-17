@@ -30,7 +30,7 @@ static inline int readPostfixUtil(unsigned int* ptr, int amount) {
 }
 
 static inline void fixAlignment(Toy_VM* vm) {
-	//NOTE: It's a tilde, not a negative sign
+	//It's a tilde, not a negative sign
 	vm->programCounter = (vm->programCounter + 3) & ~3;
 }
 

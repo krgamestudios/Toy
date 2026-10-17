@@ -60,3 +60,8 @@ typedef struct Toy_Bytecode {
 } Toy_Bytecode;
 
 TOY_API unsigned char* Toy_compileToBytecode(Toy_Ast* ast);
+
+//URGENT: Semantic optimisations
+// [ ] Folding Constant Literals
+// [ ] Extra Block Reduction
+// [ ] Dead Path Elmination

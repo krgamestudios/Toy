@@ -76,3 +76,17 @@ fn makeCounter() {
 	print triple;
 	assert triple == [7:8, 9:10, 11:12], "invoking triple table failed";
 }
+
+//test it works within arrays
+{
+	var tally = makeCounter();
+	var array: Array = [ tally, tally(), tally() ];
+	assert array[0]() == 3, "invoking within an array failed";
+}
+
+//test it works within tables
+{
+	var tally = makeCounter();
+	var table: Table = [ 1: tally, 2: tally(), 3: tally() ];
+	assert table[1]() == 3, "invoking within an array failed";
+}

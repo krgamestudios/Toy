@@ -1,0 +1,46 @@
+var ruleset: Array = [
+	//0xx
+	[
+		//00x
+		[0, 1],
+		//01x
+		[1, 1],
+	],
+	//1xx
+	[
+		//10x
+		[0, 1],
+		//11x
+		[1, 0],
+	],
+];
+
+//check the ruleset is correct
+assert ruleset[1][1][1] == 0;
+assert ruleset[1][1][0] == 1;
+assert ruleset[1][0][1] == 1;
+assert ruleset[1][0][0] == 0;
+assert ruleset[0][1][1] == 1;
+assert ruleset[0][1][0] == 1;
+assert ruleset[0][0][1] == 1;
+assert ruleset[0][0][0] == 0;
+
+fn apply(prev) {
+	var next = [].fillWith(prev.length, 0);
+
+	for (var i = 1; i < prev.length - 1; i++) {
+		next[i] = ruleset[ prev[i-1] ][ prev[i] ][ prev[i+1] ];
+	}
+
+	return next;
+}
+
+var line = [].fillWith(100, 0);
+line[95] = 1; //seed
+
+print line;
+
+for (var i = 0; i < 100; i++) {
+	line = apply(line);
+	print line;
+}
