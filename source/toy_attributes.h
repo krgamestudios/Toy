@@ -5,6 +5,9 @@
 #include "toy_value.h"
 #include "toy_vm.h"
 
+//forward declarations
+struct Toy_VM;
+
 // NOTE: Standard Attributes
 // [x] *.asString
 // [x] string.length
@@ -22,14 +25,14 @@
 // [x] table.hasKey(x)
 // [x] table.remove(x)
 
-Toy_Value Toy_private_handleStringAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
-Toy_Value Toy_private_handleArrayAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
-Toy_Value Toy_private_handleTableAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
-Toy_Value Toy_private_handleOpaqueAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+Toy_Value Toy_private_handleStringAttributes(struct Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+Toy_Value Toy_private_handleArrayAttributes(struct Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+Toy_Value Toy_private_handleTableAttributes(struct Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+Toy_Value Toy_private_handleOpaqueAttributes(struct Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 
 //plug-and-play attributes for custom objects
-typedef Toy_Value (*Toy_OpaqueAttributeHandler)(Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
+typedef Toy_Value (*Toy_OpaqueAttributeHandler)(struct Toy_VM* vm, Toy_Value compound, Toy_Value attribute);
 TOY_API void Toy_setOpaqueAttributeHandler(Toy_OpaqueAttributeHandler cb);
 
 //operates on all built-in types
-int Toy_private_handleGlobalAttributes(Toy_VM* vm, Toy_Value compound, Toy_Value attribute, Toy_Value* result);
+int Toy_private_handleGlobalAttributes(struct Toy_VM* vm, Toy_Value compound, Toy_Value attribute, Toy_Value* result);

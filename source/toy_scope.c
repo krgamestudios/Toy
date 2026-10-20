@@ -236,7 +236,7 @@ void Toy_private_incrementScopeRefCount(Toy_Scope* scope) {
 	for (Toy_Scope* iter = scope; iter; iter = iter->next) {
 		//check for issues
 		if (iter->next != NULL && iter->next->refCount <= 0) {
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0 or below'\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0 or below\n" TOY_CC_RESET);
 			exit(-1);
 		}
 
@@ -250,7 +250,7 @@ void Toy_private_decrementScopeRefCount(Toy_Scope* scope) {
 
 		//check for issues
 		if (iter->next != NULL && iter->next->refCount <= 0) {
-			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0 or below'\n" TOY_CC_RESET);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: Toy_Scope's ancestor has a refcount of 0 or below\n" TOY_CC_RESET);
 			exit(-1);
 		}
 	}

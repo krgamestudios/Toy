@@ -64,4 +64,4 @@ valgrind: source repl copy run-valgrind
 run-valgrind: $(TEST_SCRIPTFILES:.toy=.toy-run-valgrind)
 
 %.toy-run-valgrind: %.toy
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(REPL) -f $<
+	valgrind -s --leak-check=full --show-leak-kinds=all --track-origins=yes $(REPL) -f $<

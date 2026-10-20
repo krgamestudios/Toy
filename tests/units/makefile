@@ -83,4 +83,4 @@ build-run-valgrind: $(addprefix $(TEST_OUTDIR)/,$(notdir $(TEST_UNITSFILES:%.c=%
 
 .PRECIOUS: $(TEST_OUTDIR)/%.run-valgrind
 $(TEST_OUTDIR)/%.run-valgrind: $(TEST_OUTDIR)/%.exe
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $<
+	valgrind -s --leak-check=full --show-leak-kinds=all --track-origins=yes $<

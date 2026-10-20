@@ -1218,7 +1218,7 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 		Toy_resetStack(&vm->stack); //WARN: tweaks memory, don't over use this line
 	}
 
-	//not sure how often to call teh GC
+	//not sure how often to call the GC
 	if (vm->memoryBucket) {
 		Toy_collectBucketGarbage(&vm->memoryBucket); //WONTFIX: call GC after a certain number of bucket links allocated
 	}
@@ -1275,6 +1275,9 @@ void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope) {
 	//scopes
 	if (vm->scope == NULL) {
 		vm->scope = Toy_pushScope(&vm->memoryBucket, parentScope);
+	}
+	else {
+		vm->scope = Toy_pushScope(&vm->memoryBucket, vm->scope);
 	}
 }
 

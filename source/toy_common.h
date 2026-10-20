@@ -74,5 +74,8 @@ Version validation rules:
 
 */
 
+//util functions that curry a lot of common tasks
 TOY_API int Toy_private_getWorkingDir(char* dest, const char* src, size_t destLength);
 TOY_API int Toy_private_getFileName(char* dest, const char* src, size_t destLength);
+TOY_API unsigned char* Toy_private_readFile(const char* path, int* size);
+TOY_API unsigned char* Toy_private_makeCodeFromSource(const char* source, const char* workingDir);

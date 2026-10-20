@@ -17,41 +17,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-unsigned char* readFile(const char* path, int* size) {
-	//open the file
-	FILE* file = fopen(path, "rb");
-	if (file == NULL) {
-		*size = -1; //missing file error
-		return NULL;
-	}
-
-	//determine the file's length
-	fseek(file, 0L, SEEK_END);
-	*size = (int)ftell(file);
-	rewind(file);
-
-	//make some space
-	unsigned char* buffer = malloc(*size + 1);
-	if (buffer == NULL) {
-		fclose(file);
-		return NULL;
-	}
-
-	//read the file
-	if (fread(buffer, sizeof(unsigned char), *size, file) < (unsigned int)(*size)) {
-		fclose(file);
-		free(buffer);
-		*size = -2; //singal a read error
-		return NULL;
-	}
-
-	buffer[(*size)] = '\0';
-
-	//clean up and return
-	fclose(file);
-	return buffer;
-}
-
 //error callbacks
 static int errorAndExitCallback(const char* msg) {
 	fprintf(stderr, TOY_CC_ERROR "Error: %s" TOY_CC_RESET "\n", msg);
@@ -91,7 +56,7 @@ typedef struct Settings {
 	const char* script;
 	bool silentPrint;
 	bool silentAssert;
-	unsigned char verbosity; //0 = None, 1 = simple, 2 = extra, 3 = all, 255 = suppress everything from the repl
+	unsigned char verbosity; //0 = None, 1 = simple, 2 = extra, 3 = all, 255 = suppress everything
 } Settings;
 
 void usageInfo(int argc, const char* argv[]) {
@@ -361,7 +326,7 @@ int main(int argc, const char* argv[]) {
 	else if (settings.script != NULL) {
 		//read the source file
 		int size;
-		unsigned char* source = readFile(settings.script, &size);
+		unsigned char* source = Toy_private_readFile(settings.script, &size);
 
 		//check the file
 		if (source == NULL) {

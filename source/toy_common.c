@@ -1,6 +1,12 @@
 #include "toy_common.h"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#include "toy_lexer.h"
+#include "toy_parser.h"
+#include "toy_compiler.h"
 
 //util macros
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -63,4 +69,57 @@ int Toy_private_getFileName(char* dest, const char* src, size_t destLength) {
 	dest[len] = '\0';
 
 	return len;
+}
+
+unsigned char* Toy_private_readFile(const char* path, int* size) {
+	//open the file
+	FILE* file = fopen(path, "rb");
+	if (file == NULL) {
+		*size = -1; //missing file error
+		return NULL;
+	}
+
+	//determine the file's length
+	fseek(file, 0L, SEEK_END);
+	*size = ftell(file);
+	rewind(file);
+
+	//make some space
+	unsigned char* buffer = malloc(*size + 1);
+	if (buffer == NULL) {
+		fclose(file);
+		return NULL;
+	}
+
+	//read the file
+	if (fread(buffer, sizeof(unsigned char), *size, file) < (unsigned int)(*size)) {
+		fclose(file);
+		free(buffer);
+		*size = -2; //singal a read error
+		return NULL;
+	}
+
+	buffer[(*size)] = '\0';
+
+	//clean up and return
+	fclose(file);
+	return buffer;
+}
+
+unsigned char* Toy_private_makeCodeFromSource(const char* source, const char* workingDir) {
+	Toy_Lexer lexer;
+	Toy_bindLexer(&lexer, source);
+
+	Toy_Parser parser;
+	Toy_bindParser(&parser, &lexer);
+	Toy_adjustParserWorkingDirectory(&parser, workingDir);
+
+	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+
+	Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
+	unsigned char* code = Toy_compileToBytecode(ast);
+
+	Toy_freeBucket(&bucket);
+
+	return code;
 }
