@@ -12,41 +12,6 @@
 #include <string.h>
 
 //misc. utils
-char* readFile(const char* path, int* size) {
-	//open the file
-	FILE* file = fopen(path, "rb");
-	if (file == NULL) {
-		*size = -1; //missing file error
-		return NULL;
-	}
-
-	//determine the file's length
-	fseek(file, 0L, SEEK_END);
-	*size = (int)ftell(file);
-	rewind(file);
-
-	//make some space
-	char* buffer = malloc(*size + 1);
-	if (buffer == NULL) {
-		fclose(file);
-		return NULL;
-	}
-
-	//read the file
-	if (fread(buffer, sizeof(char), *size, file) < (unsigned int)(*size)) {
-		fclose(file);
-		free(buffer);
-		*size = -2; //singal a read error
-		return NULL;
-	}
-
-	buffer[(*size)] = '\0';
-
-	//clean up and return
-	fclose(file);
-	return buffer;
-}
-
 static bool checkForChainedAssign(Toy_Ast* ptr) {
 	if (ptr == NULL) {
 		return false;
@@ -273,7 +238,7 @@ static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke 
 
 //used internally
 unsigned char* compileSourceToSubroutine(const char* source, const char* workingDir) {
-	//NOTE: this is a customized internal version of 'compileSource' to handle circular references
+	//NOTE: this is a customized internal version of 'Toy_private_makeCodeFromSource' to handle circular references
 	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
 	Toy_Lexer lexer;
@@ -1018,7 +983,7 @@ static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast)
 
 	//read the source
 	int size = 0;
-	char* source = readFile(path, &size);
+	char* source = (char*)Toy_private_readFile(path, &size);
 
 	if (!source || size <= 0) {
 		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Failed to import the script '%s' (errcode %d)\n" TOY_CC_RESET, path, size);

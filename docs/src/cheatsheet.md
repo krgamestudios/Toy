@@ -97,6 +97,10 @@ TOY_API unsigned char* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned i
 TOY_API void Toy_releaseBucketPartition(unsigned char* ptr);
 TOY_API void Toy_freeBucket(Toy_Bucket** bucketHandle);
 TOY_API void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle);
+TOY_API int Toy_private_getWorkingDir(char* dest, const char* src, size_t destLength);
+TOY_API int Toy_private_getFileName(char* dest, const char* src, size_t destLength);
+TOY_API unsigned char* Toy_private_readFile(const char* path, int* size);
+TOY_API unsigned char* Toy_private_makeCodeFromSource(const char* source, const char* workingDir);
 TOY_API unsigned char* Toy_compileToBytecode(Toy_Ast* ast);
 TOY_API Toy_Function* Toy_createFunctionFromBytecode(Toy_Bucket** bucketHandle, unsigned char* bytecode, Toy_Scope* parentScope);
 TOY_API Toy_Function* Toy_createFunctionFromCallback(Toy_Bucket** bucketHandle, Toy_nativeCallback callback);
