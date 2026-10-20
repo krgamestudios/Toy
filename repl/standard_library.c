@@ -349,8 +349,6 @@ void initStandardLibrary(Toy_VM* vm) {
 		exit(-1);
 	}
 
-	//TODO: It might be useful to preallocate enough space in the scope before declaring these
-
 	//declare each pair
 	for (int i = 0; callbackPairs[i].name; i++) {
 		Toy_String* key = Toy_createStringLength(&vm->memoryBucket, callbackPairs[i].name, strlen(callbackPairs[i].name));
