@@ -622,7 +622,7 @@ static void processComparison(Toy_VM* vm, Toy_OpcodeType opcode) {
 
 		Toy_freeValue(left);
 		Toy_freeValue(right);
-		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+		Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL()); //BUG: double error messages from 'if (null > 0) pass;'
 		return;
 	}
 

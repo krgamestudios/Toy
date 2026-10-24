@@ -651,7 +651,7 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 const char* Toy_getValueTypeAsCString(Toy_ValueType type) {
 	switch (type) {
-		case TOY_VALUE_NULL: return "Null";
+		case TOY_VALUE_NULL: return "null";
 		case TOY_VALUE_BOOLEAN: return "Bool";
 		case TOY_VALUE_INTEGER: return "Int";
 		case TOY_VALUE_FLOAT: return "Float";
