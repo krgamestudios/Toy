@@ -55,11 +55,11 @@ When declaring or assigning to a variable, it's not strictly necessary to give i
 ```toy
 var total: Int = null;
 
-if (total) { Error: 'null' is neither true nor false
+if (total) { //Error: 'null' is neither true nor false
 	//
 }
 
-if (total > 40) { Error: Can't compare value types 'null' and 'Int'
+if (total > 40) { //Error: Can't compare value types 'null' and 'Int'
 	//
 }
 ```
@@ -82,15 +82,15 @@ passions.pushBack("gardening"); //OK!
 
 Each type listed above will narrow the potential values that can be assigned to a name, in addition to `null`. These are the most commonly used types in programming, and the number of types are deliberately limited, but they should be (mostly) self-explanatory. The more complex "compound" types often have additional features, listed below and on their own pages.
 
-`Bool`, or "booleans, are either `true` or `false`. All comparison operators return one of these values.
+`Bool`, or "booleans", are either `true` or `false`. All comparison operators return one of these values.
 
-`Int` and `Float` are integers and floats repsectfully, both using 32-bit representations under the hood. All arithmetic operations work on these, namely addition `+`, subtraction `-`, multiplication `*`, division `/`, and integers also support modulo `%`[^3].
+`Int` and `Float` are integers and floats respectfully, both using 32-bit representations under the hood. All arithmetic operations work on these, namely addition `+`, subtraction `-`, multiplication `*`, division `/`, and integers also support modulo `%`[^3].
 
 [^3]: Division and modulo with a zero denominator will result in an error. 
 
 `String` is a compound type, meaning it has additional components within it, either pre-computed or generated at runtime. Namely, indexing a string will give a new string created from its contents. When indexing, using only a single number will return a new string of length 1, starting from that index. If a second value is also provided after a colon, it becomes the length of the new string[^4].
 
-[^4]: If you use a colon but omit the second value, then the remainder of the string is used, like so: `print string[0:];`.
+[^4]: If you use a colon but omit the second value (like so: `print string[0:];`) then the length is "until the end".
 
 ```toy
 //define a string
