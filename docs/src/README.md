@@ -39,11 +39,11 @@ for (var result = 0; result < 10; result = tally()) {
 
 I'm currently developing a game using Toy as a primary component, which can be found here:
 
-[https://gitea.krgamestudios.com/krgamestudios/ToyBox](https://gitea.krgamestudios.com/krgamestudios/ToyBox)
+[https://github.com/krgamestudios/ToyBox](https://github.com/krgamestudios/ToyBox)
 
 ## Further Reading
 
-This website is a work in progress - for further info, see the official repository: [https://gitea.krgamestudios.com/krgamestudios/Toy](https://gitea.krgamestudios.com/krgamestudios/Toy), or the GitHub mirror: [https://github.com/krgamestudios/Toy](https://github.com/krgamestudios/Toy).
+This website is a work in progress - please be patient!
 
 <p align="center">
 	<image src="img/noai.png" alt="No AI" width="200px" />
