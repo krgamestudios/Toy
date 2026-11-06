@@ -29,24 +29,21 @@ Toy_Bucket* Toy_allocateBucket(unsigned int capacity) {
 }
 
 unsigned char* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount) {
+	assert(*bucketHandle != NULL);
+
 	//Both the header and payload occupy aligned blocks. The size word
 	//remains immediately before the payload for release and collection.
-	const unsigned int alignment = TOY_BUCKET_ALIGNMENT;
-	if (amount > UINT_MAX - 2 * alignment ||
-		(size_t)amount > SIZE_MAX - sizeof(Toy_Bucket) - 2 * alignment) {
-		fprintf(stderr, "Toy: allocation is too large\n");
-		exit(1);
-	}
-	amount = (amount + alignment - 1) / alignment * alignment;
-	unsigned int total = alignment + amount;
-	assert(*bucketHandle != NULL);
+	amount = (amount + TOY_BUCKET_ALIGNMENT-1) & ~(TOY_BUCKET_ALIGNMENT-1);
+	unsigned int total = TOY_BUCKET_ALIGNMENT + amount;
+
 	if ((*bucketHandle)->capacity - (*bucketHandle)->count < total) {
 		unsigned int capacity = (*bucketHandle)->capacity;
 		Toy_Bucket* next = Toy_allocateBucket(capacity > total ? capacity : total);
 		next->next = *bucketHandle;
 		*bucketHandle = next;
 	}
-	unsigned char* payload = (*bucketHandle)->data + (*bucketHandle)->count + alignment;
+
+	unsigned char* payload = (*bucketHandle)->data + (*bucketHandle)->count + TOY_BUCKET_ALIGNMENT;
 	*((unsigned int*)(payload - sizeof(unsigned int))) = amount;
 	(*bucketHandle)->count += total;
 	return payload;

@@ -56,7 +56,8 @@ int test_string_allocation(void) {
 
 		//inspect the bucket
 		if (bucket->capacity != 1024 ||
-			bucket->count != sizeof(Toy_String) + 12 + 4 || //+4 for bucket metadata
+			bucket->count != (((sizeof(Toy_String) + 12) + TOY_BUCKET_ALIGNMENT-1) & ~(TOY_BUCKET_ALIGNMENT-1)) + //content aligned to bucket
+				((4 + TOY_BUCKET_ALIGNMENT-1) & ~(TOY_BUCKET_ALIGNMENT-1)) || //metadata aligned to bucket
 			bucket->next != NULL)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: Unexpected bucket state after 'Toy_createStringLength'\n" TOY_CC_RESET);
