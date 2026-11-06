@@ -5,8 +5,15 @@
 #include "toy_string.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+
+static Toy_importResolver importResolver = NULL;
+
+void Toy_setImportResolver(Toy_importResolver resolver) {
+	importResolver = resolver;
+}
 
 //utilities
 static void printError(Toy_Parser* parser, Toy_Token token, const char* errorMsg) {
@@ -331,7 +338,9 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 			unsigned int i = 0, o = 0;
 			do {
 				buffer[i] = parser->previous.lexeme[o];
-				if (buffer[i] != '_') i++;
+				if (buffer[i] != '_') {
+					i++;
+				}
 			} while (parser->previous.lexeme[o++] && i < parser->previous.length);
 			buffer[i] = '\0';
 
@@ -348,7 +357,9 @@ static Toy_AstFlag literal(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 			unsigned int i = 0, o = 0;
 			do {
 				buffer[i] = parser->previous.lexeme[o];
-				if (buffer[i] != '_') i++;
+				if (buffer[i] != '_') {
+					i++;
+				}
 			} while (parser->previous.lexeme[o++] && i < parser->previous.length);
 			buffer[i] = '\0';
 
@@ -956,8 +967,21 @@ static void makeImportStmt(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_As
 	Toy_Token fileToken = parser->previous;
 	Toy_String* fileStr = Toy_toStringLength(bucketHandle, fileToken.lexeme, fileToken.length);
 
+	if (importResolver != NULL) {
+		char* name = Toy_getStringRaw(fileStr);
+		char* path = importResolver(name, parser->workingDir);
+		free(name);
+		Toy_freeString(fileStr);
+		if (path == NULL) {
+			printError(parser, fileToken, "Cannot resolve import");
+			Toy_private_emitAstError(bucketHandle, rootHandle);
+			return;
+		}
+		fileStr = Toy_createStringLength(bucketHandle, path, strlen(path));
+		free(path);
+	}
 	//prepend a working directory, if present
-	if (parser->workingDir) {
+	else if (parser->workingDir && fileToken.lexeme[0] != '/') {
 		Toy_String* pathStr = Toy_createStringLength(bucketHandle, parser->workingDir, strlen(parser->workingDir));
 		Toy_String* fullPathStr = Toy_concatStrings(bucketHandle, pathStr, fileStr);
 		Toy_freeString(pathStr);

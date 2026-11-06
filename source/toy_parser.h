@@ -24,3 +24,8 @@ TOY_API void Toy_resetParser(Toy_Parser* parser);
 
 //NOTE: must be a working directory, ending with a slash
 TOY_API void Toy_adjustParserWorkingDirectory(Toy_Parser* parser, const char* dir);
+
+//The resolver returns an allocated path; the parser frees it. NULL is an error.
+//Like the print callbacks, this hook is process-wide. NULL restores defaults.
+typedef char* (*Toy_importResolver)(const char* name, const char* workingDir);
+TOY_API void Toy_setImportResolver(Toy_importResolver resolver);
