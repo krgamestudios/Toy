@@ -12,16 +12,16 @@
 
 //utilities
 #define READ_BYTE(vm) \
-	vm->code[vm->programCounter++]
+	vm->module[vm->programCounter++]
 
 #define READ_UNSIGNED_INT(vm) \
-	*((unsigned int*)(vm->code + readPostfixUtil(&(vm->programCounter), 4)))
+	*((unsigned int*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
 
 #define READ_INT(vm) \
-	*((int*)(vm->code + readPostfixUtil(&(vm->programCounter), 4)))
+	*((int*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
 
 #define READ_FLOAT(vm) \
-	*((float*)(vm->code + readPostfixUtil(&(vm->programCounter), 4)))
+	*((float*)(vm->module + readPostfixUtil(&(vm->programCounter), 4)))
 
 static inline int readPostfixUtil(unsigned int* ptr, int amount) {
 	int ret = *ptr;
@@ -72,12 +72,12 @@ static void processRead(Toy_VM* vm) {
 			(void)len;
 
 			//grab the jump as an integer
-			unsigned int jump = *((int*)(vm->code + vm->jumpsAddr + READ_INT(vm)));
+			unsigned int jump = *((int*)(vm->module + vm->jumpsAddr + READ_INT(vm)));
 
 			//WONTFIX: the jump parameter could cause an out of bounds read if it's malformed
 
 			//jumps are relative to the data address
-			char* cstring = (char*)(vm->code + vm->dataAddr + jump);
+			char* cstring = (char*)(vm->module + vm->dataAddr + jump);
 
 			//build a string from the data section
 			if (stringType == TOY_STRING_LEAF) {
@@ -145,6 +145,7 @@ static void processRead(Toy_VM* vm) {
 		}
 
 		case TOY_VALUE_FUNCTION: {
+			//WONTFIX: a module in one chunk of bytecode can't directly call a module in another
 			unsigned int paramCount = (unsigned int)READ_BYTE(vm); //unused
 			(void)paramCount;
 
@@ -152,8 +153,14 @@ static void processRead(Toy_VM* vm) {
 
 			unsigned int addr = (unsigned int)READ_INT(vm);
 
+			//determine the beginning of the packed modules addr
+			unsigned char* module = vm->bytecode + vm->lookupAddr + vm->lookupCount;
+
+			//and jump to the correct module based on the lookup table
+			module += ((unsigned int*)(vm->bytecode + vm->lookupAddr))[addr];
+
 			//create and push the function value
-			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, vm->code + vm->subsAddr + addr, vm->scope);
+			Toy_Function* function = Toy_createFunctionFromBytecode(&vm->memoryBucket, module, vm->scope);
 			value = TOY_VALUE_FROM_FUNCTION(function);
 
 			break;
@@ -192,10 +199,10 @@ static void processDeclare(Toy_VM* vm) {
 	bool constant = READ_BYTE(vm); //constness
 
 	//grab the jump
-	unsigned int jump = *(unsigned int*)(vm->code + vm->jumpsAddr + READ_INT(vm));
+	unsigned int jump = *(unsigned int*)(vm->module + vm->jumpsAddr + READ_INT(vm));
 
 	//grab the data
-	char* cstring = (char*)(vm->code + vm->dataAddr + jump);
+	char* cstring = (char*)(vm->module + vm->dataAddr + jump);
 
 	//build the name string
 	Toy_String* name = Toy_toStringLength(&vm->memoryBucket, cstring, len);
@@ -386,11 +393,11 @@ static void processInvoke(Toy_VM* vm) {
 				Toy_Value argValue = Toy_popStack(&vm->stack);
 
 				//paramAddr is relative to the data section, and is followed by the param type
-				unsigned int paramAddr = ((unsigned int*)(subVM.code + subVM.paramAddr))[(i-1)*2];
-				Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.code + subVM.paramAddr))[(i-1)*2 + 1]);
+				unsigned int paramAddr = ((unsigned int*)(subVM.module + subVM.paramAddr))[(i-1)*2];
+				Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.module + subVM.paramAddr))[(i-1)*2 + 1]);
 
 				//c-string of the param's name
-				const char* cstr = ((char*)(subVM.code + subVM.dataAddr)) + paramAddr;
+				const char* cstr = ((char*)(subVM.module + subVM.dataAddr)) + paramAddr;
 
 				//as a name string
 				Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
@@ -1195,18 +1202,17 @@ static unsigned int process(Toy_VM* vm) {
 
 //exposed functions
 void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
-	vm->code = NULL;
+	vm->bytecode = NULL;
+	vm->module = NULL;
 
 	vm->jumpsCount = 0;
 	vm->paramCount = 0;
 	vm->dataCount = 0;
-	vm->subsCount = 0;
 
 	vm->codeAddr = 0;
 	vm->jumpsAddr = 0;
 	vm->paramAddr = 0;
 	vm->dataAddr = 0;
-	vm->subsAddr = 0;
 
 	vm->programCounter = 0;
 
@@ -1244,18 +1250,44 @@ void Toy_inheritVM(Toy_VM* parentVM, Toy_VM* subVM) {
 	subVM->parentBucketHandle = &parentVM->memoryBucket; //track this to update it later
 
 	Toy_resetVM(subVM, true, true);
+
+	//WARN: There's a very small chance of value corruption if the parent and child VMs are running bytecode with different TOY_VERSION_BUILD strings.
+	subVM->bytecode = parentVM->bytecode;
+	subVM->lookupCount = parentVM->lookupCount;
+	subVM->lookupAddr = parentVM->lookupAddr;
 }
 
 void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope) {
-	vm->code = bytecode; //set code, so it can be read
+	//check for version & datestamp
+	if (bytecode[0] == TOY_VERSION_MAJOR && bytecode[1] == TOY_VERSION_MINOR && bytecode[2] == TOY_VERSION_PATCH && bytecode[3] == 0) {
+		//datestamp length
+		unsigned int len = strlen(TOY_VERSION_BUILD);
+		len = (len+3) & ~3;
 
-	(void)READ_UNSIGNED_INT(vm); //global header
+		if (strncmp((char*)bytecode+4, TOY_VERSION_BUILD, len) != 0) {
+			Toy_error("Invalid metadata found in Toy_bindVM()");
+			return;
+		}
+
+		//set the lookup address table info
+		vm->lookupCount = *(int*)(bytecode+4+len);
+		vm->lookupAddr = 4 + len + 4; //extra +4 to omit the count itself
+
+		vm->bytecode = bytecode; //hold the whole bytecode
+		vm->module = bytecode + 4 + len + 4 + vm->lookupCount; //hold only the module
+	}
+	else {
+		//this isn't the root, so only use the module
+		vm->module = bytecode;
+	}
+
+	//read the module properly
+	(void)READ_UNSIGNED_INT(vm); //module size header
 
 	//section headers
 	vm->jumpsCount = READ_UNSIGNED_INT(vm);
 	vm->paramCount = READ_UNSIGNED_INT(vm);
 	vm->dataCount = READ_UNSIGNED_INT(vm);
-	vm->subsCount = READ_UNSIGNED_INT(vm);
 
 	//section locations
 	vm->codeAddr = READ_UNSIGNED_INT(vm);
@@ -1267,9 +1299,6 @@ void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope) {
 	}
 	if (vm->dataCount) {
 		vm->dataAddr = READ_UNSIGNED_INT(vm);
-	}
-	if (vm->subsCount) {
-		vm->subsAddr = READ_UNSIGNED_INT(vm);
 	}
 
 	//scopes

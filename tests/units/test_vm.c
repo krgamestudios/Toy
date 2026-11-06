@@ -45,14 +45,13 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 
 		//check the bytecode was loaded correctly
 		if (
-			vm.codeAddr != 24 || // bytecode header is: total, jumps, prams, data, subs, codeAddr
+			vm.codeAddr != 20 || // bytecode header is: total, jumps, prams, data, codeAddr
 			vm.jumpsCount != 0 ||
 			vm.paramCount != 0 ||
-			vm.dataCount != 0 ||
-			vm.subsCount != 0
+			vm.dataCount != 0
 		)
 		{
-			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to setup and teadown Toy_VM, source: %s\n" TOY_CC_RESET, source);
+			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to setup and teardown Toy_VM, source: %s\n" TOY_CC_RESET, source);
 
 			//cleanup and return
 			Toy_freeVM(&vm);
@@ -60,7 +59,7 @@ int test_setup_and_teardown(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
-		//don't run it this time, simply teadown
+		//don't run it this time, simply teardown
 		Toy_freeVM(&vm);
 		free(bytecode);
 	}

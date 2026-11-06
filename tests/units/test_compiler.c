@@ -11,6 +11,10 @@
 
 //tests
 int test_compiler_expressions(Toy_Bucket** bucketHandle) {
+	//skip the datestamp & lookup tables
+	unsigned int dateLength = 4 + strlen(TOY_VERSION_BUILD) + 4 + 4;
+	dateLength = (dateLength + 3) & ~3;
+
 	//simple test to ensure the header looks right with an empty ast
 	{
 		//setup
@@ -21,13 +25,12 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		unsigned char* buffer = Toy_compileToBytecode(ast);
 
 		//check header
-		int* ptr = (int*)buffer;
+		int* ptr = (int*)(buffer + dateLength);
 
-		if ((ptr++)[0] != 28 || //total size
+		if ((ptr++)[0] != 24 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
-			(ptr++)[0] != 0 || //data count
-			(ptr++)[0] != 0) //subs count
+			(ptr++)[0] != 0) //data count
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode header, ast: PASS\n" TOY_CC_RESET);
 
@@ -36,12 +39,13 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 			return -1;
 		}
 
+		unsigned char* bytes = (unsigned char*)ptr;
+
 		//check code
-		if (*((unsigned char*)(buffer + 24)) != TOY_OPCODE_RETURN ||
-			*((unsigned char*)(buffer + 25)) != 0 ||
-			*((unsigned char*)(buffer + 26)) != 0 ||
-			*((unsigned char*)(buffer + 27)) != 0
-		)
+		if (bytes[0] != TOY_OPCODE_RETURN || //URGENT: the tests are failing here somehow
+			bytes[1] != 0 ||
+			bytes[2] != 0 ||
+			bytes[3] != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, ast: PASS\n" TOY_CC_RESET);
 
@@ -69,13 +73,12 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		unsigned char* buffer = Toy_compileToBytecode(ast);
 
 		//check header
-		int* ptr = (int*)buffer;
+		int* ptr = (int*)(buffer + dateLength);
 
-		if ((ptr++)[0] != 28 || //total size
+		if ((ptr++)[0] != 24 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
-			(ptr++)[0] != 0 || //data count
-			(ptr++)[0] != 0) //subs count
+			(ptr++)[0] != 0) //data count
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode header, source: %s\n" TOY_CC_RESET, source);
 
@@ -85,11 +88,10 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		}
 
 		//check code
-		if (*((unsigned char*)(buffer + 24)) != TOY_OPCODE_RETURN ||
-			*((unsigned char*)(buffer + 25)) != 0 ||
-			*((unsigned char*)(buffer + 26)) != 0 ||
-			*((unsigned char*)(buffer + 27)) != 0
-		)
+		if (ptr[0] != TOY_OPCODE_RETURN ||
+			ptr[1] != 0 ||
+			ptr[2] != 0 ||
+			ptr[3] != 0)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
 
@@ -117,9 +119,9 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		unsigned char* buffer = Toy_compileToBytecode(ast);
 
 		//check header
-		int* ptr = (int*)buffer;
+		int* ptr = (int*)(buffer + dateLength);
 
-		if ((ptr++)[0] != 36 || //total size
+		if ((ptr++)[0] != 32 || //total size
 			(ptr++)[0] != 0 || //jump count
 			(ptr++)[0] != 0 || //param count
 			(ptr++)[0] != 0 || //data count
@@ -133,20 +135,20 @@ int test_compiler_expressions(Toy_Bucket** bucketHandle) {
 		}
 
 		//check code
-		if (*((unsigned char*)(buffer + 24)) != TOY_OPCODE_READ ||
-			*((unsigned char*)(buffer + 25)) != TOY_VALUE_NULL ||
-			*((unsigned char*)(buffer + 26)) != 0 ||
-			*((unsigned char*)(buffer + 27)) != 0 ||
+		if (ptr[0] != TOY_OPCODE_READ ||
+			ptr[1] != TOY_VALUE_NULL ||
+			ptr[2] != 0 ||
+			ptr[3] != 0 ||
 
-			*((unsigned char*)(buffer + 28)) != TOY_OPCODE_ELIMINATE ||
-			*((unsigned char*)(buffer + 29)) != 1 ||
-			*((unsigned char*)(buffer + 30)) != 0 ||
-			*((unsigned char*)(buffer + 31)) != 0 ||
+			ptr[4] != TOY_OPCODE_ELIMINATE ||
+			ptr[5] != 1 ||
+			ptr[6] != 0 ||
+			ptr[7] != 0 ||
 
-			*((unsigned char*)(buffer + 32)) != TOY_OPCODE_RETURN ||
-			*((unsigned char*)(buffer + 33)) != 0 ||
-			*((unsigned char*)(buffer + 34)) != 0 ||
-			*((unsigned char*)(buffer + 35)) != 0
+			ptr[8] != TOY_OPCODE_RETURN ||
+			ptr[9] != 0 ||
+			ptr[10] != 0 ||
+			ptr[11] != 0
 		)
 		{
 			fprintf(stderr, TOY_CC_ERROR "ERROR: failed to produce the expected bytecode code, source: %s\n" TOY_CC_RESET, source);
