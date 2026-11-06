@@ -8,12 +8,14 @@
 // - It cannot allocate more memory than it has 'capacity'
 // If each of these rules are followed, this is actually more efficient than other options
 
+#define TOY_BUCKET_ALIGNMENT _Alignof(max_align_t)
+
 //a custom allocator
 typedef struct Toy_Bucket {  //32 | 64 BITNESS
 	struct Toy_Bucket* next; //4  | 8
 	unsigned int capacity;   //4  | 4
 	unsigned int count;      //4  | 4
-	unsigned char data[];    //-  | -
+	_Alignas(max_align_t) unsigned char data[];    //-  | -
 } Toy_Bucket;                //12 | 16
 
 TOY_API Toy_Bucket* Toy_allocateBucket(unsigned int capacity);

@@ -2,6 +2,7 @@
 #include "toy_console_colors.h"
 
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,29 +29,31 @@ Toy_Bucket* Toy_allocateBucket(unsigned int capacity) {
 }
 
 unsigned char* Toy_partitionBucket(Toy_Bucket** bucketHandle, unsigned int amount) {
-	//the endpoint must be aligned to the word size, otherwise you'll get a bus error from moving pointers
-	amount = (amount + 3) & ~3; //NOTE: this also leaves the lowest two bits as zero
-
-	assert((*bucketHandle) != NULL && "Expected a 'Toy_Bucket', received NULL");
-	assert((*bucketHandle)->capacity >= (amount + 4) && "ERROR: Failed to partition a 'Toy_Bucket', requested amount is too high");
-
-	//if you're out of space in this bucket, allocate another one
-	if ((*bucketHandle)->capacity < (*bucketHandle)->count + amount + 4) { //+4 for the metadata header
-		Toy_Bucket* tmp = Toy_allocateBucket((*bucketHandle)->capacity);
-		tmp->next = (*bucketHandle); //it's buckets all the way down
-		(*bucketHandle) = tmp;
+	//Both the header and payload occupy aligned blocks. The size word
+	//remains immediately before the payload for release and collection.
+	const unsigned int alignment = TOY_BUCKET_ALIGNMENT;
+	if (amount > UINT_MAX - 2 * alignment ||
+		(size_t)amount > SIZE_MAX - sizeof(Toy_Bucket) - 2 * alignment) {
+		fprintf(stderr, "Toy: allocation is too large\n");
+		exit(1);
 	}
-
-	//use a 4-byte metadata header to hold the size of this partition, for GC
-	*((unsigned int*)((*bucketHandle)->data + (*bucketHandle)->count)) = amount;
-
-	//track the new metadata, and return the requested memory space
-	(*bucketHandle)->count += amount + 4;
-	return ((*bucketHandle)->data + (*bucketHandle)->count - amount); //metadata is before the pointer's address
+	amount = (amount + alignment - 1) / alignment * alignment;
+	unsigned int total = alignment + amount;
+	assert(*bucketHandle != NULL);
+	if ((*bucketHandle)->capacity - (*bucketHandle)->count < total) {
+		unsigned int capacity = (*bucketHandle)->capacity;
+		Toy_Bucket* next = Toy_allocateBucket(capacity > total ? capacity : total);
+		next->next = *bucketHandle;
+		*bucketHandle = next;
+	}
+	unsigned char* payload = (*bucketHandle)->data + (*bucketHandle)->count + alignment;
+	*((unsigned int*)(payload - sizeof(unsigned int))) = amount;
+	(*bucketHandle)->count += total;
+	return payload;
 }
 
 void Toy_releaseBucketPartition(unsigned char* ptr) {
-	*((int*)(ptr-4)) |= 1; //flips the low-bit within the header
+	*((int*)(ptr-sizeof(unsigned int))) |= 1; //flips the low-bit within the header
 	//no checks here, for technical reasons
 }
 
@@ -79,7 +82,7 @@ void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle) {
 	Toy_Bucket* link = *bucketHandle;
 	while (link) {
 		//find non-free partitions
-		unsigned char* ptr = link->data;
+		unsigned char* ptr = link->data + TOY_BUCKET_ALIGNMENT - sizeof(unsigned int);
 
 		bool gc = true;
 
@@ -88,7 +91,7 @@ void Toy_collectBucketGarbage(Toy_Bucket** bucketHandle) {
 				gc = false;
 				break;
 			}
-			ptr += ((*((int*)ptr) | 1) ^ 1) + 4; //OR + XOR to remove the 'free' flag from the size
+			ptr += (*((unsigned int*)ptr) & ~1U) + TOY_BUCKET_ALIGNMENT; //OR + XOR to remove the 'free' flag from the size
 		}
 
 		//free this link, if its been entirely released
