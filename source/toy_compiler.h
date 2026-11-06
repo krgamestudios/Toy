@@ -20,6 +20,7 @@ typedef struct Toy_private_EscapeStack {
 typedef struct Toy_Bytecode {
     //store the submodules as a list, identified by a string (and index, for actual lookups)
 	Toy_String* identity; //root compiler has null id
+	Toy_Bucket* importBucket; //keeps imported names alive during compilation
     unsigned int lookupIndex;
     struct Toy_Bytecode* next;
 	unsigned char* buffer; //holds the results while the rest of the program is compiled

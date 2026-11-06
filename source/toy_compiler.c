@@ -983,13 +983,22 @@ static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast)
 
 	if (!source || size <= 0) {
 		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Failed to import the script '%s' (errcode %d)\n" TOY_CC_RESET, path, size);
+		free(path);
+		free(source);
 		(*mb)->panic = true;
 		return 0;
 	}
 
 	//grab the working dir
-	char workingDir[256];
-	Toy_private_getWorkingDir(workingDir, path, 256);
+	size_t pathLength = strlen(path) + 1;
+	char* workingDir = malloc(pathLength);
+	if (workingDir == NULL) {
+		free(source);
+		free(path);
+		(*mb)->panic = true;
+		return 0;
+	}
+	Toy_private_getWorkingDir(workingDir, path, pathLength);
 
 	//setup lexer, parser & compiler
 	Toy_Lexer lexer;
@@ -1001,17 +1010,30 @@ static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast)
 
 	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 	Toy_Ast* newAst = Toy_scanParser(&bucket, &parser);
+	if (newAst == NULL || parser.error) {
+		Toy_freeBucket(&bucket);
+		free(workingDir);
+		free(source);
+		free(path);
+		(*mb)->panic = true;
+		return 0;
+	}
 
 	Toy_Bytecode* newImport = makeBytecode(ast.file, *mb); //passing in the *parent* of the new bytecode
+	newImport->importBucket = bucket;
 
 	writeBytecodeBody(newImport, newAst);
 	collateBytecode(newImport);
 
-	//cleanup
-	Toy_freeBucket(&bucket);
-
+	//keep imported names alive until all modules have been packaged
+	free(workingDir);
 	free(source);
 	free(path);
+
+	if (newImport->buffer == NULL) {
+		(*mb)->panic = true;
+		return 0;
+	}
 
 	//read the function as a value, with the address as a parameter
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
@@ -1300,6 +1322,10 @@ static unsigned int writeInstructionFnDeclare(Toy_Bytecode** mb, Toy_AstFnDeclar
 	unsigned int paramCount = emitParameters(newModule, ast.params);
 	writeBytecodeBody(newModule, ast.body);
 	collateBytecode(newModule);
+	if (newModule->buffer == NULL) {
+		(*mb)->panic = true;
+		return 0;
+	}
 
 	//read the function as a value, with the address as a parameter
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
@@ -1714,5 +1740,42 @@ unsigned char* Toy_compileToBytecode(Toy_Ast* ast) {
 	writeBytecodeBody(mb, ast);
 	collateBytecode(mb);
 
-	return packageBytecode(mb);
+	//failed modules have no buffer and cannot be packaged
+	bool failed = false;
+	for (Toy_Bytecode* iter = mb; iter != NULL; iter = iter->next) {
+		if (iter->panic || iter->buffer == NULL) {
+			failed = true;
+		}
+	}
+
+	unsigned char* buffer = failed ? NULL : packageBytecode(mb);
+
+	//release names before freeing the imported AST buckets that hold them
+	for (Toy_Bytecode* iter = mb; iter != NULL; iter = iter->next) {
+		if (iter->identity != NULL) {
+			Toy_freeString(iter->identity);
+		}
+	}
+
+	while (mb != NULL) {
+		Toy_Bytecode* next = mb->next;
+		while (mb->breakEscapes != NULL) {
+			mb->breakEscapes = Toy_private_resizeEscapeStack(mb->breakEscapes, 0, NULL);
+		}
+		while (mb->continueEscapes != NULL) {
+			mb->continueEscapes = Toy_private_resizeEscapeStack(mb->continueEscapes, 0, NULL);
+		}
+		free(mb->code);
+		free(mb->jumps);
+		free(mb->param);
+		free(mb->data);
+		free(mb->buffer);
+		if (mb->importBucket != NULL) {
+			Toy_freeBucket(&mb->importBucket);
+		}
+		free(mb);
+		mb = next;
+	}
+
+	return buffer;
 }
