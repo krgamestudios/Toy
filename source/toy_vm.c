@@ -276,7 +276,9 @@ static void processAssignCompound(Toy_VM* vm) {
 		}
 
 		//set the value
-		array->data[index] = Toy_copyValue(&vm->memoryBucket, value);
+		Toy_Value replacement = Toy_copyValue(&vm->memoryBucket, value);
+		Toy_freeValue(array->data[index]);
+		array->data[index] = replacement;
 
 		//in case of chaining, leave a copy on the stack
 		bool chainedAssignment = READ_BYTE(vm);
@@ -293,6 +295,11 @@ static void processAssignCompound(Toy_VM* vm) {
 
 		//set the value
 		Toy_insertTable(&table, Toy_copyValue(&vm->memoryBucket, key), Toy_copyValue(&vm->memoryBucket, value));
+		Toy_Value* slot = &target;
+		while (slot->type == TOY_VALUE_REFERENCE) {
+			slot = slot->as.reference;
+		}
+		slot->as.table = table;
 
 		//in case of chaining, leave a copy on the stack
 		bool chainedAssignment = READ_BYTE(vm);
@@ -311,6 +318,8 @@ static void processAssignCompound(Toy_VM* vm) {
 		Toy_freeValue(value);
 		return;
 	}
+	Toy_freeValue(target);
+	Toy_freeValue(key);
 }
 
 static void processAccess(Toy_VM* vm) {
@@ -395,7 +404,7 @@ static void processInvoke(Toy_VM* vm) {
 				//as a name string
 				Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
 
-				Toy_declareScope(&vm->memoryBucket, subVM.scope, name, paramType, Toy_copyValue(&subVM.memoryBucket, argValue), true);
+				Toy_declareScope(&subVM.memoryBucket, subVM.scope, name, paramType, Toy_copyValue(&subVM.memoryBucket, argValue), true);
 
 				Toy_freeString(name);
 				Toy_freeValue(argValue);
@@ -476,6 +485,9 @@ static void processAttribute(Toy_VM* vm) {
 	if (TOY_VALUE_IS_FUNCTION(result)) {
 		//WONTFIX: `print array.pushBack;' will leave the compound's reference on the stack
 		Toy_pushStack(&vm->stack, compound);
+	}
+	else {
+		Toy_freeValue(compound);
 	}
 
 	//leave the result on the stack
@@ -995,8 +1007,9 @@ static void processIndex(Toy_VM* vm) {
 
 		//BUG: array slicing is not implemented (length is ignored)
 
-		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-		if (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i]) || TOY_VALUE_IS_FUNCTION(array->data[i])) {
+		//Borrow elements only when the collection outlives this access.
+		//Elements of temporary collections must be copied before freeing them.
+		if (TOY_VALUE_IS_REFERENCE(value) && (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i]) || TOY_VALUE_IS_FUNCTION(array->data[i]))) {
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(array->data[i]));
 			Toy_pushStack(&vm->stack, ref);
 		}
@@ -1028,8 +1041,9 @@ static void processIndex(Toy_VM* vm) {
 			return;
 		}
 
-		//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-		if (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value) || TOY_VALUE_IS_FUNCTION(entry->value)) {
+		//Borrow elements only when the collection outlives this access.
+		//Elements of temporary collections must be copied before freeing them.
+		if (TOY_VALUE_IS_REFERENCE(value) && (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value) || TOY_VALUE_IS_FUNCTION(entry->value))) {
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(entry->value));
 			Toy_pushStack(&vm->stack, ref);
 		}
@@ -1062,7 +1076,8 @@ static void processDuplicate(Toy_VM* vm) {
 		Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, index)); //use a copy to ensure strings are handled correctly
 
 		//duplicate refs to work on
-		Toy_pushStack(&vm->stack, value);
+		Toy_pushStack(&vm->stack, TOY_VALUE_IS_REFERENCE(value) ? value :
+			Toy_copyValue(&vm->memoryBucket, value));
 		Toy_pushStack(&vm->stack, index);
 
 		processIndex(vm);
@@ -1310,7 +1325,11 @@ void Toy_freeVM(Toy_VM* vm) {
 
 Toy_Value Toy_getReturnValueFromVM(Toy_VM* parentVM, Toy_VM* subVM) {
 	if (subVM->stack->count > 0) {
-		return Toy_copyValue(&parentVM->memoryBucket, subVM->stack->data[subVM->stack->count-1]);
+		//Inherited VMs own the current arena head until they return.
+		//Allocating through the parent's stale head loses new buckets.
+		Toy_Bucket** bucket = subVM->parentBucketHandle != NULL ?
+			&subVM->memoryBucket : &parentVM->memoryBucket;
+		return Toy_copyValue(bucket, subVM->stack->data[subVM->stack->count-1]);
 	}
 	else {
 		return TOY_VALUE_FROM_NULL();

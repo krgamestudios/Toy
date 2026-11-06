@@ -15,7 +15,9 @@ static void probeAndInsert(Toy_Table** tableHandle, Toy_Value key, Toy_Value val
 	//probe
 	while (true) {
 		//if we're overriding an existing value
-		if (Toy_checkValuesAreEqual((*tableHandle)->data[probe].key, key)) {
+		if (Toy_checkValuesAreEqual((*tableHandle)->data[probe].key, entry.key)) {
+			Toy_freeValue((*tableHandle)->data[probe].key);
+			Toy_freeValue((*tableHandle)->data[probe].value);
 			(*tableHandle)->data[probe] = entry;
 			(*tableHandle)->maxPsl = entry.psl > (*tableHandle)->maxPsl ? entry.psl : (*tableHandle)->maxPsl;
 			return;
