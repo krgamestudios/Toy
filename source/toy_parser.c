@@ -500,32 +500,32 @@ static Toy_AstFlag binary(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_Ast
 
 		//assignment
 		case TOY_TOKEN_OPERATOR_ASSIGN: {
-			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT + 1);
+			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT);
 			return TOY_AST_FLAG_ASSIGN;
 		}
 
 		case TOY_TOKEN_OPERATOR_ADD_ASSIGN: {
-			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT + 1);
+			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT);
 			return TOY_AST_FLAG_ADD_ASSIGN;
 		}
 
 		case TOY_TOKEN_OPERATOR_SUBTRACT_ASSIGN: {
-			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT + 1);
+			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT);
 			return TOY_AST_FLAG_SUBTRACT_ASSIGN;
 		}
 
 		case TOY_TOKEN_OPERATOR_MULTIPLY_ASSIGN: {
-			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT + 1);
+			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT);
 			return TOY_AST_FLAG_MULTIPLY_ASSIGN;
 		}
 
 		case TOY_TOKEN_OPERATOR_DIVIDE_ASSIGN: {
-			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT + 1);
+			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT);
 			return TOY_AST_FLAG_DIVIDE_ASSIGN;
 		}
 
 		case TOY_TOKEN_OPERATOR_MODULO_ASSIGN: {
-			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT + 1);
+			parsePrecedence(bucketHandle, parser, rootHandle, PREC_ASSIGNMENT);
 			return TOY_AST_FLAG_MODULO_ASSIGN;
 		}
 
@@ -758,17 +758,16 @@ static Toy_AstFlag attribute(Toy_Bucket** bucketHandle, Toy_Parser* parser, Toy_
 	advance(parser);
 
 	if (parser->previous.type == TOY_TOKEN_OPERATOR_DOT) {
-		Toy_Ast* expr = NULL;
-		parsePrecedence(bucketHandle, parser, &expr, PREC_PRIMARY);
-
-		//hijack access node and take the value (presumably an identifier)
-		if (expr->type != TOY_AST_VAR_ACCESS || expr->varAccess.child == NULL || expr->varAccess.child->type != TOY_AST_VALUE) {
-			printError(parser, parser->previous, "Malformed expression passed to attribute precedence rule");
+		if (parser->current.type != TOY_TOKEN_NAME) {
+			printError(parser, parser->current, "Expected a member name");
 			Toy_private_emitAstError(bucketHandle, rootHandle);
 			return TOY_AST_FLAG_NONE;
 		}
-
-		Toy_private_emitAstAttribute(bucketHandle, rootHandle, expr->varAccess.child);
+		advance(parser);
+		Toy_Ast* member = NULL;
+		Toy_private_emitAstValue(bucketHandle, &member, TOY_VALUE_FROM_STRING(
+			Toy_toStringLength(bucketHandle, parser->previous.lexeme, parser->previous.length)));
+		Toy_private_emitAstAttribute(bucketHandle, rootHandle, member);
 		return TOY_AST_FLAG_ATTRIBUTE;
 	}
 	else {
