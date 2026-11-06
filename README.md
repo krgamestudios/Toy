@@ -59,8 +59,9 @@ This source code is covered by the zlib license (see [LICENSE](LICENSE) for deta
 	<image src="noai.png" alt="No AI" width="200px" />
 </p>
 
-Contributions via the [GitHub mirror](https://github.com/krgamestudios/Toy) are welcome, but absolutely no AI contributions will be accepted.
+Contributions via the [GitHub repo](https://github.com/krgamestudios/Toy) are welcome, but absolutely no AI contributions will be accepted.
 
+@ThomasAdam - Multiple fixes to overlooked problems and memory improvements
 @Jenny-hso - Syntax highlighting for multiple text editors  
 Suyash Dwivedi - "No AI" logo [via wikimedia, CC BY-SA 4.0](https://commons.wikimedia.org/w/index.php?curid=165477595)  
 @NishiOwO - Unofficial NetBSD support  
