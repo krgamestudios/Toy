@@ -8,6 +8,7 @@
 union Toy_String_t;
 struct Toy_Array;
 struct Toy_Table;
+struct Toy_Object;
 union Toy_Function_t;
 
 typedef enum Toy_ValueType {
@@ -21,6 +22,7 @@ typedef enum Toy_ValueType {
 	TOY_VALUE_FUNCTION,
 	TOY_VALUE_OPAQUE,
 	TOY_VALUE_ANY,
+	TOY_VALUE_OBJECT,
 
 	TOY_VALUE_REFERENCE, //not a value itself, but pointing to one
 	TOY_VALUE_UNKNOWN, //The correct type is unknown, but will be determined later
@@ -37,6 +39,7 @@ typedef struct Toy_Value {             //32 | 64 BITNESS
 		struct Toy_Table* table;       //4  | 8
 		union Toy_Function_t* function;//4  | 8
 		struct Toy_Value* reference;   //4  | 8
+		struct Toy_Object* object;
 		void* opaque;                  //4  | 8
 	} as;                              //4  | 8
 
@@ -93,3 +96,19 @@ TOY_API union Toy_String_t* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Va
 
 //for error messages
 TOY_API const char* Toy_getValueTypeAsCString(Toy_ValueType type);
+
+//Objects own their methods and property accessors. Copies share the
+//lexical state captured by those functions, just like function values.
+typedef struct Toy_Object {
+	unsigned int* identity;
+	union Toy_String_t* name;
+	Toy_Value methods;
+	Toy_Value getter;
+	Toy_Value setter;
+} Toy_Object;
+
+#define TOY_VALUE_IS_OBJECT(v) (Toy_unwrapValue(v).type == TOY_VALUE_OBJECT)
+#define TOY_VALUE_AS_OBJECT(v) (Toy_unwrapValue(v).as.object)
+#define TOY_VALUE_FROM_OBJECT(v) ((Toy_Value){{ .object = v }, TOY_VALUE_OBJECT})
+
+TOY_API Toy_Value Toy_createObject(Toy_Bucket** bucketHandle, union Toy_String_t* name, Toy_Value methods, Toy_Value getter, Toy_Value setter);

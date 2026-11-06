@@ -36,6 +36,10 @@ unsigned int Toy_hashValue(Toy_Value value) {
 	MAYBE_UNWRAP(value);
 
 	switch(value.type) {
+		case TOY_VALUE_OBJECT:
+			Toy_error("Objects cannot be table keys");
+			return 0;
+
 		case TOY_VALUE_NULL:
 			return 0;
 
@@ -90,10 +94,41 @@ unsigned int Toy_hashValue(Toy_Value value) {
 	return 0;
 }
 
+Toy_Value Toy_createObject(Toy_Bucket** bucketHandle, Toy_String* name, Toy_Value methods, Toy_Value getter, Toy_Value setter) {
+	Toy_Object* object = malloc(sizeof(*object));
+	if (object == NULL) {
+		Toy_error("Out of memory creating object");
+		exit(1);
+	}
+
+	object->identity = malloc(sizeof(*object->identity));
+	if (object->identity == NULL) {
+		Toy_error("Out of memory creating object");
+		exit(1);
+	}
+
+	*object->identity = 1;
+	object->name = Toy_copyString(name);
+	object->methods = Toy_copyValue(bucketHandle, methods);
+	object->getter = Toy_copyValue(bucketHandle, getter);
+	object->setter = Toy_copyValue(bucketHandle, setter);
+
+	return TOY_VALUE_FROM_OBJECT(object);
+}
+
 Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 	MAYBE_UNWRAP(value);
 
 	switch(value.type) {
+		case TOY_VALUE_OBJECT: {
+			Toy_Value copy = Toy_createObject(bucketHandle, value.as.object->name,
+				value.as.object->methods, value.as.object->getter, value.as.object->setter);
+			free(copy.as.object->identity);
+			copy.as.object->identity = value.as.object->identity;
+			++*copy.as.object->identity;
+			return copy;
+		}
+
 		case TOY_VALUE_NULL:
 		case TOY_VALUE_BOOLEAN:
 		case TOY_VALUE_INTEGER:
@@ -128,11 +163,13 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 				if (TOY_VALUE_IS_NULL(ptr->data[i].key) != true) {
 					result->data[i].key = Toy_copyValue(bucketHandle, Toy_unwrapValue(ptr->data[i].key));
 					result->data[i].value = Toy_copyValue(bucketHandle, Toy_unwrapValue(ptr->data[i].value));
+					result->data[i].psl = ptr->data[i].psl;
 				}
 			}
 
 			result->capacity = ptr->capacity;
 			result->count = ptr->count;
+			result->maxPsl = ptr->maxPsl;
 
 			return TOY_VALUE_FROM_TABLE(result);
 		}
@@ -157,6 +194,17 @@ Toy_Value Toy_copyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 void Toy_freeValue(Toy_Value value) {
 	switch(value.type) {
+		case TOY_VALUE_OBJECT:
+			if (--*value.as.object->identity == 0) {
+				free(value.as.object->identity);
+			}
+			Toy_freeString(value.as.object->name);
+			Toy_freeValue(value.as.object->methods);
+			Toy_freeValue(value.as.object->getter);
+			Toy_freeValue(value.as.object->setter);
+			free(value.as.object);
+			return;
+
 		case TOY_VALUE_NULL:
 		case TOY_VALUE_BOOLEAN:
 		case TOY_VALUE_INTEGER:
@@ -226,6 +274,10 @@ bool Toy_checkValuesAreEqual(Toy_Value left, Toy_Value right) {
 	MAYBE_UNWRAP(right);
 
 	switch(left.type) {
+		case TOY_VALUE_OBJECT:
+			return right.type == TOY_VALUE_OBJECT &&
+				left.as.object->identity == right.as.object->identity;
+
 		case TOY_VALUE_NULL:
 			return right.type == TOY_VALUE_NULL;
 
@@ -350,6 +402,9 @@ bool Toy_checkValuesAreComparable(Toy_Value left, Toy_Value right) {
 
 	//NOTE: "equal" and "comparable" are different - equal means they're identical, comparable is only possible for certain types
 	switch(left.type) {
+		case TOY_VALUE_OBJECT:
+			return false;
+
 		case TOY_VALUE_NULL:
 			return false;
 
@@ -395,6 +450,9 @@ int Toy_compareValues(Toy_Value left, Toy_Value right) {
 
 	//comparison means there's a difference in value, with some kind of quantity - so null, bool, etc. aren't comparable
 	switch(left.type) {
+		case TOY_VALUE_OBJECT:
+			break;
+
 		case TOY_VALUE_NULL:
 		case TOY_VALUE_BOOLEAN:
 			break;
@@ -454,6 +512,9 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 	MAYBE_UNWRAP(value);
 
 	switch(value.type) {
+		case TOY_VALUE_OBJECT:
+			return Toy_copyString(value.as.object->name);
+
 		case TOY_VALUE_NULL:
 			return Toy_createStringLength(bucketHandle, "<null>", 6);
 
@@ -651,6 +712,8 @@ Toy_String* Toy_stringifyValue(Toy_Bucket** bucketHandle, Toy_Value value) {
 
 const char* Toy_getValueTypeAsCString(Toy_ValueType type) {
 	switch (type) {
+		case TOY_VALUE_OBJECT: return "Object";
+
 		case TOY_VALUE_NULL: return "null";
 		case TOY_VALUE_BOOLEAN: return "Bool";
 		case TOY_VALUE_INTEGER: return "Int";

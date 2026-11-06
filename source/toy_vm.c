@@ -243,6 +243,29 @@ static void processAssignCompound(Toy_VM* vm) {
 	Toy_Value key = Toy_popStack(&vm->stack);
 	Toy_Value target = Toy_popStack(&vm->stack);
 
+	if (TOY_VALUE_IS_OBJECT(target)) {
+		Toy_Object* object = TOY_VALUE_AS_OBJECT(target);
+		Toy_Table* methods = TOY_VALUE_AS_TABLE(object->methods);
+		if (Toy_private_lookupTableEntryPtr(&methods, key) != NULL) {
+			Toy_error("Object methods are read-only");
+		}
+		else if (!TOY_VALUE_IS_FUNCTION(object->setter)) {
+			Toy_error("Object properties are read-only");
+		}
+		else {
+			Toy_Value args[] = {key, value};
+			Toy_freeValue(Toy_callFunction(vm, TOY_VALUE_AS_FUNCTION(object->setter), 2, args));
+		}
+		bool chained = READ_BYTE(vm);
+		if (chained) {
+			Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, value));
+		}
+		Toy_freeValue(target);
+		Toy_freeValue(key);
+		Toy_freeValue(value);
+		return;
+	}
+
 	//shake out variable names
 	if (TOY_VALUE_IS_STRING(target)) {
 		Toy_Value* valuePtr = Toy_accessScopeAsPointer(vm->scope, TOY_VALUE_AS_STRING(target));
@@ -342,7 +365,7 @@ static void processAccess(Toy_VM* vm) {
 	}
 
 	//in the event of a certain subset of types, create references instead (these should only exist on the stack)
-	if (TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr) || TOY_VALUE_IS_FUNCTION(*valuePtr) || TOY_VALUE_IS_OPAQUE(*valuePtr) || TOY_VALUE_IS_REFERENCE(*valuePtr)) {
+	if (TOY_VALUE_IS_ARRAY(*valuePtr) || TOY_VALUE_IS_TABLE(*valuePtr) || TOY_VALUE_IS_FUNCTION(*valuePtr) || TOY_VALUE_IS_OPAQUE(*valuePtr) || TOY_VALUE_IS_OBJECT(*valuePtr) || TOY_VALUE_IS_REFERENCE(*valuePtr)) {
 		Toy_Value ref = TOY_REFERENCE_FROM_POINTER(valuePtr);
 		Toy_pushStack(&vm->stack, ref);
 	}
@@ -473,12 +496,110 @@ Toy_Value Toy_callFunction(Toy_VM* vm, Toy_Function* fn, unsigned int argc, Toy_
 	return result;
 }
 
+static bool nativeArity(Toy_VM* vm, unsigned int count) {
+	if (vm->nativeArgumentCount == count) {
+		return true;
+	}
+
+	for (unsigned int i = 0; i < vm->nativeArgumentCount; i++) {
+		Toy_freeValue(Toy_popStack(&vm->stack));
+	}
+
+	Toy_error("Wrong number of arguments");
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_NULL());
+
+	return false;
+}
+
+void Toy_objectConstructor(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+	if (!nativeArity(vm, 4)) {
+		return;
+	}
+
+	Toy_Value setter = Toy_popStack(&vm->stack);
+	Toy_Value getter = Toy_popStack(&vm->stack);
+	Toy_Value methods = Toy_popStack(&vm->stack);
+	Toy_Value name = Toy_popStack(&vm->stack);
+	bool valid = TOY_VALUE_IS_STRING(name) && TOY_VALUE_IS_TABLE(methods) &&
+		(TOY_VALUE_IS_NULL(getter) || TOY_VALUE_IS_FUNCTION(getter)) &&
+		(TOY_VALUE_IS_NULL(setter) || TOY_VALUE_IS_FUNCTION(setter));
+	if (valid) {
+		Toy_Table* table = TOY_VALUE_AS_TABLE(methods);
+		for (unsigned int i = 0; i < table->capacity; i++) {
+			if (TOY_VALUE_IS_NULL(table->data[i].key)) {
+				continue;
+			}
+
+			if (!TOY_VALUE_IS_STRING(table->data[i].key) ||
+				!TOY_VALUE_IS_FUNCTION(table->data[i].value)) {
+				valid = false;
+			}
+
+		}
+	}
+
+	Toy_Value result = TOY_VALUE_FROM_NULL();
+	if (valid) {
+		result = Toy_createObject(&vm->memoryBucket,
+			TOY_VALUE_AS_STRING(name), methods, getter, setter);
+	}
+	else {
+		Toy_error("object expects a name, named methods, getter and setter");
+	}
+
+	Toy_freeValue(name);
+	Toy_freeValue(methods);
+	Toy_freeValue(getter);
+	Toy_freeValue(setter);
+	Toy_pushStack(&vm->stack, result);
+}
+
+void Toy_typeName(Toy_VM* vm, Toy_FunctionNative* self) {
+	(void)self;
+	if (!nativeArity(vm, 1)) {
+		return;
+	}
+
+	Toy_Value value = Toy_popStack(&vm->stack);
+	Toy_String* name;
+	if (TOY_VALUE_IS_OBJECT(value)) {
+		name = Toy_copyString(TOY_VALUE_AS_OBJECT(value)->name);
+	}
+	else {
+		const char* type = Toy_getValueTypeAsCString(Toy_unwrapValue(value).type);
+		name = Toy_createStringLength(&vm->memoryBucket, type, strlen(type));
+	}
+
+	Toy_freeValue(value);
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_STRING(name));
+}
+
 static void processAttribute(Toy_VM* vm) {
 	//get the compound & attribute
 	Toy_Value attribute = Toy_popStack(&vm->stack);
 	Toy_Value compound = Toy_popStack(&vm->stack);
 
 	Toy_Value result = TOY_VALUE_FROM_NULL();
+
+	if (TOY_VALUE_IS_OBJECT(compound)) {
+		Toy_Object* object = TOY_VALUE_AS_OBJECT(compound);
+		Toy_Table* methods = TOY_VALUE_AS_TABLE(object->methods);
+		Toy_TableEntry* entry = Toy_private_lookupTableEntryPtr(&methods, attribute);
+		if (entry != NULL) {
+			result = Toy_copyValue(&vm->memoryBucket, entry->value);
+		}
+		else if (TOY_VALUE_IS_FUNCTION(object->getter)) {
+			result = Toy_callFunction(vm, TOY_VALUE_AS_FUNCTION(object->getter), 1, &attribute);
+		}
+		else {
+			Toy_error("Unknown object member");
+		}
+		Toy_pushStack(&vm->stack, result);
+		Toy_freeValue(compound);
+		Toy_freeValue(attribute);
+		return;
+	}
 
 	//delegate based on the attribute's value as a string
 	if (TOY_VALUE_IS_STRING(attribute) && Toy_private_handleGlobalAttributes(vm, compound, attribute, &result)) {
@@ -1043,7 +1164,7 @@ static void processIndex(Toy_VM* vm) {
 
 		//Borrow elements only when the collection outlives this access.
 		//Elements of temporary collections must be copied before freeing them.
-		if (TOY_VALUE_IS_REFERENCE(value) && (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i]) || TOY_VALUE_IS_FUNCTION(array->data[i]))) {
+		if (TOY_VALUE_IS_REFERENCE(value) && (TOY_VALUE_IS_REFERENCE(array->data[i]) || TOY_VALUE_IS_ARRAY(array->data[i]) || TOY_VALUE_IS_TABLE(array->data[i]) || TOY_VALUE_IS_FUNCTION(array->data[i]) || TOY_VALUE_IS_OBJECT(array->data[i]))) {
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(array->data[i]));
 			Toy_pushStack(&vm->stack, ref);
 		}
@@ -1077,7 +1198,7 @@ static void processIndex(Toy_VM* vm) {
 
 		//Borrow elements only when the collection outlives this access.
 		//Elements of temporary collections must be copied before freeing them.
-		if (TOY_VALUE_IS_REFERENCE(value) && (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value) || TOY_VALUE_IS_FUNCTION(entry->value))) {
+		if (TOY_VALUE_IS_REFERENCE(value) && (TOY_VALUE_IS_REFERENCE(entry->value) || TOY_VALUE_IS_ARRAY(entry->value) || TOY_VALUE_IS_TABLE(entry->value) || TOY_VALUE_IS_FUNCTION(entry->value) || TOY_VALUE_IS_OBJECT(entry->value))) {
 			Toy_Value ref = TOY_REFERENCE_FROM_POINTER(&(entry->value));
 			Toy_pushStack(&vm->stack, ref);
 		}
@@ -1104,7 +1225,7 @@ static void processDuplicate(Toy_VM* vm) {
 		Toy_pushStack(&vm->stack, value);
 		processAccess(vm);
 	}
-	else if (squeezed == TOY_OPCODE_INDEX) {
+	else if (squeezed == TOY_OPCODE_INDEX || squeezed == TOY_OPCODE_ATTRIBUTE) {
 		Toy_Value index = Toy_popStack(&vm->stack);
 		Toy_Value value = Toy_peekStack(&vm->stack); //will implicitly copy the reference
 		Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, index)); //use a copy to ensure strings are handled correctly
@@ -1114,7 +1235,12 @@ static void processDuplicate(Toy_VM* vm) {
 			Toy_copyValue(&vm->memoryBucket, value));
 		Toy_pushStack(&vm->stack, index);
 
-		processIndex(vm);
+		if (squeezed == TOY_OPCODE_ATTRIBUTE) {
+			processAttribute(vm);
+		}
+		else {
+			processIndex(vm);
+		}
 	}
 	else {
 		//simple duplication

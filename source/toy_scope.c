@@ -186,6 +186,11 @@ static void visitValue(Toy_Value value, Toy_Scope* owner,
 		value.as.function->type == TOY_FUNCTION_CUSTOM) {
 		visit(value.as.function->bytecode.parentScope, owner);
 	}
+	else if (value.type == TOY_VALUE_OBJECT) {
+		visitValue(value.as.object->methods, owner, visit);
+		visitValue(value.as.object->getter, owner, visit);
+		visitValue(value.as.object->setter, owner, visit);
+	}
 	else if (value.type == TOY_VALUE_ARRAY) {
 		for (unsigned int i = 0; i < value.as.array->count; i++) {
 			visitValue(value.as.array->data[i], owner, visit);

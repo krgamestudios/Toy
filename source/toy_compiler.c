@@ -1120,6 +1120,12 @@ static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign a
 		accessedTargetType = TOY_OPCODE_INDEX;
 		assignedTargetType = TOY_OPCODE_ASSIGN_COMPOUND;
 	}
+	else if (ast.target->type == TOY_AST_ATTRIBUTE) {
+		writeBytecodeFromAst(mb, ast.target->attribute.left);
+		writeBytecodeFromAst(mb, ast.target->attribute.right);
+		accessedTargetType = TOY_OPCODE_ATTRIBUTE;
+		assignedTargetType = TOY_OPCODE_ASSIGN_COMPOUND;
+	}
 	//unknown target
 	else {
 		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid AST type found: Malformed assignment target\n" TOY_CC_RESET);

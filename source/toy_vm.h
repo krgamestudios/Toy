@@ -68,3 +68,8 @@ TOY_API Toy_Value Toy_getReturnValueFromVM(Toy_VM* parentVM, Toy_VM* subVM);
 //Arguments are borrowed; the returned value belongs to the caller.
 union Toy_Function_t;
 TOY_API Toy_Value Toy_callFunction(Toy_VM* vm, union Toy_Function_t* fn, unsigned int argc, Toy_Value* argv);
+
+//Optional native bindings for constructing objects and reading type names.
+struct Toy_FunctionNative;
+TOY_API void Toy_objectConstructor(Toy_VM* vm, struct Toy_FunctionNative* self);
+TOY_API void Toy_typeName(Toy_VM* vm, struct Toy_FunctionNative* self);
