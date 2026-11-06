@@ -6,7 +6,7 @@
 
 The Toy Scripting Language is an imperative, bytecode-interpreted, embeddable scripting language. Rather than functioning independently, it serves as part of another program, the "host". This design allows for straightforward customization by both the host's developers and end users, achieved by exposing program logic through external scripts.
 
-This repository holds the reference implementation for Toy version 2, written in C - open beta is currently underway.
+This repository holds the *handmade* reference implementation for Toy version 2, written in C - open beta is currently underway.
 
 # Nifty Features
 
