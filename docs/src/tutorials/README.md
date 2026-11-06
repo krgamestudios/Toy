@@ -32,8 +32,8 @@ This flexibility does have its drawbacks, such as incompatibility with older cod
 
 [^3]: One example is the addition of `Toy_adjustParserWorkingDirectory`, because I couldn't for the life of me maintain each script file's directory for the `import` keyword without major cross-cutting changes, so embedding the correct path at the parser stage was the least impactful solution that still irks me.
 
-## Tutorials and References
+## The Next Bit
 
-Here's some pages that may or may not yet exist - I'll fill these out over time and begin testing them (yes, you absolutely SHOULD be testing documentation!)
+This documentation isn't complete yet, but work will continue alongside Toy itself. For now, you can check the sidebar to see what resources are currently available.
 
-* [Variables, Values and Types](variables.md) (oh my!)
+

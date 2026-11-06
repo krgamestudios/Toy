@@ -1,5 +1,7 @@
 # Toy v2 Quick-Start Guide
 
+*Author's Note: Yes this is a mess, it was written as new features were added, and will be replaced with a proper appendix.*
+
 To help you start using Toy as fast as possible, here are the most useful elements of the language. Not everything available is listed, but this should let you start coding right away.
 
 ## Keyword 'print'

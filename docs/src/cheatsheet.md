@@ -1,5 +1,7 @@
 # Cheat Sheet
 
+*Author's Note: Yes this is a mess, it was written as new features were added, and will be replaced with a proper appendix.*
+
 ## Compile and Run A Snippet Of Code
 
 ```c

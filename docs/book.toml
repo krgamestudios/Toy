@@ -2,8 +2,11 @@
 title = "The Toy Scripting Language"
 authors = ["Kayne Ruse (Ratstail91)"]
 description = "Documentation For The Toy Scripting Language"
-language = "en"
 
 [output.html]
 git-repository-url = "https://github.com/krgamestudios/Toy"
 git-repository-icon = "fab-github"
+
+[output.html.print]
+enable = false
+
