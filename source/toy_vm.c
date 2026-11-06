@@ -1266,7 +1266,11 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 	vm->programCounter = 0;
 
 	if (!preserveScope) {
-		vm->scope = Toy_popScope(vm->scope);
+		Toy_Scope* stop = vm->parentBucketHandle != NULL ? vm->scopeBase : NULL;
+		while (vm->scope != stop) {
+			vm->scope = Toy_popScope(vm->scope);
+		}
+		vm->scope = NULL;
 	}
 
 	if (!preserveStack) {
@@ -1288,6 +1292,7 @@ void Toy_initVM(Toy_VM* vm) {
 
 	//create persistent memory
 	vm->scope = NULL;
+	vm->scopeBase = NULL;
 	vm->stack = Toy_allocateStack();
 	vm->memoryBucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
 
@@ -1305,6 +1310,7 @@ void Toy_inheritVM(Toy_VM* parentVM, Toy_VM* subVM) {
 
 	//inherent persistent memory
 	subVM->scope = NULL;
+	subVM->scopeBase = NULL;
 	subVM->stack = Toy_allocateStack();
 	subVM->memoryBucket = parentVM->memoryBucket;
 
@@ -1369,6 +1375,7 @@ void Toy_bindVM(Toy_VM* vm, unsigned char* bytecode, Toy_Scope* parentScope) {
 	else {
 		vm->scope = Toy_pushScope(&vm->memoryBucket, vm->scope);
 	}
+	vm->scopeBase = vm->scope->next;
 }
 
 unsigned int Toy_runVM(Toy_VM* vm) {
@@ -1385,15 +1392,18 @@ unsigned int Toy_runVM(Toy_VM* vm) {
 }
 
 void Toy_freeVM(Toy_VM* vm) {
+	Toy_Scope* owner = vm->scope != NULL ? vm->scope->owner : NULL;
 	Toy_resetVM(vm, false, true);
 
 	//clear the persistent memory
 	Toy_freeStack(vm->stack);
 
 	if (vm->parentBucketHandle != NULL) {
+		Toy_collectScopes(owner);
 		*(vm->parentBucketHandle) = vm->memoryBucket; //update the outer VM, if there is one
 	}
 	else {
+		Toy_freeScopeHeap(owner);
 		Toy_freeBucket(&vm->memoryBucket);
 	}
 }

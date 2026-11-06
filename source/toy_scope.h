@@ -20,6 +20,11 @@ typedef struct Toy_Scope {
 	struct Toy_Scope* next;
 	Toy_ScopeEntry* data;
 	unsigned int refCount;
+	struct Toy_Scope* owner;
+	struct Toy_Scope* scopes;
+	struct Toy_Scope* heapNext;
+	unsigned int externalRefs;
+	bool marked;
 	unsigned int capacity;
 	unsigned int count;
 	unsigned int maxPsl;
@@ -54,3 +59,7 @@ void Toy_private_decrementScopeRefCount(Toy_Scope* scope);
 #ifndef TOY_SCOPE_EXPANSION_THRESHOLD
 #define TOY_SCOPE_EXPANSION_THRESHOLD 0.7f
 #endif
+
+//Collect scopes kept only by cycles of local functions.
+TOY_API void Toy_collectScopes(Toy_Scope* owner);
+TOY_API void Toy_freeScopeHeap(Toy_Scope* owner);

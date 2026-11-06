@@ -44,6 +44,7 @@ typedef struct Toy_VM {
 
 	//scope - block-level key/value pairs
 	Toy_Scope* scope;
+	Toy_Scope* scopeBase;
 
 	//stack - immediate-level values only
 	Toy_Stack* stack;

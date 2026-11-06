@@ -6,6 +6,9 @@
 #include <string.h>
 
 #include "toy_print.h"
+#include "toy_function.h"
+#include "toy_array.h"
+#include "toy_table.h"
 
 //utils
 static Toy_ScopeEntry* lookupScopeEntryPtr(Toy_Scope* scope, Toy_String* key, unsigned int hash, bool recursive) {
@@ -121,6 +124,12 @@ Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	//WARN: You've tried lazily allocating scope memory in the past, it doesn't work and breaks a bunch of tests, so stop trying.
 	newScope->next = scope;
 	newScope->refCount = 0;
+	newScope->scopes = NULL;
+	newScope->owner = scope != NULL ? scope->owner : newScope;
+	newScope->heapNext = newScope->owner->scopes;
+	newScope->owner->scopes = newScope;
+	newScope->externalRefs = 0;
+	newScope->marked = false;
 	newScope->data = adjustScopeEntries(bucketHandle, NULL, TOY_SCOPE_INITIAL_CAPACITY);
 	newScope->capacity = TOY_SCOPE_INITIAL_CAPACITY;
 	newScope->count = 0;
@@ -131,26 +140,158 @@ Toy_Scope* Toy_pushScope(Toy_Bucket** bucketHandle, Toy_Scope* scope) {
 	return newScope;
 }
 
-Toy_Scope* Toy_popScope(Toy_Scope* scope) {
-	if (scope == NULL) {
-		return NULL;
+static void freeScopeValues(Toy_Scope* scope) {
+	if (scope->data == NULL) {
+		return;
 	}
 
-	Toy_private_decrementScopeRefCount(scope);
-
-	//clean up this scope's members
 	for (unsigned int i = 0; i < scope->capacity; i++) {
 		if (scope->data[i].key != NULL) {
 			Toy_freeString(scope->data[i].key);
 			Toy_freeValue(scope->data[i].value);
 		}
 	}
-	Toy_releaseBucketPartition((unsigned char*)scope->data);
 
-	//release this scope and return
+	Toy_releaseBucketPartition((unsigned char*)scope->data);
+	scope->data = NULL;
+}
+
+Toy_Scope* Toy_popScope(Toy_Scope* scope) {
+	if (scope == NULL) {
+		return NULL;
+	}
+
 	Toy_Scope* next = scope->next;
-	Toy_releaseBucketPartition((void*)scope);
+	Toy_private_decrementScopeRefCount(scope);
+	if (scope->refCount == 0) {
+		freeScopeValues(scope);
+		//Keep the heap owner until the VM releases its arena.
+		if (scope != scope->owner) {
+			Toy_Scope** link = &scope->owner->scopes;
+			while (*link != scope) {
+				link = &(*link)->heapNext;
+			}
+
+			*link = scope->heapNext;
+			Toy_releaseBucketPartition((void*)scope);
+		}
+	}
+
 	return next;
+}
+
+static void visitValue(Toy_Value value, Toy_Scope* owner,
+	void (*visit)(Toy_Scope*, Toy_Scope*)) {
+	if (value.type == TOY_VALUE_FUNCTION &&
+		value.as.function->type == TOY_FUNCTION_CUSTOM) {
+		visit(value.as.function->bytecode.parentScope, owner);
+	}
+	else if (value.type == TOY_VALUE_ARRAY) {
+		for (unsigned int i = 0; i < value.as.array->count; i++) {
+			visitValue(value.as.array->data[i], owner, visit);
+		}
+	}
+	else if (value.type == TOY_VALUE_TABLE) {
+		for (unsigned int i = 0; i < value.as.table->capacity; i++) {
+			if (value.as.table->data[i].key.type != TOY_VALUE_NULL) {
+				visitValue(value.as.table->data[i].value, owner, visit);
+			}
+
+		}
+	}
+}
+
+static void visitScope(Toy_Scope* scope, Toy_Scope* owner,
+	void (*visit)(Toy_Scope*, Toy_Scope*)) {
+	if (scope->data == NULL) {
+		return;
+	}
+
+	for (unsigned int i = 0; i < scope->capacity; i++) {
+		if (scope->data[i].key != NULL) {
+			visitValue(scope->data[i].value, owner, visit);
+		}
+	}
+}
+
+static void subtractInternal(Toy_Scope* scope, Toy_Scope* owner) {
+	for (; scope != NULL && scope->owner == owner; scope = scope->next) {
+		if (scope->externalRefs > 0) {
+			scope->externalRefs--;
+		}
+	}
+}
+
+static void markScope(Toy_Scope* scope, Toy_Scope* owner) {
+	if (scope == NULL || scope->owner != owner || scope->marked) {
+		return;
+	}
+
+	scope->marked = true;
+	markScope(scope->next, owner);
+	visitScope(scope, owner, markScope);
+}
+
+void Toy_collectScopes(Toy_Scope* owner) {
+	if (owner == NULL) {
+		return;
+	}
+
+	owner = owner->owner;
+	for (Toy_Scope* scope = owner->scopes; scope; scope = scope->heapNext) {
+		scope->externalRefs = scope->refCount;
+		scope->marked = false;
+	}
+
+	//References held inside this heap are not roots. VM stacks and host
+	//callbacks retain their counts, including the captured ancestor chain.
+	for (Toy_Scope* scope = owner->scopes; scope; scope = scope->heapNext) {
+		visitScope(scope, owner, subtractInternal);
+	}
+
+	for (Toy_Scope* scope = owner->scopes; scope; scope = scope->heapNext) {
+		if (scope->externalRefs > 0) {
+			markScope(scope, owner);
+		}
+	}
+
+	//Destroy values first: their functions can still refer to other scopes.
+	for (Toy_Scope* scope = owner->scopes; scope; scope = scope->heapNext) {
+		if (!scope->marked) {
+			freeScopeValues(scope);
+		}
+	}
+
+	Toy_Scope** link = &owner->scopes;
+	while (*link != NULL) {
+		Toy_Scope* scope = *link;
+		if (!scope->marked && scope != owner) {
+			*link = scope->heapNext;
+			Toy_releaseBucketPartition((void*)scope);
+		}
+
+		else {
+			link = &scope->heapNext;
+		}
+	}
+}
+
+void Toy_freeScopeHeap(Toy_Scope* owner) {
+	if (owner == NULL) {
+		return;
+	}
+
+	owner = owner->owner;
+	for (Toy_Scope* scope = owner->scopes; scope; scope = scope->heapNext) {
+		freeScopeValues(scope);
+	}
+
+	Toy_Scope* scope = owner->scopes;
+	while (scope != NULL) {
+		Toy_Scope* next = scope->heapNext;
+		Toy_releaseBucketPartition((void*)scope);
+		scope = next;
+	}
 }
 
 void Toy_declareScope(Toy_Bucket** bucketHandle, Toy_Scope* scope, Toy_String* key, Toy_ValueType type, Toy_Value value, bool constant) {
