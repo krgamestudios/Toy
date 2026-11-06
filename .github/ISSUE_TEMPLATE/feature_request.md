@@ -4,14 +4,14 @@ about: Suggest an idea
 labels: enhancement
 ---
 
-### Describe the feature you’d like
+## Describe the Feature You'd Like
 
 A clear and concise description of what you’d like to be able to do with Toy.
 
-### Describe alternatives you've considered
+## Describe Alternatives You've Considered
 
 A clear and concise description of any alternative solutions or workarounds you've considered.
 
-### Additional context
+## Additional Context
 
 Add any other context about the feature request here.
