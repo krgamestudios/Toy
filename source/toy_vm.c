@@ -354,10 +354,7 @@ static void processAccess(Toy_VM* vm) {
 	Toy_freeValue(name);
 }
 
-static void processInvoke(Toy_VM* vm) {
-	Toy_ValueType valueType = READ_BYTE(vm);
-	unsigned int argCount = (unsigned int)READ_BYTE(vm);
-	fixAlignment(vm);
+static void invoke(Toy_VM* vm, Toy_ValueType valueType, unsigned int argCount) {
 
 	//check for invoking bad values
 	if (valueType != TOY_VALUE_FUNCTION) {
@@ -379,6 +376,11 @@ static void processInvoke(Toy_VM* vm) {
 
 	switch(fn->type) {
 		case TOY_FUNCTION_CUSTOM: {
+			if (vm->maxCallDepth && vm->callDepth >= vm->maxCallDepth) {
+				Toy_error("Call depth limit exceeded");
+				Toy_freeValue(value);
+				return;
+			}
 			//spin up a new sub-vm
 			Toy_VM subVM;
 			Toy_inheritVM(vm, &subVM);
@@ -433,8 +435,10 @@ static void processInvoke(Toy_VM* vm) {
 
 		case TOY_FUNCTION_NATIVE: {
 			//NOTE: arguments are on the stack, leave results on the stack
-			//BUG: native functions can't declare their parameter count, but the argument count *is* in the bytecode
+			unsigned int previous = vm->nativeArgumentCount;
+			vm->nativeArgumentCount = argCount;
 			fn->native.callback(vm, &fn->native);
+			vm->nativeArgumentCount = previous;
 		}
 		break;
 
@@ -444,6 +448,29 @@ static void processInvoke(Toy_VM* vm) {
 	}
 
 	Toy_freeValue(value);
+}
+
+static void processInvoke(Toy_VM* vm) {
+	Toy_ValueType valueType = READ_BYTE(vm);
+	unsigned int argCount = (unsigned int)READ_BYTE(vm);
+	fixAlignment(vm);
+	invoke(vm, valueType, argCount);
+}
+
+Toy_Value Toy_callFunction(Toy_VM* vm, Toy_Function* fn, unsigned int argc, Toy_Value* argv) {
+	unsigned int base = vm->stack->count;
+	for (unsigned int i = 0; i < argc; i++) {
+		Toy_pushStack(&vm->stack, Toy_copyValue(&vm->memoryBucket, argv[i]));
+	}
+
+	Toy_pushStack(&vm->stack, TOY_VALUE_FROM_FUNCTION(Toy_copyFunction(&vm->memoryBucket, fn)));
+	invoke(vm, TOY_VALUE_FUNCTION, argc);
+	Toy_Value result = vm->stack->count > base ? Toy_popStack(&vm->stack) : TOY_VALUE_FROM_NULL();
+	while (vm->stack->count > base) {
+		Toy_freeValue(Toy_popStack(&vm->stack));
+	}
+
+	return result;
 }
 
 static void processAttribute(Toy_VM* vm) {
@@ -1098,6 +1125,13 @@ static void processDuplicate(Toy_VM* vm) {
 
 static unsigned int process(Toy_VM* vm) {
 	while(true) {
+		if (vm->instructionBudget != NULL) {
+			if (*vm->instructionBudget == 0) {
+				Toy_error("Instruction limit exceeded");
+				return 0;
+			}
+			--*vm->instructionBudget;
+		}
 		//prep by aligning to the 4-byte word
 		fixAlignment(vm);
 
@@ -1246,6 +1280,12 @@ void Toy_resetVM(Toy_VM* vm, bool preserveScope, bool preserveStack) {
 }
 
 void Toy_initVM(Toy_VM* vm) {
+	vm->userData = NULL;
+	vm->instructionBudget = NULL;
+	vm->nativeArgumentCount = 0;
+	vm->callDepth = 0;
+	vm->maxCallDepth = 0;
+
 	//create persistent memory
 	vm->scope = NULL;
 	vm->stack = Toy_allocateStack();
@@ -1257,6 +1297,12 @@ void Toy_initVM(Toy_VM* vm) {
 }
 
 void Toy_inheritVM(Toy_VM* parentVM, Toy_VM* subVM) {
+	subVM->userData = parentVM->userData;
+	subVM->instructionBudget = parentVM->instructionBudget;
+	subVM->nativeArgumentCount = 0;
+	subVM->callDepth = parentVM->callDepth + 1;
+	subVM->maxCallDepth = parentVM->maxCallDepth;
+
 	//inherent persistent memory
 	subVM->scope = NULL;
 	subVM->stack = Toy_allocateStack();

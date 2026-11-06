@@ -32,6 +32,13 @@ typedef struct Toy_VM {
 	unsigned int paramAddr;
 	unsigned int dataAddr;
 
+	//Host context and instruction budget are shared with nested calls.
+	void* userData;
+	uint64_t* instructionBudget;
+	unsigned int nativeArgumentCount;
+	unsigned int callDepth;
+	unsigned int maxCallDepth;
+
 	//execution utils
 	unsigned int programCounter;
 
@@ -56,3 +63,7 @@ TOY_API unsigned int Toy_runVM(Toy_VM* vm);
 TOY_API void Toy_freeVM(Toy_VM* vm);
 
 TOY_API Toy_Value Toy_getReturnValueFromVM(Toy_VM* parentVM, Toy_VM* subVM);
+
+//Arguments are borrowed; the returned value belongs to the caller.
+union Toy_Function_t;
+TOY_API Toy_Value Toy_callFunction(Toy_VM* vm, union Toy_Function_t* fn, unsigned int argc, Toy_Value* argv);
