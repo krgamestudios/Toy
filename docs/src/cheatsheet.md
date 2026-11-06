@@ -113,6 +113,7 @@ TOY_API void Toy_bindParser(Toy_Parser* parser, Toy_Lexer* lexer);
 TOY_API Toy_Ast* Toy_scanParser(Toy_Bucket** bucketHandle, Toy_Parser* parser);
 TOY_API void Toy_resetParser(Toy_Parser* parser);
 TOY_API void Toy_adjustParserWorkingDirectory(Toy_Parser* parser, const char* dir);
+TOY_API void Toy_setImportResolver(Toy_importResolver resolver);
 TOY_API void Toy_print(const char* msg);
 TOY_API void Toy_error(const char* msg);
 TOY_API void Toy_assertFailure(const char* msg);
