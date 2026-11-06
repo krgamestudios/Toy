@@ -15,19 +15,22 @@
 
 typedef struct Toy_VM {
 	//raw instructions to be executed
-	unsigned char* code;
+	unsigned char* bytecode;
+	unsigned char* module;
+
+	//module info
+	unsigned int lookupCount;
+	unsigned int lookupAddr;
 
 	//metadata
 	unsigned int jumpsCount;
 	unsigned int paramCount;
 	unsigned int dataCount;
-	unsigned int subsCount;
 
 	unsigned int codeAddr;
 	unsigned int jumpsAddr;
 	unsigned int paramAddr;
 	unsigned int dataAddr;
-	unsigned int subsAddr;
 
 	//execution utils
 	unsigned int programCounter;

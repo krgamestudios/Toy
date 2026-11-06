@@ -16,20 +16,14 @@ typedef struct Toy_private_EscapeStack {
 	Toy_private_EscapeEntry_t data[];
 } Toy_private_EscapeStack;
 
-//not needed at runtime, so they can be bigger
-#ifndef TOY_ESCAPE_INITIAL_CAPACITY
-#define TOY_ESCAPE_INITIAL_CAPACITY 32
-#endif
-
-#ifndef TOY_ESCAPE_EXPANSION_RATE
-#define TOY_ESCAPE_EXPANSION_RATE 4
-#endif
-
-Toy_private_EscapeStack* Toy_private_resizeEscapeStack(Toy_private_EscapeStack* ptr, unsigned int capacity, Toy_private_EscapeStack* next);
-
-
 //structure for holding the bytecode during compilation
 typedef struct Toy_Bytecode {
+    //store the submodules as a list, identified by a string (and index, for actual lookups)
+	Toy_String* identity; //root compiler has null id
+    unsigned int lookupIndex;
+    struct Toy_Bytecode* next;
+	unsigned char* buffer; //holds the results while the rest of the program is compiled
+
 	unsigned char* code; //the instruction set
 	unsigned int codeCapacity;
 	unsigned int codeCount;
@@ -46,10 +40,6 @@ typedef struct Toy_Bytecode {
 	unsigned int dataCapacity;
 	unsigned int dataCount;
 
-	unsigned char* subs; //subroutines etc, built recursively
-	unsigned int subsCapacity;
-	unsigned int subsCount;
-
 	//tools for handling the build process
 	unsigned int currentScopeDepth;
 	Toy_private_EscapeStack* breakEscapes;
@@ -65,4 +55,11 @@ TOY_API unsigned char* Toy_compileToBytecode(Toy_Ast* ast);
 // [ ] Extract Subroutines & Imports
 // [ ] Folding Constant Literals
 // [ ] Extra Block Reduction
-// [ ] Dead Path Elmination
+// [ ] Dead Code Elimination
+
+
+
+//URGENT: subroutines, such as functions and imported files, are held as a cached list with a key-value system
+//URGENT: They are then referenced from the "root" of the bytecode
+
+//TODO: rename 'Toy_Bytecode' to something better

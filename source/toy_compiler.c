@@ -37,6 +37,15 @@ static bool checkForChainedInvoke(Toy_Ast* ptr) {
 }
 
 //escapes
+//not needed at runtime, so they can be bigger
+#ifndef TOY_ESCAPE_INITIAL_CAPACITY
+#define TOY_ESCAPE_INITIAL_CAPACITY 32
+#endif
+
+#ifndef TOY_ESCAPE_EXPANSION_RATE
+#define TOY_ESCAPE_EXPANSION_RATE 4
+#endif
+
 Toy_private_EscapeStack* Toy_private_resizeEscapeStack(Toy_private_EscapeStack* ptr, unsigned int capacity, Toy_private_EscapeStack* next) {
 	//if you're freeing everything, just return
 	if (ptr != NULL && capacity == 0) {
@@ -47,7 +56,7 @@ Toy_private_EscapeStack* Toy_private_resizeEscapeStack(Toy_private_EscapeStack* 
 
 	//NOTE: the 'next' parameter is handled a bit oddly due to the stack being grafted on long after the escape array was implemented.
 	unsigned int originalCapacity = ptr == NULL ? 0 : ptr->capacity;
-	unsigned int orignalCount = ptr == NULL ? 0 : ptr->count;
+	unsigned int originalCount = ptr == NULL ? 0 : ptr->count;
 
 	ptr = (Toy_private_EscapeStack*)realloc(ptr, capacity * sizeof(Toy_private_EscapeEntry_t) + sizeof(Toy_private_EscapeStack));
 
@@ -58,7 +67,7 @@ Toy_private_EscapeStack* Toy_private_resizeEscapeStack(Toy_private_EscapeStack* 
 
 	ptr->next = next;
 	ptr->capacity = capacity;
-	ptr->count = orignalCount;
+	ptr->count = originalCount;
 
 	return ptr;
 }
@@ -229,50 +238,13 @@ static unsigned int emitParameters(Toy_Bytecode* mb, Toy_Ast* ast) {
 }
 
 //forward declarations
+static Toy_Bytecode* makeBytecode(Toy_String* identity, Toy_Bytecode* parent);
 static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast); //forward declare for recursion
 static void writeBytecodeBody(Toy_Bytecode* mb, Toy_Ast* ast);
-static unsigned char* collateBytecodeBody(Toy_Bytecode* mb);
+static void collateBytecode(Toy_Bytecode* mb);
 static unsigned int writeInstructionAssign(Toy_Bytecode** mb, Toy_AstVarAssign ast, bool chainedAssignment); //forward declare for chaining of var declarations
 static unsigned int writeInstructionAccess(Toy_Bytecode** mb, Toy_AstVarAccess ast);
 static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke ast);
-
-//used internally
-unsigned char* compileSourceToSubroutine(const char* source, const char* workingDir) {
-	//NOTE: this is a customized internal version of 'Toy_private_makeCodeFromSource' to handle circular references
-	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
-
-	Toy_Lexer lexer;
-	Toy_bindLexer(&lexer, source);
-
-	Toy_Parser parser;
-	Toy_bindParser(&parser, &lexer);
-	Toy_adjustParserWorkingDirectory(&parser, workingDir);
-
-	Toy_Ast* ast = Toy_scanParser(&bucket, &parser);
-
-	Toy_Bytecode compiler = { 0 };
-
-	compiler.breakEscapes = Toy_private_resizeEscapeStack(NULL, TOY_ESCAPE_INITIAL_CAPACITY, NULL);
-	compiler.continueEscapes = Toy_private_resizeEscapeStack(NULL, TOY_ESCAPE_INITIAL_CAPACITY, NULL);
-
-	//compile the ast to memory
-	writeBytecodeBody(&compiler, ast);
-	unsigned char* buffer = collateBytecodeBody(&compiler);
-
-	//cleanup
-	Toy_private_resizeEscapeStack(compiler.breakEscapes, 0, NULL);
-	Toy_private_resizeEscapeStack(compiler.continueEscapes, 0, NULL);
-
-	free(compiler.param);
-	free(compiler.code);
-	free(compiler.jumps);
-	free(compiler.data);
-	free(compiler.subs);
-
-	Toy_freeBucket(&bucket);
-
-	return buffer;
-}
 
 //write the instructions
 static unsigned int writeInstructionValue(Toy_Bytecode** mb, Toy_AstValue ast) {
@@ -978,7 +950,31 @@ static unsigned int writeInstructionReturn(Toy_Bytecode** mb, Toy_AstReturn ast)
 }
 
 static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast) {
-	//extract the path, because reasons
+	//don't recompile the existing submodules if it can be avoided
+	for (Toy_Bytecode* iter = *mb; iter != NULL; iter = iter->next) {
+		if (iter->identity != NULL && Toy_compareStrings(iter->identity, ast.file) == 0) {
+			//read the function as a value, with the address as a parameter
+			EMIT_BYTE(mb, code, TOY_OPCODE_READ);
+			EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+			EMIT_BYTE(mb, code, 0); //no parameters
+			EMIT_BYTE(mb, code, 0);
+
+			EMIT_INT(mb, code, iter->lookupIndex); //address within the global module table
+
+			//delcare the function
+			EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
+			EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+			EMIT_BYTE(mb, code, ast.name->info.length); //quick optimisation to skip a 'strlen()' call
+			EMIT_BYTE(mb, code, true); //functions are const for now
+
+			//time to write to the actual function name
+			emitString(mb, ast.name);
+
+			return 0;
+		}
+	}
+
+	//otherwise, read in and use the file
 	char* path = Toy_getStringRaw(ast.file);
 
 	//read the source
@@ -995,15 +991,27 @@ static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast)
 	char workingDir[256];
 	Toy_private_getWorkingDir(workingDir, path, 256);
 
-	//compile the file
-	unsigned char* subroutine = compileSourceToSubroutine(source, workingDir);
+	//setup lexer, parser & compiler
+	Toy_Lexer lexer;
+	Toy_bindLexer(&lexer, source);
+
+	Toy_Parser parser;
+	Toy_bindParser(&parser, &lexer);
+	Toy_adjustParserWorkingDirectory(&parser, workingDir);
+
+	Toy_Bucket* bucket = Toy_allocateBucket(TOY_BUCKET_IDEAL);
+	Toy_Ast* newAst = Toy_scanParser(&bucket, &parser);
+
+	Toy_Bytecode* newImport = makeBytecode(ast.file, *mb); //passing in the *parent* of the new bytecode
+
+	writeBytecodeBody(newImport, newAst);
+	collateBytecode(newImport);
+
+	//cleanup
+	Toy_freeBucket(&bucket);
+
 	free(source);
 	free(path);
-
-	//write the subroutine to the subs section
-	unsigned int subsAddr = (*mb)->subsCount;
-	emitBuffer(&((*mb)->subs), &((*mb)->subsCapacity), &((*mb)->subsCount), subroutine, *((unsigned int*)subroutine));
-	free(subroutine);
 
 	//read the function as a value, with the address as a parameter
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
@@ -1011,7 +1019,7 @@ static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast)
 	EMIT_BYTE(mb, code, 0); //no parameters
 	EMIT_BYTE(mb, code, 0);
 
-	EMIT_INT(mb, code, subsAddr);
+	EMIT_INT(mb, code, newImport->lookupIndex); //address within the global module table
 
 	//delcare the function
 	EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
@@ -1261,49 +1269,37 @@ static unsigned int writeInstructionAccess(Toy_Bytecode** mb, Toy_AstVarAccess a
 }
 
 static unsigned int writeInstructionFnDeclare(Toy_Bytecode** mb, Toy_AstFnDeclare ast) {
-	/*
-	FnDeclare: name, params, body
+	//don't recompile the existing submodules if it can be avoided
+	for (Toy_Bytecode* iter = *mb; iter != NULL; iter = iter->next) {
+		if (iter->identity != NULL && Toy_compareStrings(iter->identity, ast.name) == 0) {
+			//read the function as a value, with the address as a parameter
+			EMIT_BYTE(mb, code, TOY_OPCODE_READ);
+			EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+			EMIT_BYTE(mb, code, 0); //no parameters
+			EMIT_BYTE(mb, code, 0);
 
-	fn name(param1: int, param2: float, param3: string, param4) {
-		//
+			EMIT_INT(mb, code, iter->lookupIndex); //address within the global module table
+
+			//delcare the function
+			EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
+			EMIT_BYTE(mb, code, TOY_VALUE_FUNCTION);
+			EMIT_BYTE(mb, code, ast.name->info.length); //quick optimisation to skip a 'strlen()' call
+			EMIT_BYTE(mb, code, true); //functions are const for now
+
+			//time to write to the actual function name
+			emitString(mb, ast.name);
+
+			return 0;
+		}
 	}
 
-	ast->params->aggregate
-		.left->aggregate
-			.left->aggregate
-				.left->aggregate
-					.left = (NULL)
-					.right->value.value.as.string.name (param1: int)
-				.right->value.value.as.string.name (param2: float)
-			.right->value.value.as.string.name (param3: string)
-		.right->value.value.as.string.name (param4: any)
-	*/
-
 	//generate the subroutine
-	Toy_Bytecode compiler = { 0 };
-
-	compiler.breakEscapes = Toy_private_resizeEscapeStack(NULL, TOY_ESCAPE_INITIAL_CAPACITY, NULL);
-	compiler.continueEscapes = Toy_private_resizeEscapeStack(NULL, TOY_ESCAPE_INITIAL_CAPACITY, NULL);
+	Toy_Bytecode* newModule = makeBytecode(ast.name, *mb);
 
 	//compile the ast to memory
-	unsigned int paramCount = emitParameters(&compiler, ast.params);
-	writeBytecodeBody(&compiler, ast.body);
-	unsigned char* subroutine = collateBytecodeBody(&compiler);
-
-	//cleanup the compiler
-	Toy_private_resizeEscapeStack(compiler.breakEscapes, 0, NULL);
-	Toy_private_resizeEscapeStack(compiler.continueEscapes, 0, NULL);
-
-	free(compiler.param);
-	free(compiler.code);
-	free(compiler.jumps);
-	free(compiler.data);
-	free(compiler.subs);
-
-	//write the subroutine to the subs section
-	unsigned int subsAddr = (*mb)->subsCount;
-	emitBuffer(&((*mb)->subs), &((*mb)->subsCapacity), &((*mb)->subsCount), subroutine, *((unsigned int*)subroutine));
-	free(subroutine);
+	unsigned int paramCount = emitParameters(newModule, ast.params);
+	writeBytecodeBody(newModule, ast.body);
+	collateBytecode(newModule);
 
 	//read the function as a value, with the address as a parameter
 	EMIT_BYTE(mb, code, TOY_OPCODE_READ);
@@ -1311,7 +1307,7 @@ static unsigned int writeInstructionFnDeclare(Toy_Bytecode** mb, Toy_AstFnDeclar
 	EMIT_BYTE(mb, code, (unsigned char)paramCount);
 	EMIT_BYTE(mb, code, 0);
 
-	EMIT_INT(mb, code, subsAddr);
+	EMIT_INT(mb, code, newModule->lookupIndex); //address within the global module table
 
 	//delcare the function
 	EMIT_BYTE(mb, code, TOY_OPCODE_DECLARE);
@@ -1329,7 +1325,7 @@ static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke 
 	unsigned int argCount = writeBytecodeFromAst(mb, ast.args);
 
 	if (argCount > 255) {
-		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid function invokation with %d functions arguments (maximum 255)\n" TOY_CC_RESET, (int)argCount);
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid function invocation with %d functions arguments (maximum 255)\n" TOY_CC_RESET, (int)argCount);
 		(*mb)->panic = true;
 		return 0;
 	}
@@ -1337,7 +1333,7 @@ static unsigned int writeInstructionFnInvoke(Toy_Bytecode** mb, Toy_AstFnInvoke 
 	unsigned int fnCount = writeBytecodeFromAst(mb, ast.function);
 
 	if (fnCount != 1) {
-		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid function invokation with %d function AST nodes (expected 1)\n" TOY_CC_RESET, (int)fnCount);
+		fprintf(stderr, TOY_CC_ERROR "COMPILER ERROR: Invalid function invocation with %d function AST nodes (expected 1)\n" TOY_CC_RESET, (int)fnCount);
 		(*mb)->panic = true;
 		return 0;
 	}
@@ -1380,7 +1376,6 @@ static unsigned int writeInstructionStackPop(Toy_Bytecode** mb, Toy_AstStackPop 
 
 	return result - 1;
 }
-
 
 static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 	if (ast == NULL) {
@@ -1534,8 +1529,34 @@ static unsigned int writeBytecodeFromAst(Toy_Bytecode** mb, Toy_Ast* ast) {
 	return result;
 }
 
+static Toy_Bytecode* makeBytecode(Toy_String* identity, Toy_Bytecode* parent) {
+	Toy_Bytecode* ptr = malloc(sizeof(Toy_Bytecode));
+	memset(ptr, 0, sizeof(Toy_Bytecode));
+
+	//set the metadata, if able
+	if (identity) {
+		ptr->identity = Toy_copyString(identity);
+	}
+
+	ptr->lookupIndex = 0;
+	while (parent != NULL && parent->next != NULL) {
+		parent = parent->next;
+	}
+
+	if (parent) {
+		parent->next = ptr;
+		ptr->lookupIndex = parent->lookupIndex + 1;
+	}
+
+	//allocate the escape arrays
+	ptr->breakEscapes = Toy_private_resizeEscapeStack(NULL, TOY_ESCAPE_INITIAL_CAPACITY, NULL);
+	ptr->continueEscapes = Toy_private_resizeEscapeStack(NULL, TOY_ESCAPE_INITIAL_CAPACITY, NULL);
+
+	return ptr;
+}
+
 static void writeBytecodeBody(Toy_Bytecode* mb, Toy_Ast* ast) {
-	//this is separated from 'collateBytecodeBody', to separate the concerns for bytecode & functions
+	//this is separated from 'collateBytecodeBody', to separate the concerns between code and submodules
 
 	writeBytecodeFromAst(&mb, ast);
 
@@ -1548,10 +1569,10 @@ static void writeBytecodeBody(Toy_Bytecode* mb, Toy_Ast* ast) {
 	}
 }
 
-static unsigned char* collateBytecodeBody(Toy_Bytecode* mb) {
+static void collateBytecode(Toy_Bytecode* mb) {
 	//if an error occurred, just exit
 	if (mb->panic) {
-		return NULL;
+		return;
 	}
 
 	//write the header and combine the parts
@@ -1561,13 +1582,11 @@ static unsigned char* collateBytecodeBody(Toy_Bytecode* mb) {
 	int jumpsAddr = 0;
 	int paramAddr = 0;
 	int dataAddr = 0;
-	int subsAddr = 0;
 
 	emitInt(&buffer, &capacity, &count, 0); //total size (overwritten later)
 	emitInt(&buffer, &capacity, &count, mb->jumpsCount); //jumps size
 	emitInt(&buffer, &capacity, &count, mb->paramCount); //param size
 	emitInt(&buffer, &capacity, &count, mb->dataCount); //data size
-	emitInt(&buffer, &capacity, &count, mb->subsCount); //routine size
 
 	//generate blank spaces, cache their positions in the *Addr variables for later writes
 	if (mb->codeCount > 0) {
@@ -1585,10 +1604,6 @@ static unsigned char* collateBytecodeBody(Toy_Bytecode* mb) {
 	if (mb->dataCount > 0) {
 		dataAddr = count;
 		emitInt(&buffer, &capacity, &count, 0); //data
-	}
-	if (mb->subsCount > 0) {
-		subsAddr = count;
-		emitInt(&buffer, &capacity, &count, 0); //subs
 	}
 
 	//append various parts to the buffer
@@ -1624,41 +1639,80 @@ static unsigned char* collateBytecodeBody(Toy_Bytecode* mb) {
 		count += mb->dataCount;
 	}
 
-	if (mb->subsCount > 0) {
-		expand(&buffer, &capacity, &count, mb->subsCount);
-		memcpy((buffer + count), mb->subs, mb->subsCount);
+	//finally, record the total size within the header, and store the result
+	((unsigned int*)buffer)[0] = count;
+	mb->buffer = buffer;
 
-		*((int*)(buffer + subsAddr)) = count;
-		count += mb->subsCount;
+	//finalize this compiler's internals
+	Toy_private_resizeEscapeStack(mb->breakEscapes, 0, NULL);
+	Toy_private_resizeEscapeStack(mb->continueEscapes, 0, NULL);
+
+	free(mb->code);
+	free(mb->jumps);
+	free(mb->param);
+	free(mb->data);
+
+	mb->breakEscapes = NULL;
+	mb->continueEscapes = NULL;
+	mb->code = NULL;
+	mb->jumps = NULL;
+	mb->param = NULL;
+	mb->data = NULL;
+}
+
+static unsigned char* packageBytecode(Toy_Bytecode* mb) {
+	//the final result
+	unsigned char* lookup = NULL;
+	unsigned int lookupCapacity = 0;
+	unsigned int lookupCount = 0;
+
+	unsigned char* packed = NULL;
+	unsigned int packedCapacity = 0;
+	unsigned int packedCount = 0;
+
+	//read each held buffer and "package" it into one chunk of bytecode
+	for (Toy_Bytecode* iter = mb; iter != NULL; iter = iter->next) {
+		emitInt(&lookup, &lookupCapacity, &lookupCount, packedCount); //the lookup table maps order as index, and stores addresses
+		emitBuffer(&packed, &packedCapacity, &packedCount, iter->buffer, *((unsigned int*)iter->buffer));
 	}
 
-	//finally, record the total size within the header, and return the result
-	((int*)buffer)[0] = count;
+	//package format: datestamp header, lookup table (with initial total int), submodules
+	unsigned int head = 4 + strlen(TOY_VERSION_BUILD);
+	head = (head + 3) & ~3; //4-byte alignment
 
-	return buffer;
+	unsigned int finalSize = head + (lookupCount+4) + packedCount;
+	unsigned char* final = malloc(finalSize);
+
+	//datastamp
+	final[0] = TOY_VERSION_MAJOR;
+	final[1] = TOY_VERSION_MINOR;
+	final[2] = TOY_VERSION_PATCH;
+	final[3] = 0;
+
+	strncpy((char*)(final+4), TOY_VERSION_BUILD, finalSize-4);
+
+	//lookup table
+	*(unsigned int*)(final + head) = lookupCount;
+	memcpy(final + head + 4, lookup, lookupCount);
+
+	//packed
+	memcpy(final + head + (lookupCount+4), packed, packedCount);
+
+	//cleanup
+	free(lookup);
+	free(packed);
+
+	return final;
 }
 
 //exposed functions
 unsigned char* Toy_compileToBytecode(Toy_Ast* ast) {
 	//setup
-	Toy_Bytecode compiler = { 0 };
-
-	compiler.breakEscapes = Toy_private_resizeEscapeStack(NULL, TOY_ESCAPE_INITIAL_CAPACITY, NULL);
-	compiler.continueEscapes = Toy_private_resizeEscapeStack(NULL, TOY_ESCAPE_INITIAL_CAPACITY, NULL);
+	Toy_Bytecode* mb = makeBytecode(NULL, NULL);
 
 	//compile the ast to memory
-	writeBytecodeBody(&compiler, ast);
-	unsigned char* buffer = collateBytecodeBody(&compiler);
+	writeBytecodeBody(mb, ast);
+	collateBytecode(mb);
 
-	//cleanup
-	Toy_private_resizeEscapeStack(compiler.breakEscapes, 0, NULL);
-	Toy_private_resizeEscapeStack(compiler.continueEscapes, 0, NULL);
-
-	free(compiler.param);
-	free(compiler.code);
-	free(compiler.jumps);
-	free(compiler.data);
-	free(compiler.subs);
-
-	return buffer;
+	return packageBytecode(mb);
 }

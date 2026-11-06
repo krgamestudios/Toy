@@ -333,16 +333,16 @@ static void attr_arraySort(Toy_VM* vm, Toy_FunctionNative* self) {
 	//get the two parameters and declare them as references to values (which we can mess with for speed & efficiency)
 	Toy_Value lhs = TOY_VALUE_FROM_NULL(); //NOTE: yes, this means this quicksort can't be parallelized, but idc
 	{
-		const char* cstr = ((char*)(subVM.code + subVM.dataAddr)) + ((unsigned int*)(subVM.code + subVM.paramAddr))[0];
-		Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.code + subVM.paramAddr))[1]);
+		const char* cstr = ((char*)(subVM.module + subVM.dataAddr)) + ((unsigned int*)(subVM.module + subVM.paramAddr))[0];
+		Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.module + subVM.paramAddr))[1]);
 		Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
 		Toy_declareScope(&vm->memoryBucket, subVM.scope, name, paramType, TOY_REFERENCE_FROM_POINTER(&lhs), true);
 		Toy_freeString(name);
 	}
 	Toy_Value rhs = TOY_VALUE_FROM_NULL();
 	{
-		const char* cstr = ((char*)(subVM.code + subVM.dataAddr)) + ((unsigned int*)(subVM.code + subVM.paramAddr))[2];
-		Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.code + subVM.paramAddr))[3]);
+		const char* cstr = ((char*)(subVM.module + subVM.dataAddr)) + ((unsigned int*)(subVM.module + subVM.paramAddr))[2];
+		Toy_ValueType paramType = (Toy_ValueType)(((unsigned int*)(subVM.module + subVM.paramAddr))[3]);
 		Toy_String* name = Toy_toStringLength(&subVM.memoryBucket, cstr, strlen(cstr));
 		Toy_declareScope(&vm->memoryBucket, subVM.scope, name, paramType, TOY_REFERENCE_FROM_POINTER(&rhs), true);
 		Toy_freeString(name);

@@ -7,7 +7,7 @@ TOY_VERSION_MINOR
 TOY_VERSION_PATCH
 TOY_VERSION_BUILD
 
-The first three are each one unsigned byte (with one undefined byte for alignment), and the fourth is a null terminated C-string.
+The first three are each one unsigned byte (with one null byte for alignment), and the fourth is a null terminated C-string.
 
 * Under no circumstance, should you ever run bytecode whose major version is different
 * Under no circumstance, should you ever run bytecode whose minor version is above the interpreter's minor version

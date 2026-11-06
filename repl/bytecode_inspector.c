@@ -6,8 +6,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
+int inspect_module(unsigned char* bytecode);
 int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr);
 int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr);
 
@@ -21,13 +23,43 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 
 //exposed functions
 int inspect_bytecode(unsigned char* bytecode) {
-	//TODO: handle version info?
+	//read the datestamp header
+	if (bytecode[0] != TOY_VERSION_MAJOR || bytecode[1] > TOY_VERSION_MINOR) {
+		printf(TOY_CC_ASSERT "Unrecognized version of Toy found (expexted %d.%d.%d %s)" TOY_CC_RESET "\n", TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, TOY_VERSION_BUILD);
+	}
 
+	if (!(bytecode[0] == TOY_VERSION_MAJOR && bytecode[1] == TOY_VERSION_MINOR && bytecode[2] == TOY_VERSION_PATCH)) {
+		printf(TOY_CC_WARN "Different version of Toy found, continuing (expexted %d.%d.%d %s)" TOY_CC_RESET "\n", TOY_VERSION_MAJOR, TOY_VERSION_MINOR, TOY_VERSION_PATCH, TOY_VERSION_BUILD);
+	}
+
+	unsigned int len = strlen((char*)bytecode+4);
+	len = (len+3) & ~3;
+
+	unsigned int lookupCount = *(int*)(bytecode+4+len);
+	unsigned int* lookup = (unsigned int*)(bytecode+4+len+4);
+
+	unsigned char* packed = bytecode+4+len+(lookupCount+4);
+
+	//print module metadata
+	printf("Total modules found: %d\n", lookupCount/4);
+
+	for (unsigned int i = 0; i < lookupCount / 4; i++) {
+		printf("Module found at %d\n", lookup[i]);
+	}
+
+	//run the inspection
+	for (unsigned int i = 0; i < lookupCount / 4; i++) {
+		inspect_module(packed + lookup[i]);
+	}
+
+	return 0;
+}
+
+int inspect_module(unsigned char* bytecode) {
 	unsigned int const bytecodeSize = ((unsigned int*)(bytecode))[0];
 	unsigned int const jumpsSize = ((unsigned int*)(bytecode))[1];
 	unsigned int const paramSize = ((unsigned int*)(bytecode))[2];
 	unsigned int const dataSize = ((unsigned int*)(bytecode))[3];
-	unsigned int const subsSize = ((unsigned int*)(bytecode))[4];
 
 	printf(FONT ".header:\r" TOY_CC_RESET);
 
@@ -38,15 +70,13 @@ int inspect_bytecode(unsigned char* bytecode) {
 	printf(MARKER TOY_CC_NOTICE "Jumps Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(1, unsigned int), jumpsSize);
 	printf(MARKER TOY_CC_NOTICE "Param Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(2, unsigned int), paramSize);
 	printf(MARKER TOY_CC_NOTICE "Data Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(3, unsigned int), dataSize);
-	printf(MARKER TOY_CC_NOTICE "Subs Size:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(4, unsigned int), subsSize);
 
 	//some addresses may be absent
-	unsigned int addr_pc = 4;
+	unsigned int addr_pc = 3; //WARN: starts at 3 so it reads from the 4th word
 	unsigned int code_addr = 0;
 	unsigned int jumps_addr = 0;
 	unsigned int param_addr = 0;
 	unsigned int data_addr = 0;
-	unsigned int subs_addr = 0;
 
 	//bugfix
 	unsigned int code_end = 0;
@@ -77,13 +107,6 @@ int inspect_bytecode(unsigned char* bytecode) {
 		printf(MARKER TOY_CC_NOTICE "Data Address:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(addr_pc, unsigned int), ((unsigned int*)(bytecode))[addr_pc]);
 		data_addr = ((unsigned int*)(bytecode))[addr_pc];
 		if (code_end == 0) code_end = data_addr;
-	}
-
-	if (subsSize > 0) {
-		addr_pc++;
-		printf(MARKER TOY_CC_NOTICE "Subs Address:\t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(addr_pc, unsigned int), ((unsigned int*)(bytecode))[addr_pc]);
-		subs_addr = ((unsigned int*)(bytecode))[addr_pc];
-		if (code_end == 0) code_end = subs_addr;
 	}
 
 	if (code_end == 0) code_end = bytecodeSize; //very hacky
@@ -131,16 +154,6 @@ int inspect_bytecode(unsigned char* bytecode) {
 				ISPRINT_SANITIZE(((char*)(bytecode + data_addr + (i*4)))[2]),
 				ISPRINT_SANITIZE(((char*)(bytecode + data_addr + (i*4)))[3])
 			);
-		}
-	}
-
-	//subs
-	if (subsSize > 0) {
-		printf(FONT ".subs:\n" TOY_CC_RESET);
-
-		unsigned int i = 0;
-		while (i < subsSize) {
-			i += inspect_bytecode(bytecode + subs_addr + i);
 		}
 	}
 
