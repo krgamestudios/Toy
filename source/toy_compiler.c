@@ -950,6 +950,16 @@ static unsigned int writeInstructionReturn(Toy_Bytecode** mb, Toy_AstReturn ast)
 }
 
 static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast) {
+	printf(TOY_CC_DEBUG "file: %.*s\n" TOY_CC_RESET, ast.file->node.right->info.length, ast.file->node.right->leaf.data);
+
+	for (Toy_Bytecode* iter = *mb; iter != NULL; iter = iter->next) {
+		if (iter->identity) {
+			char* str = Toy_getStringRaw(iter->identity);
+			printf(TOY_CC_NOTICE "\t\tfrom: %s" TOY_CC_RESET "\n", str);
+			free(str);
+		}
+	}
+
 	//don't recompile the existing submodules if it can be avoided
 	for (Toy_Bytecode* iter = *mb; iter != NULL; iter = iter->next) {
 		if (iter->identity != NULL && Toy_compareStrings(iter->identity, ast.file) == 0) {
@@ -1010,7 +1020,9 @@ static unsigned int writeInstructionImport(Toy_Bytecode** mb, Toy_AstImport ast)
 	//cleanup
 	Toy_freeBucket(&bucket);
 
-	free(source);
+	// free(source); //BUGFIX: retain the identity strings
+	(*mb)->sourceHook = source;
+
 	free(path);
 
 	//read the function as a value, with the address as a parameter
@@ -1660,6 +1672,13 @@ static void collateBytecode(Toy_Bytecode* mb) {
 	mb->data = NULL;
 }
 
+static void freeBytecode(Toy_Bytecode* mb) {
+	if (mb->next) freeBytecode(mb->next);
+	free(mb->buffer);
+	free(mb->sourceHook);
+	free(mb);
+}
+
 static unsigned char* packageBytecode(Toy_Bytecode* mb) {
 	//the final result
 	unsigned char* lookup = NULL;
@@ -1701,6 +1720,8 @@ static unsigned char* packageBytecode(Toy_Bytecode* mb) {
 	//cleanup
 	free(lookup);
 	free(packed);
+
+	freeBytecode(mb);
 
 	return final;
 }

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <ctype.h>
 
-int inspect_module(unsigned char* bytecode);
+int inspect_module(unsigned char* bytecode, unsigned int idx);
 int inspect_instruction(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr);
 int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_addr, unsigned int data_addr);
 
@@ -18,7 +18,7 @@ int inspect_read(unsigned char* bytecode, unsigned int pc, unsigned int jumps_ad
 #define MARKER_VALUE(pc, type) \
 	((unsigned int)(pc * sizeof(type)))
 
-#define MARKER "\t\033[" TOY_CC_FONT_CYAN "m" " %u\t" TOY_CC_RESET
+#define MARKER "\t\033[" TOY_CC_FONT_CYAN "m" " \t%u\t" TOY_CC_RESET
 #define FONT "\033[" TOY_CC_FONT_CYAN "m"
 
 //exposed functions
@@ -44,24 +44,24 @@ int inspect_bytecode(unsigned char* bytecode) {
 	printf("Total modules found: %d\n", lookupCount/4);
 
 	for (unsigned int i = 0; i < lookupCount / 4; i++) {
-		printf("Module found at %d\n", lookup[i]);
+		printf("Module found at " FONT "%d" TOY_CC_RESET "\n", lookup[i]);
 	}
 
 	//run the inspection
 	for (unsigned int i = 0; i < lookupCount / 4; i++) {
-		inspect_module(packed + lookup[i]);
+		inspect_module(packed + lookup[i], i);
 	}
 
 	return 0;
 }
 
-int inspect_module(unsigned char* bytecode) {
+int inspect_module(unsigned char* bytecode, unsigned int idx) {
 	unsigned int const bytecodeSize = ((unsigned int*)(bytecode))[0];
 	unsigned int const jumpsSize = ((unsigned int*)(bytecode))[1];
 	unsigned int const paramSize = ((unsigned int*)(bytecode))[2];
 	unsigned int const dataSize = ((unsigned int*)(bytecode))[3];
 
-	printf(FONT ".header:\r" TOY_CC_RESET);
+	printf(FONT ".header: (%u)\r" TOY_CC_RESET, idx);
 
 	//bytecode size
 	printf(MARKER TOY_CC_NOTICE "Bytecode Size: \t\t%u" TOY_CC_RESET "\n", MARKER_VALUE(0, unsigned int), bytecodeSize);

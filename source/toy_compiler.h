@@ -23,6 +23,7 @@ typedef struct Toy_Bytecode {
     unsigned int lookupIndex;
     struct Toy_Bytecode* next;
 	unsigned char* buffer; //holds the results while the rest of the program is compiled
+	char* sourceHook; //BUGFIX: god help me
 
 	unsigned char* code; //the instruction set
 	unsigned int codeCapacity;
